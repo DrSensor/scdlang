@@ -5,8 +5,6 @@ references:
   - https://github.com/sverweij/state-machine-cat
 syntax:
   - scdlang
-  - xstate
-  - scxml
 ---
 ![type state picture]()
 ---
