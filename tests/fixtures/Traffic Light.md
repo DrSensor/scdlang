@@ -2,14 +2,17 @@
 title: Traffic Light
 references:
   - https://xstate.js.org/docs/#finite-state-machines
+  - https://hoverbear.org/2016/10/12/rust-state-machine-pattern/
+  - https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=cb3b16f55f4d6ad25fc54f5058c7dacf
 syntax:
   - scdlang
   - xstate
   - scxml
+  - rust
 ---
 ![traffic light machine](https://imgur.com/rqqmkJh.png)
 ---
-```scd
+```scl
 state light {
   initial green
 
@@ -19,7 +22,7 @@ state light {
 }
 ```
 or
-```scd
+```scl
 state light {
   initial green
   
@@ -32,26 +35,41 @@ state light {
 ```
 ---
 ```js
-{
+export default {
   initial: 'green',
   states: {
-    green: {
-      on: {
-        TIMER: 'yellow'
-      }
-    },
-    yellow: {
-      on: {
-        TIMER: 'red'
-      }
-    },
-    red: {
-      on: {
-        TIMER: 'green'
+    light: {
+      green: {
+        on: {
+          TIMER: 'yellow'
+        }
+      },
+      yellow: {
+        on: {
+          TIMER: 'red'
+        }
+      },
+      red: {
+        on: {
+          TIMER: 'green'
+        }
       }
     }
   }
 }
+```
+#### Example Usage
+```js
+import { Machine } from 'xstate'
+import statecharts from './traffic-light'
+
+const trafficLight = Machine(statecharts)
+
+service = interpret(trafficLight)
+  .onTransition(state => console.log(state))
+  .start()
+
+setInterval(() => trafficLight.send('TIMER'), 1000)
 ```
 ---
 ```scxml
@@ -69,3 +87,48 @@ state light {
   </state>
 </scxml>
 ```
+---
+```rs
+#[derive(Debug)]
+enum Light {
+  Green,
+  Yellow,
+  Red
+}
+
+enum Event {
+  TIMER
+}
+
+#[derive(Debug)]
+struct Machine { state: Light }
+
+impl Machine {
+  fn new() -> Self {
+    Machine {
+        state: Light::Green
+    }
+  }
+
+  fn emit(&mut self, event: Event) {
+    self.state = match event {
+      Event::TIMER => match self.state {
+        Light::Green => Light::Yellow,
+        Light::Yellow => Light::Red,
+        Light::Red => Light::Green,
+      }
+    }
+  }
+}
+```
+#### Example Usage
+```rs
+fn main() {
+    let mut traffic_light = Machine::new();
+    for _ in 0..6 {
+        println!("{:?}", traffic_light.state);
+        traffic_light.emit(Event::TIMER);
+    }
+}
+```
+---
