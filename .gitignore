@@ -1,3 +1,4 @@
+*.lock
 # Logs
 logs
 *.log
@@ -59,3 +60,6 @@ typings/
 
 # next.js build output
 .next
+
+/target
+**/*.rs.bk
