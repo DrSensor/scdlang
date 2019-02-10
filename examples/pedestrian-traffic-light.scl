@@ -1,0 +1,18 @@
+initial Red.Stop
+
+state Red {
+    do |> activateCrosswalkLight
+
+    initial Walk
+    final Stop,Off
+
+    state Wait { do |> blinkCrosswalkLight }
+
+    Walk -> Wait @ Crossing
+    Wait -> Stop @ Crossed
+    Walk,Wait -> Off @ NoCar
+}
+
+Green -> Yellow @ Timeout
+Yellow -> Red @ Timeout
+Red -> Green @ Timeout

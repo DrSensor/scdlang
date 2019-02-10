@@ -1,0 +1,8 @@
+initial Off
+
+state On {
+    do |> beeping
+}
+
+Off -> On @ Toggle
+On -> Off @ Toggle
