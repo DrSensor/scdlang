@@ -8,39 +8,76 @@ syntax:
 ---
 ![type state picture]()
 ---
-#### action on entry
+### action
+- keyword: entry, exit
+- symbol: `|>`, `<|`, `<|>`
+
+#### on entry
 ```scl
-... -> Alpha|>something
-```
-or (preferred)
-```
 state Alpha {
   entry |> something
 }
 ```
-Read as: "execute *action **something*** when transition to *state **Beta***"
-
-#### action on exit
+or
 ```scl
-Alpha|>something -> ...
-```
-or (preferred)
-```
 state Alpha {
-  exit |> something
+  |> something
 }
 ```
+or
+```scl
+Alpha <| something
+```
+or
+```scl
+something |> Alpha
+```
+Read as: "execute *action **something*** when transition to *state **Alpha***"
+
+#### on exit
+```scl
+state Alpha { exit |> something }
+```
+or
+```scl
+state Alpha {
+  <| something
+}
+```
+or
+```scl
+Alpha |> something
+```
+or
+```scl
+something <| Alpha
+```
 Read as: "execute *action **something*** when transition from *state **Alpha***"
+
+#### on entry and exit
+```scl
+state Alpha { entry,exit |> something }
+```
+or (discouraged)
+```scl
+state Alpha {
+  <|> something
+}
+```
+or (discouraged)
+```scl
+something <|> Alpha
+```
+or
+```scl
+Alpha <|> something
+```
+Read as: "when transition to/from *state **Alpha***, execute *action **something***"
 
 #### action with expression
 ```scl
 context VarX as x
 
-Alpha|>--x -> ...
-... -> Alpha|>++x
-```
-or (preferred)
-```
 state Alpha {
   entry |> --x
   exit |> ++x
@@ -50,38 +87,26 @@ Read as: "decrement `x` when entering *state **Alpha*** and increment `x` if exi
 
 #### activity
 ```scl
-Alpha -> Beta[<beeping>]
-```
-or
-```scl
-state Beta {
-  do |> beeping
-}
+state Beta { do |> beeping }
 ```
 Read as: "perform *activity **beeping*** when on *state **Beta***"
 
 #### internal transitions
 > action on entry and exit will not be executed when those event triggered
 ```scl
-state Beta {
-  @ Click
-}
+state Beta { @ Click }
 ```
 Read as: "*event **Click*** can occurred while in *state **Beta***"
 
 ##### with action
 ```scl
-state Beta {
-  @ Click |> something
-}
+state Beta { @ Click |> something }
 ```
 Read as: "execute *action **something*** when *event **Click*** occurred while in *state **Beta***"
 
 ##### with guard 🤔
 ```scl
-state Beta {
-  @ Click[{Alpha}]
-}
+state Beta { @ Click[x > 0 & {A}] }
 ```
 Read as: "*event **Click*** can occurred while in *state **Beta*** only if in *state **Alpha***"
 
