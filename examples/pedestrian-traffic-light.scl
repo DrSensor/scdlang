@@ -13,6 +13,10 @@ state Red {
     Walk,Wait -> Off @ NoCar
 }
 
-Green -> Yellow @ Timeout
-Yellow -> Red @ Timeout
-Red -> Green @ Timeout
+@ Timeout {
+    Green -> Yellow
+    Yellow -> Red
+    Red -> Green @ [{Stop} | {Off}]
+}
+
+Green,Yellow,Red -> PowerOff @ Shutdown |> cleanResource

@@ -28,14 +28,54 @@ A -> B @ C,D,E
 ```
 Read as: "*state **A*** transition to *state **B*** at *event **C**, **D**, or **E***"
 
+##### shortcut
+```scl
+@ E {
+  A -> B
+  B -> C
+  C -> D
+}
+```
+is a shortcut for
+```
+A -> B @ E
+B -> C @ E
+C -> D @ E
+```
+
+<details>
+<summary>can be combined with guards or actions</summary>
+
+```scl
+@ E[isOk] |> activate,lampOn,etc {
+  A -> B
+  C -> D
+}
+```
+
+```scl
+@ E[x > 0] {
+  A -> B |> activate
+  C -> D |> lampOn
+}
+```
+
+```scl
+@ E {
+  A -> B @ [x > 0] |> activate
+  C -> D @ [isOk] |> lampOn
+}
+```
+</details>
+
 #### guard
 - symbol: `[`$guardsName|$expression`]`
 
 ##### use $guardsName
 ```scl
-A -> B @ C[D]
+A -> B @ C[isD]
 ```
-Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *condition **D*** is true"
+Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *condition **isD*** is true"
 
 ##### use $expression
 ```scl
@@ -73,24 +113,16 @@ Read as: "*state **A*** transition to *state **B*** at *event **C*** only if **A
 
 
 #### action
-- symbol: `/`$actionaName`(`_$arguments`)`
+- symbol: `|>`
 ```scl
 A -> B @ C |> f
 ```
-Read as: "*state **A*** transition to *state **B*** at *event **C*** will execute *action **f()***"
+Read as: "*state **A*** transition to *state **B*** at *event **C*** will execute *action **f***"
 
 ##### with guards
 ```scl
 A -> B @ C[D] |> f
 ```
-Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *condition **D*** is true will execute *action **f()***"
-
-##### with $arguments
-```scl
-context VarX as x
-
-A -> B @ C |> f
-```
-Read as: "*state **A*** transition to *state **B*** at *event **C*** will execute *action **f(x)***"
+Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *condition **D*** is true will execute *action **f***"
 
 ---
