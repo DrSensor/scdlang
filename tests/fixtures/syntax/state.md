@@ -19,9 +19,19 @@ A -> B
 Read as: "*state **A*** transition to *state **B***"
 
 ```scl
+B <- A
+```
+Read as: "*state **B*** transition from *state **A***"
+
+```scl
 A,C,D -> B
 ```
 Read as: "*state **A**, **C**, and **D*** transition to *state **B***"
+
+```scl
+B <- A,C,D
+```
+Read as: "*state **B*** transition from either *state **A**, **C**, or **D***"
 
 #### compound/composite/nested
 - keyword: *state*

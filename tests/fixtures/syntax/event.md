@@ -12,8 +12,16 @@ syntax:
 
 ```scl
 A -> B @ C
+// or
+B <- A @ C
 ```
 Read as: "*state **A*** transition to *state **B*** at *event **C***"
+
+> Useful for defining Toggle event
+```scl
+A <-> B @ C
+```
+Read as: "*state **A*** transition to/from *state **B*** at *event **C***"
 
 ```scl
 A -> B @ C,D,E
