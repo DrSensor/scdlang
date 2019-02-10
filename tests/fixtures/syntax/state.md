@@ -1,5 +1,5 @@
 ---
-title: Transient and Compound State
+title: Declaring State
 references:
   - https://www.uml-diagrams.org/state-machine-diagrams.html
   - https://github.com/sverweij/state-machine-cat
@@ -11,46 +11,73 @@ syntax:
 ![type state picture]()
 ---
 #### atomic/simple
+- symbol: $current_state `->` $next_state
+
 ```scl
 A -> B
 ```
-#### compound/composite/nested
-```scl
-state P {
+Read as: "*state **A*** transition to *state **B***"
 
-}
+```scl
+A,C,D -> B
 ```
+Read as: "*state **A**, **C**, and **D*** transition to *state **B***"
+
+#### compound/composite/nested
+- keyword: *state*
+- symbol: `{`$declaration`}`
+```scl
+state P {...}
+```
+Read as: "inside *state **P***, ..."
+
 #### parallel
+- keyword: *parallel*
 ```scl
 parallel state P {
-  state P1 {
-    
-  }
-  state P2 {
-    
-  }
+  state P1 {...}
+  state P2 {...}
 }
 ```
----
-#### atomic/simple
-```rs
-enum State {
-  A,
-  B
-}
-```
-#### compound/composite/nested
-```rs
-enum P {...}
-```
-#### parallel
-```rs
-trait State {...}
+Read as: "inside *state **P***, there is *state **P1*** and **P2** which run on *parallel*"
 
-enum P1 {...}
-impl State for P1 {...}
+#### history shallow & deep
+> default is shallow
+- keyword: *history* or *cache*
 
-enum P2 {...}
-impl State for P2 {...}
+```scl
+history state P {...}
+cache state P {...}
 ```
+Read as: "inside *state **P*** which is *cache*able, ..."
+
+```scl
+A -> P[history]
+```
+Read as: "*state **A*** transition to *pervious* *state* of **P***"
+
+```scl
+P[cache] -> A
+```
+Read as: "cache the *current* *state* of **P** then transition to *state **A***"
+
+##### shallow
+- keyword: *shallow.*
+```scl
+shallow.history state P {...}
+shallow.cache state P {...}
+```
+Read as: "inside *state **P*** which is *cache*able, ..."
+
+##### deep
+- keyword: *deep.*
+- symbol: `*`
+```scl
+deep.history state P {...}
+deep.cache state P {...}
+*history state P {...}
+*cache state P {...}
+```
+Read as: "inside *state **P*** and all *state* inside *state **P*** which is *cache*able, ..."
+
 ---
