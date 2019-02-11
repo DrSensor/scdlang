@@ -19,4 +19,5 @@ state Red {
     Red -> Green @ [{Stop} | {Off}]
 }
 
-Green,Yellow,Red -> PowerOff @ Shutdown |> cleanResource
+Yellow -> PowerOff @ Shutdown |> cleanResource
+Yellow <- PowerOff @ PowerOn

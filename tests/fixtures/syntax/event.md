@@ -28,7 +28,13 @@ A -> B @ C,D,E
 ```
 Read as: "*state **A*** transition to *state **B*** at *event **C**, **D**, or **E***"
 
-##### shortcut
+##### 2nd form
+```scl
+A -> B @ E
+B -> C @ E
+C -> D @ E
+```
+can be written as:
 ```scl
 @ E {
   A -> B
@@ -36,15 +42,13 @@ Read as: "*state **A*** transition to *state **B*** at *event **C**, **D**, or *
   C -> D
 }
 ```
-is a shortcut for
-```
-A -> B @ E
-B -> C @ E
-C -> D @ E
-```
+Read as: "at *event **E***:
+<br>- *state **A*** can transition to *state **B***
+<br>- *state **B*** can transition to *state **C***
+<br>- *state **C*** can transition to *state **D***"
 
 <details>
-<summary>can be combined with guards or actions</summary>
+<summary>Also, can be combined with guards and/or actions.</summary>
 
 ```scl
 @ E[isOk] |> activate,lampOn,etc {
@@ -61,15 +65,23 @@ C -> D @ E
 ```
 
 ```scl
-@ E {
-  A -> B @ [x > 0] |> activate
-  C -> D @ [isOk] |> lampOn
+@ [x > 0] {
+  A -> B |> activate
+  A -> B @ E |> lampOn
+}
+```
+
+```scl
+|> activate {
+  A -> B @ E
+  C -> D @ F
+  J -> K
 }
 ```
 </details>
 
 #### guard
-- symbol: `[`$guardsName|$expression`]`
+- symbol: `[`$guardNames$|$expression$`]`
 
 ##### use $guardsName
 ```scl
@@ -119,10 +131,31 @@ A -> B @ C |> f
 ```
 Read as: "*state **A*** transition to *state **B*** at *event **C*** will execute *action **f***"
 
+```scl
+|> f {
+  J -> K
+  A -> B @ E
+}
+```
+Read as: "execute *action **f***
+<br>on *state **J*** transition to *state **K***
+<br>or
+<br>on *state **A*** transition to *state **B*** at *event **E***"
+
 ##### with guards
 ```scl
 A -> B @ C[D] |> f
 ```
 Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *condition **D*** is true will execute *action **f***"
+
+```scl
+@ [D] {
+  => J |> g
+  A -> B @ C |> f
+}
+```
+Read as: "only if *condition **D*** is true:
+<br> - *state **A*** can transition to *state **B*** at *event **C*** which will execute *action **f***
+<br> - *state **J*** can self transition which will execute *action **g***"
 
 ---

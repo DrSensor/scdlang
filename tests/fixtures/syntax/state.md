@@ -33,9 +33,18 @@ B <- A,C,D
 ```
 Read as: "*state **B*** transition from either *state **A**, **C**, or **D***"
 
+```scl
+B -> B
+```
+or
+```scl
+=> B 
+```
+Read as: "*state **B*** transition to *state **B***"
+
 #### compound/composite/nested
 - keyword: *state*
-- symbol: `{`$declaration`}`
+- symbol: `{`$declarations$`}`
 ```scl
 state P {...}
 ```
