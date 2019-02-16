@@ -1,0 +1,45 @@
+WHITESPACE = _{ " " } // which one: silent it for testing convinience or or expose it for better error reporting? 🤔
+COMMENT = _{ "/*" ~ (!"*/" ~ ANY)* ~ "*/" }
+
+// #region quoted_name with superb error reporting 😎
+SINGLE_QUOTE = { "'" }
+DOUBLE_QUOTE = { "\"" }
+word = _{ (LETTER|NUMBER)+ }
+sentence = _{ word+ ~ WHITESPACE? ~ word+ }
+quoted_name = _{ !WHITESPACE ~ (sentence|word) }
+single_quoted_name = _{ SINGLE_QUOTE ~ quoted_name ~ (SINGLE_QUOTE|!(DOUBLE_QUOTE|WHITESPACE|EOI)) }
+double_quoted_name = _{ DOUBLE_QUOTE ~ quoted_name ~ (DOUBLE_QUOTE|!(SINGLE_QUOTE|WHITESPACE|EOI)) }
+// #endregion
+
+CAMEL_CASE = @{ ASCII_ALPHA_LOWER ~ ASCII_ALPHANUMERIC* }
+PASCAL_CASE = @{ ASCII_ALPHA_UPPER ~ ASCII_ALPHANUMERIC* }
+
+// #region symbol
+transition_to = @{ "-"+ ~ ">" }
+transition_from = @{ "<" ~ "-"+ }
+transition_toggle = @{ "<" ~ "-"+ ~ ">" }
+at_event = @{ "@" }
+// #endregion
+
+// #region helpers
+most_use_var = _{ PASCAL_CASE|single_quoted_name|double_quoted_name }
+rarely_use_var = _{ CAMEL_CASE|single_quoted_name|double_quoted_name }
+to_from = _{ transition_to|transition_from }
+// #endregion
+
+// #region name
+StateName = ${ most_use_var }
+EventName = ${ most_use_var }
+// #endregion
+
+// #region expressions
+transient_transition = _{ to_from ~ StateName ~ !at_event }
+event_transition = _{ (transition_toggle|to_from) ~ StateName ~ at_event ~ EventName }
+// #endregion
+
+transition = _{ StateName ~ (event_transition|transient_transition) }
+
+// #region consumable result
+Expression = { transition }
+complete_syntax = _{ SOI ~ (NEWLINE? ~ Expression ~ NEWLINE?)+ ~ EOI }
+// #endregion

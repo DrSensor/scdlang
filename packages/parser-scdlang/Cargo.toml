@@ -1,0 +1,9 @@
+[package]
+name = "parser-scdlang"
+version = "0.1.0"
+authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+pest = "^2"
+pest_derive = "^2"

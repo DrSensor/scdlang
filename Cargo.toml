@@ -1,0 +1,12 @@
+[workspace]
+
+members = [
+    "packages/parser-scdlang",
+    "packages/cli",
+]
+
+# [dev-dependencies]
+# quickcheck = "*"
+# quickcheck_macros = "*"
+# proptest = "*"
+# speculate = "*"
