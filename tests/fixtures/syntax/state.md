@@ -26,12 +26,12 @@ Read as: "*state **P*** have ..."
 ```scl
 A -> B
 ```
-Read as: "*state **A*** transition to *state **B***"
+Read as: "*state **A*** transition to *state **B***" ✔
 
 ```scl
 B <- A
 ```
-Read as: "*state **B*** transition from *state **A***"
+Read as: "*state **B*** transition from *state **A***" ✔
 
 ```scl
 A,C,D -> B
