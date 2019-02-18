@@ -74,6 +74,50 @@ Alpha <|> something
 ```
 Read as: "when transition to/from *state **Alpha***, execute *action **something***"
 
+#### on entry and exit at different state
+```scl
+state Alpha { entry |> something }
+state Beta { exit |> something }
+```
+or
+```scl
+Alpha <| something
+Beta |> something
+```
+or
+```scl
+Alpha <| something <| Beta
+```
+or
+```scl
+Beta |> something |> Alpha
+```
+Read as: "when transition to *state **Alpha*** or transition from *state **Beta***, execute *action **something***"
+
+#### on entry and exit at different action
+```scl
+state Alpha {
+  entry |> createThing
+  exit |> destroyThing
+}
+```
+or
+```scl
+Alpha <| createThing
+Alpha |> destroyThing
+```
+or
+```scl
+destroyThing <| Alpha <| createThing
+```
+or
+```scl
+createThing |> Alpha |> destroyThing
+```
+Read as: "
+<br>- when transition to *state **Alpha***, execute *action **createThing***
+<br>- and when transition from *state **Alpha***, execute *action **destroyThing***"
+
 #### action with expression
 ```scl
 context VarX as x
@@ -88,6 +132,10 @@ Read as: "decrement `x` when entering *state **Alpha*** and increment `x` if exi
 #### activity
 ```scl
 state Beta { do |> beeping }
+```
+or
+```scl
+Beta |>| beeping
 ```
 Read as: "perform *activity **beeping*** when on *state **Beta***"
 
