@@ -12,22 +12,15 @@ action "On Push" {
 	args = "action 'opened|synchronize'"
 }
 
-action "Cache dependencies" {
-	needs = "On Push"
-	uses = "docker://rust:latest"
-	args = "cargo build"
-	env = { CARGO_HOME = "/github/home/.cargo" }
-}
-
 action "Calculate cache size" {
-	needs = "Cache dependencies"
+	needs = "Perf [build]"
 	uses = "docker://alpine:latest"
 	# args = "du -sh $HOME/.cargo/registry" # $HOME is unknown
 	runs = ["sh", "-c", "du -sh $HOME/.cargo/registry"]
 }
 
 action "Perf [build]" {
-	needs = "Cache dependencies"
+	needs = "On Push"
 	uses = "./.github/action/perf"
 	args = [
 		"build --all",
@@ -38,7 +31,7 @@ action "Perf [build]" {
 }
 
 action "Perf [exec]" {
-	needs = "Cache dependencies"
+	needs = "Calculate cache size"
 	uses = "./.github/action/perf"
 	args = [
 		"run -p scrap",
