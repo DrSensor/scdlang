@@ -27,13 +27,17 @@ action "Perf [build]" {
 		"build -p scdlang-core",
 		"build -p scrap",
 	]
-	env = { CARGO_HOME = "/github/home/.cargo" }
+	env = {
+		CARGO_HOME = "/github/home/.cargo",
+		PERF_PREPARE = "cargo clean",
+	}
 }
 
 action "Perf [exec]" {
 	needs = "Calculate cache size"
 	uses = "./.github/action/perf"
 	args = [
+		"run",
 		"run -p scrap",
 	]
 	env = { CARGO_HOME = "/github/home/.cargo" }
