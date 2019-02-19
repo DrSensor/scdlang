@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python
 import re,sys
 from itertools import zip_longest
 from subprocess import run

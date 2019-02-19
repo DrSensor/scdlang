@@ -12,7 +12,7 @@ action "Perf [build]" {
 	needs = "On Push"
   uses = "./.github/action/perf"
   args = [
-		"build",
+		"build --all",
 		"build -p scdlang-core",
 		"build -p scrap",
 	]
@@ -22,7 +22,6 @@ action "Perf [exec]" {
 	needs = "On Push"
   uses = "./.github/action/perf"
   args = [
-		"run --all",
 		"run -p scrap",
 	]
 }
