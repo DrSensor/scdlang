@@ -13,6 +13,9 @@ RUN wget https://github.com/sharkdp/hyperfine/releases/download/v1.5.0/hyperfine
     dpkg -i hyperfine_1.5.0_amd64.deb && \
     rm -f hyperfine_1.5.0_amd64.deb
 
+ENV PATH="/usr/local/bin:${PATH}"
+
+COPY wrap-args.py /usr/local/bin/wrap-args
 COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
