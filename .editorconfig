@@ -1,6 +1,6 @@
 root = true
 
-[*.{ts, js}]
+[*.{ts,js,sh,py}]
 indent_style = space
 indent_size = 2
 insert_final_newline = true
@@ -10,12 +10,12 @@ indent_style = tab
 indent_size = 4
 insert_final_newline = true
 
-[*.scl]
+[{*.scl,Dockerfile}]
 indent_style = space
 indent_size = 4
 insert_final_newline = false
 
-[*.{rc,json,toml,config.js}]
+[*.{rc,json,toml,workflow,config.js}]
 indent_style = tab
 indent_size = 2
 insert_final_newline = false

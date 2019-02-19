@@ -1,6 +1,9 @@
+# Dependencies Lock
+*.lock
+!/Cargo.lock
+
 !packages/*
 
-*.lock
 # Logs
 logs
 *.log
