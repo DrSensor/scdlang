@@ -1,13 +1,13 @@
 FROM rust:latest
 
-LABEL "name"="perf"
-LABEL "maintainer"="Fahmi Akbar Wildana <f.a.wildana@gmail.com>"
-LABEL "version"="0.1.0"
+LABEL "name"="perf" \
+      "maintainer"="Fahmi Akbar Wildana <f.a.wildana@gmail.com>" \
+      "version"="0.1.0"
 
-LABEL "com.github.actions.name"="GitHub Action for Measuring Performance"
-LABEL "com.github.actions.description"="Common cli for measuring performance"
-LABEL "com.github.actions.icon"="bar-chart-2"
-LABEL "com.github.actions.color"="orange"
+LABEL "com.github.actions.name"="GitHub Action for Measuring Performance" \
+      "com.github.actions.description"="Common cli for measuring performance" \
+      "com.github.actions.icon"="clock" \
+      "com.github.actions.color"="orange"
 
 ENV PATH=/usr/local/bin:/root/.pyenv/bin:/root/.pyenv/shims:${PATH}
 
