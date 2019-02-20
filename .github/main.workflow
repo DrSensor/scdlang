@@ -1,9 +1,7 @@
 workflow "Measure Performance" {
 	on = "pull_request"
 	resolves = [
-		"Calculate cache size",
-		"Perf [build]",
-		"Perf [exec]",
+		"Summarize benchmark",
 	]
 }
 
@@ -17,6 +15,12 @@ action "Calculate cache size" {
 	uses = "docker://alpine:latest"
 	# args = "du -sh $HOME/.cargo/registry" # $HOME is unknown
 	runs = ["sh", "-c", "du -sh $HOME/.cargo/registry"]
+}
+
+action "Summarize benchmark" {
+	needs = ["Perf [build]", "Perf [exec]"]
+	uses = "./.github/action/summarize-perf"
+	args = "query '{exec: .command, time: .mean}'"
 }
 
 action "Perf [build]" {

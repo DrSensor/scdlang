@@ -2,6 +2,7 @@
 *.lock
 !/Cargo.lock
 
+!/.github/action/**
 !packages/*
 
 # Logs
