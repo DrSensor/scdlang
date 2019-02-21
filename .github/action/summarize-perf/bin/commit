@@ -10,4 +10,4 @@ else                    # Positional argument
 fi
 
 git notes add -f ${msg}
-git push refs/notes/*
+git push origin refs/notes/*

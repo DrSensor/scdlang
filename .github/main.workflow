@@ -21,6 +21,7 @@ action "Summarize benchmark" {
 	needs = ["Perf [build]", "Perf [exec]"]
 	uses = "./.github/action/summarize-perf"
 	args = "query '{exec: .command, time: .mean}' | commit"
+	secrets = ["GITHUB_TOKEN"]
 }
 
 action "Perf [build]" {
