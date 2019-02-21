@@ -1,4 +1,10 @@
-FROM python AS helper
+FROM python:slim AS helper
+
+RUN apt-get update && \
+    apt-get install --no-install-recommends -y \
+        binutils && \
+    apt-get clean -y && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY wrap-args.py .
 RUN pip install pyinstaller && \
