@@ -9,15 +9,15 @@ LABEL "com.github.actions.name"="GitHub Actions to summarize perf" \
       "com.github.actions.icon"="bar-chart-2" \
       "com.github.actions.color"="green"
 
-ENV PATH="/usr/local/bin:${PATH}"
-
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
-        jq && \
+        git \
+        jq \
+    && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY bin /usr/local/bin/
+COPY bin /usr/bin/
 COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]

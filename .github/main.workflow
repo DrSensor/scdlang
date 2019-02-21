@@ -20,7 +20,7 @@ action "Calculate cache size" {
 action "Summarize benchmark" {
 	needs = ["Perf [build]", "Perf [exec]"]
 	uses = "./.github/action/summarize-perf"
-	args = "query '{exec: .command, time: .mean}'"
+	args = "query '{exec: .command, time: .mean}' | commit"
 }
 
 action "Perf [build]" {
