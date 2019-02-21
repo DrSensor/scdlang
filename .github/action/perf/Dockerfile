@@ -1,4 +1,11 @@
-FROM rust:latest
+FROM python AS helper
+
+COPY wrap-args.py .
+RUN pip install pyinstaller && \
+    pyinstaller wrap-args.py --onefile --distpath /bin
+
+# ----------------- Github Action ------------------------
+FROM rust:slim
 
 LABEL "name"="perf" \
       "maintainer"="Fahmi Akbar Wildana <f.a.wildana@gmail.com>" \
@@ -9,20 +16,11 @@ LABEL "com.github.actions.name"="GitHub Action for Measuring Performance" \
       "com.github.actions.icon"="clock" \
       "com.github.actions.color"="orange"
 
-ENV PATH=/usr/local/bin:/root/.pyenv/bin:/root/.pyenv/shims:${PATH}
-
-RUN wget https://github.com/sharkdp/hyperfine/releases/download/v1.5.0/hyperfine_1.5.0_amd64.deb && \
-    dpkg -i hyperfine_1.5.0_amd64.deb && \
-    rm -f hyperfine_1.5.0_amd64.deb && \
+ADD https://github.com/sharkdp/hyperfine/releases/download/v1.5.0/hyperfine_1.5.0_amd64.deb /tmp/
+RUN dpkg -i /tmp/hyperfine_1.5.0_amd64.deb && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN curl https://pyenv.run | bash && \
-    pyenv install 3.7.1 && \
-    pyenv global 3.7.1 && \
-    apt purge -y python python3 && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
-COPY wrap-args.py /usr/local/bin/wrap-args
+COPY --from=helper /bin/wrap-args /usr/bin/
 COPY entrypoint.sh /entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
