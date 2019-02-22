@@ -9,12 +9,11 @@ register() {
 }
 
 getinfo() {
-  read sha
-  curl $([ -z $GITHUB_TOKEN ] || echo "-H 'Authorization: token ${GITHUB_TOKEN}'") -s https://api.github.com/repos/${GITHUB_REPOSITORY}/git/commits/${sha} | jq -c .
+  curl $([ -z $GITHUB_TOKEN ] || echo "-H 'Authorization: token ${GITHUB_TOKEN}'") -s https://api.github.com/repos/${GITHUB_REPOSITORY}/git/commits/${GITHUB_SHA} | jq -c .
 }
 # -----------------------------------------------------
 
-jq -r .after "$GITHUB_EVENT_PATH" | getinfo | register
+getinfo | register
 export PERF_HOME=${PERF_HOME:-${HOME}/.perf}
 
 sh -c "$*"
