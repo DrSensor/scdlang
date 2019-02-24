@@ -9,6 +9,5 @@ else                    # Positional argument
   msg="-m '$1'"
 fi
 
-git fetch origin refs/notes/*:refs/notes/*
 git notes add ${msg}
 git push origin refs/notes/*

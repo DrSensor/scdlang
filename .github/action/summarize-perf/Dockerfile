@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM python:slim
 
 LABEL "name"="summarize-perf" \
       "maintainer"="Fahmi Akbar Wildana <f.a.wildana@gmail.com>" \
@@ -20,6 +20,10 @@ RUN apt-get update && \
     tar -xz -C /usr/bin && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# TODO: Get answer if using crude installation is a good idea 🤔
+# https://pipenv.readthedocs.io/en/latest/install/#crude-installation-of-pipenv
+RUN pip install pipenv --no-cache-dir
 
 COPY bin /usr/bin/
 COPY entrypoint.sh /entrypoint.sh
