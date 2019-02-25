@@ -1,0 +1,53 @@
+#!/bin/sh
+set -e
+
+CONTENT="$@"                # Positional argument
+if [ -z "$1" ]; then        # Pipe
+  CONTENT=`cat -`
+elif [ -f "$1" ]; then      # File
+  CONTENT=`cat $*`
+fi
+
+URI=https://api.github.com
+API_HEADER="Accept: application/vnd.github.v3+json; application/vnd.github.antiope-preview+json"
+AUTH_HEADER="Authorization: token ${GITHUB_TOKEN}"
+NUMBER=$(jq -r .number "$GITHUB_EVENT_PATH")
+ID=$(echo "(${GITHUB_WORKFLOW}/${GITHUB_ACTION}) ${GITHUB_REPOSITORY}/pull/${NUMBER}" | md5sum)
+
+body='{"body":"<!-- '${ID}'-->\n'${CONTENT}'"}'
+header="Content-Type: application/json"
+
+list_comment() {
+  curl -sSL -H "${AUTH_HEADER}" -H "${API_HEADER}" -H "$header" -X GET "${URI}/repos/${GITHUB_REPOSITORY}/issues/${NUMBER}/comments"
+}
+
+edit_comment() {
+  echo "Edit comment at https://github.com/${GITHUB_REPOSITORY}/pull/${NUMBER}#issuecomment-$1"
+  curl -sSL -H "${AUTH_HEADER}" -H "${API_HEADER}" -d "$body" -H "$header" -X PATCH "${URI}/repos/${GITHUB_REPOSITORY}/issues/comments/$1"
+}
+
+post_comment() {
+  echo "Create new comment at https://github.com/${GITHUB_REPOSITORY}/pull/${NUMBER}"
+	curl -sSL -H "${AUTH_HEADER}" -H "${API_HEADER}" -d "$body" -H "$header"  -X POST "${URI}/repos/${GITHUB_REPOSITORY}/issues/${NUMBER}/comments"
+}
+
+comment_exists() {
+  comments=$(list_comment | jq -r '.[] | {id: .id, body: .body} | @base64')
+
+  for c in $comments; do
+    comment_id=$(echo "$c" | base64 --decode - | jq -r '.id')
+    comment_body=$(echo "$c" | base64 --decode - | jq -r '.body')
+
+    if echo $comment_body | grep ${ID} >/dev/null; then
+      return 0 #true
+    fi
+  done
+
+  return 1 #false
+}
+
+if comment_exists; then
+  edit_comment $comment_id
+else
+  post_comment
+fi

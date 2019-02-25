@@ -16,7 +16,7 @@ getinfo() {
 getinfo | register
 export PERF_HOME=${PERF_HOME:-${HOME}/.perf}
 
-git fetch origin refs/notes/*:refs/notes/*
+git fetch -q origin refs/notes/*:refs/notes/*
 python --version
 pipenv --version
 
