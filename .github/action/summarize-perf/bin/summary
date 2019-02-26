@@ -6,7 +6,7 @@ printlog() {
   base=$(jq -r .pull_request.base.ref $GITHUB_EVENT_PATH)
   head=$(jq -r .pull_request.head.ref $GITHUB_EVENT_PATH)
 
-  # there's nothing to be committed in the current branch?
+  # if there's nothing to be committed in the current branch
   if [ ! -n "$(git status --porcelain)" ]; then
     git checkout $base --quiet
     git checkout $head --quiet
