@@ -1,6 +1,6 @@
 workflow "Testing" {
 	on = "push"
-	resolves = ["Unit Test"]
+	resolves = ["Unit Test cargo"]
 }
 
 workflow "Measure Performance" {
@@ -53,7 +53,7 @@ action "Perf cargo" {
 	env = { PERF_PREPARE = "cargo clean" }
 }
 
-action "Unit Test" {
+action "Unit Test cargo" {
 	uses = "docker://rust:slim"
 	args = "cargo test"
 }

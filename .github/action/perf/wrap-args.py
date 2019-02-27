@@ -7,15 +7,15 @@ assert len(sys.argv) > 1
 
 # grouper('ABCDEFG', 3, 'x') --> ABC DEF Gxx"
 def grouper(iterable, n, fillvalue=None):
-  "Collect data into fixed-length chunks or blocks"
-  args = [iter(iterable)] * n
-  return zip_longest(*args, fillvalue=fillvalue)
+    "Collect data into fixed-length chunks or blocks"
+    args = [iter(iterable)] * n
+    return zip_longest(*args, fillvalue=fillvalue)
 
 def group_command(flatten_commands, commands):
-  "Group string by it's command name"
-  separator = f"({'|'.join(list_command)})"
-  separated_cmd_params = [s.strip() for s in re.split(separator, flatten_commands)[1:]]
-  return [' '.join(s) for s in grouper(separated_cmd_params, 2)]
+    "Group string by it's command name"
+    separator = f"({'|'.join(list_command)})"
+    separated_cmd_params = [s.strip() for s in re.split(separator, flatten_commands)[1:]]
+    return [' '.join(s) for s in grouper(separated_cmd_params, 2)]
 
 cargo_list = run(['cargo', '--list'], capture_output=True)
 stdout = cargo_list.stdout.decode('utf-8')
