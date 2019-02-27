@@ -2,10 +2,11 @@
 import json
 import requests
 import io
+import matplotlib
 from itertools import chain
 from textwrap import shorten
 from sys import stdin
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt, get_backend as mplbackend
 
 plt.style.use('bmh')
 # ----------------------- helper -----------------------
@@ -55,12 +56,14 @@ for i, command in enumerate(commands):
 
 fig.set_figheight(fig_height)
 fig.tight_layout()
-plt.savefig('perf.png',
-            aspect='auto',
-            transparant=True,
-            dpi=300)
-# plt.show()
 
-response = requests.post('https://vgy.me/upload', files={'file': open('perf.png', 'rb')})
-url = response.json()['image']
-print(f'![perf result]({url})')
+if mplbackend() == 'agg':
+    plt.savefig('perf.png',
+                aspect='auto',
+                transparant=True,
+                dpi=300)
+    response = requests.post('https://vgy.me/upload', files={'file': open('perf.png', 'rb')})
+    url = response.json()['image']
+    print(f'![perf result]({url})')
+else:
+    plt.show()

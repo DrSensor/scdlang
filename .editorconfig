@@ -25,7 +25,7 @@ indent_style = space
 indent_size = 2
 insert_final_newline = false
 
-[*.{rc,json,toml,workflow,config.js}]
+[{*.{rc,json,toml,workflow,config.js},Justfile}]
 indent_style = tab
 indent_size = 2
 insert_final_newline = false
