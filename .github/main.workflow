@@ -6,8 +6,8 @@ workflow "Testing" {
 workflow "Measure Performance" {
 	on = "pull_request"
 	resolves = [
-		"Summarize perf",
 		"Save perf results",
+		"Summarize perf"
 	]
 }
 
@@ -32,7 +32,7 @@ action "Save perf results" {
 }
 
 action "Summarize perf" {
-	needs = ["On Merged|Sync"]
+	needs = ["Save perf results"]
 	uses = "./.github/action/summarize-perf"
 	args = "summary | ./scripts/perfsum.py | comment"
 	secrets = ["GITHUB_TOKEN"]
