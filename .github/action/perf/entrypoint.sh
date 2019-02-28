@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+members=`cargo metadata --no-deps --format-version=1 | jq -r '["-p" + " " + .packages[].name] | join(" ")'`
+
 PERF_HOME=${PERF_HOME:-${HOME}/.perf}
 mkdir -p ${PERF_HOME}
 
@@ -14,6 +16,6 @@ else
   du -sh $CARGO_HOME/registry || true
 fi; echo
 
-sh -c "hyperfine --export-json '${PERF_HOME}/${GITHUB_ACTION}.json' -p '${PERF_PREPARE:-""}' -w 10 $(wrap-args $*)"
+sh -c "hyperfine --export-json '${PERF_HOME}/${GITHUB_ACTION}.json' -p '${PERF_PREPARE:-"cargo clean $members"}' -w 10 $(wrap-args $*)"
 
 ${PERF_TEARDOWN}

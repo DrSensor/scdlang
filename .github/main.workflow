@@ -50,7 +50,6 @@ action "Perf cargo" {
 		"run",
 		"run -p scrap",
 	]
-	env = { PERF_PREPARE = "cargo clean" }
 }
 
 action "Unit Test cargo" {
