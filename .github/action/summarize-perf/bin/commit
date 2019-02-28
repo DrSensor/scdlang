@@ -1,0 +1,13 @@
+#!/bin/sh
+set -e
+
+if [ -z "$1" ]; then # Pipe
+  msg="-F -"
+elif [ -f "$1" ]; then # File
+  msg="-F $1"
+else                    # Positional argument
+  msg="-m '$1'"
+fi
+
+git notes add ${msg}
+git push origin refs/notes/*
