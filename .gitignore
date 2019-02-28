@@ -1,6 +1,11 @@
+# Dependencies Lock
+*.lock
+!/Cargo.lock
+!/Pipfile.lock
+
+!/.github/action/**
 !packages/*
 
-*.lock
 # Logs
 logs
 *.log
