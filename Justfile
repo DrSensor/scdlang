@@ -47,6 +47,15 @@ unit:
 @stats git-flags='':
 	./scripts/summary.sh {{git-flags}} | ./scripts/perfsum.py &
 
+# Profile debug/development build
+analyze: release _clean-analyze
+	heaptrack ./target/release/scrap
+	heaptrack --analyze heaptrack.*.zst &
+	./scripts/perfquick.sh ./target/release/scrap | jq .
+
 # Install all recommended toolchains
 install-toolchains:
 	rustup component add rustfmt clippy
+
+@_clean-analyze:
+	rm heaptrack.*.zst || true

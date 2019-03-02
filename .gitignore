@@ -1,3 +1,6 @@
+# perf data
+*.zst
+
 # Dependencies Lock
 *.lock
 !/Cargo.lock
