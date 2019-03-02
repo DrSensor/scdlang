@@ -1,0 +1,20 @@
+{
+  "exec": "cargo build --all",
+  "time": 0.6206483443549999
+}
+{
+  "exec": "cargo build -p scdlang-core",
+  "time": 0.200878470055
+}
+{
+  "exec": "cargo build -p scrap",
+  "time": 0.464965072855
+}
+{
+  "exec": "cargo run ",
+  "time": 0.6207154970550001
+}
+{
+  "exec": "cargo run -p scrap",
+  "time": 0.457544522755
+}
