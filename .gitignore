@@ -6,6 +6,9 @@
 !/.github/action/**
 !packages/*
 
+# Python
+.mypy_cache/
+
 # Logs
 logs
 *.log
