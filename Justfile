@@ -53,9 +53,15 @@ analyze: release _clean-analyze
 	heaptrack --analyze heaptrack.*.zst &
 	./scripts/perfquick.sh ./target/release/scrap | jq .
 
+# Install all dependencies
+install: install-toolchains
+	cargo build --all
+	pipenv install --dev
+
 # Install all recommended toolchains
 install-toolchains:
 	rustup component add rustfmt clippy
+# pipenv lock --requirements --dev | pipenv install --dev --requirements -
 
 @_clean-analyze:
 	rm heaptrack.*.zst || true
