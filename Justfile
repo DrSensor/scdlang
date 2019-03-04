@@ -11,7 +11,7 @@ check:
 
 # Run `just +command` whenever some files is changed
 @watch +command:
-	watchexec just {{command}}
+	watchexec --clear just {{command}}
 
 # Run all kind of tests
 test: unit
@@ -45,7 +45,7 @@ unit:
 
 # Show reports of macro-benchmark
 @stats git-flags='':
-	./scripts/summary.sh {{git-flags}} | ./scripts/perfsum.py &
+	./scripts/summary.sh {{git-flags}} | ./scripts/perfsum.py
 
 # Profile debug/development build
 analyze: release _clean-analyze

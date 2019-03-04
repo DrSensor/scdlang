@@ -7,26 +7,45 @@ from sys import stdin
 from matplotlib import pyplot as plt, get_backend as mplbackend
 
 plt.style.use("bmh")
+x_axis = {"time": "Exec Time (s)", "memory": "Peak Memory (kB)", "cpu": "Load CPU (%)"}
 
 
-# ----------------------- helper -----------------------
-def filter_by(command, perf_data, fillempty=0):
-    return list(
-        map(
-            lambda perf: next(
-                map(
-                    lambda log: log["time"],
-                    filter(lambda log: log["exec"] == command, perf),
+def to_number(var):
+    if type(var) == str:
+        if "%" in var:
+            return int(var.strip("%"))
+    else:
+        return var
+
+
+def max_number(var):
+    if type(var) == str:
+        if "(%)" in var:
+            return 100
+    else:
+        return None
+
+
+def filter_by(command, perf_data, keys, fillempty=0):
+    result = []
+    for key, title in keys.items():
+        _ = list(
+            map(
+                lambda perf: next(
+                    map(
+                        lambda log: to_number(log[key]),
+                        filter(lambda log: log["exec"] == command and key in log, perf),
+                    )
                 )
+                if len(perf) > 0
+                else fillempty,
+                perf_data,
             )
-            if len(perf) > 0
-            else fillempty,
-            perf_data,
         )
-    )
+        if len(_) != 0:
+            result.append((_, title, max_number(title)))
+    return result
 
-
-# ------------------------------------------------------
 
 data = json.load(stdin)
 
@@ -42,27 +61,40 @@ commands = list(
 )
 
 max_char_title = max([len(c) for c in commands])
+max_perf_keys = max(map(lambda p: len(p.keys()), chain.from_iterable(perfs)))
 
-fig, axs = plt.subplots(len(commands), 1)
+fig = plt.figure()
+gs = fig.add_gridspec(len(commands), max_perf_keys - 1)
 fig.set_figwidth(max_char_title / 5)
 fig_height = fig.get_figwidth()
 
 for i, command in enumerate(commands):
-    times = filter_by(command, perfs)
-    xy = list(filter(lambda p: p[0] != 0, zip(times, subjects)))
+    cmd_perfs = filter_by(command, perfs, x_axis)
+    first_ax = None
+    for j, (results, title, limit) in enumerate(cmd_perfs):
+        xy = list(filter(lambda p: p[0] != 0, zip(results, subjects)))
 
-    x = list(map(lambda p: p[0], xy))
-    y = list(map(lambda p: shorten(p[1], 25, placeholder="..."), xy))
+        x = list(map(lambda p: p[0], xy))
+        y = list(map(lambda p: shorten(p[1], 25, placeholder="..."), xy))
 
-    axs[i].barh(y, x)
+        grid = gs[i, j] if len(cmd_perfs) > 1 else gs[i, :]
+        ax = fig.add_subplot(grid, sharey=first_ax)
 
-    fig_height += len(xy) / fig.get_figwidth()
-    axs[i].invert_yaxis()
-    axs[i].set_xlabel("Exec Time (s)")
-    axs[i].set_title(command)
+        if first_ax is not None:
+            ax.set_title("/".join(command.split("/")[-2:]), loc="right")
+            plt.setp(ax.get_yticklabels(), visible=False)
+        elif len(cmd_perfs) == 1:
+            ax.set_title(command, loc="right")
+
+        ax.barh(y, x)
+        ax.set_xlim(right=limit)
+
+        fig_height += len(xy) / fig.get_figwidth()
+        ax.invert_yaxis()
+        ax.set_xlabel(title)
+        first_ax = ax if j == 0 else None
 
 fig.set_figheight(fig_height)
-fig.tight_layout()
 
 if mplbackend() == "agg":
     plt.savefig("perf.png", aspect="auto", transparant=True, dpi=300)
