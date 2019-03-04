@@ -1,7 +1,8 @@
 #!/bin/sh
+# TODO: add post and pre query when published to gh-actions marketplace
 set -e
 
 jq '
   if has("results") then .results[]
   else . end
-' ${PERF_HOME}/*.json | jq "$@"
+' ${PERF_HOME}/*.json | jq "$@" | jq 'del(.[] | nulls)'

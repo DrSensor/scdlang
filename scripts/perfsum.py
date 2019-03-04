@@ -14,6 +14,8 @@ def to_number(var):
     if type(var) == str:
         if "%" in var:
             return int(var.strip("%"))
+        if "?" in var:
+            return 0
     else:
         return var
 
