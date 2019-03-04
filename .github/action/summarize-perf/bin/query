@@ -1,4 +1,7 @@
 #!/bin/sh
 set -e
 
-jq .results[] ${PERF_HOME}/*.json | jq "$@"
+jq '
+  if has("results") then .results[]
+  else . end
+' ${PERF_HOME}/*.json | jq "$@"

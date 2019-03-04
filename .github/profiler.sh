@@ -1,7 +1,9 @@
 #!/bin/sh
+# TODO: make it as dedicated gh-action when published to marketplace
 set -e
 
 json='{
+  "command": "%C",
   "memory": {
     "peak": %M,
     "average": %K,

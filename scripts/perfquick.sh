@@ -2,6 +2,7 @@
 set -e
 
 json='{
+  "command": "%C",
   "memory": {
     "peak": %M,
     "average": %K,
