@@ -1,33 +1,67 @@
 export MPLBACKEND = "Qt5Agg"
 
-start: format
+# Start development
+start:
 	cargo run --quiet --bin scrap
 
-watch +command:
-	watchexec just {{command}}
+# Run type checker
+check:
+	cargo check
+	mypy scripts
 
+# Run `just +command` whenever some files is changed
+@watch +command:
+	watchexec --clear just {{command}}
+
+# Run all kind of tests
 test: unit
 
+# Autoformat all code
 format:
 	cargo fmt
+	black scripts
 
-lint: format
+# Run linter check on all code
+lint:
 	cargo clippy
+	flake8 scripts
 
-clean: format
+# Clean all artifacts
+clean: _clean-analyze
 	cargo clean
+	pipenv clean
 
 # Run all release build
-release: format
+release:
 	cargo build --release
 
+# Run all debug/development build
+build:
+	cargo build
+
 # Run all unit test
-unit: format
+unit:
 	cargo test
 
 # Show reports of macro-benchmark
-perfsum git-flags='':
+@stats git-flags='':
 	./scripts/summary.sh {{git-flags}} | ./scripts/perfsum.py
 
+# Profile debug/development build
+analyze: release _clean-analyze
+	heaptrack ./target/release/scrap
+	heaptrack --analyze heaptrack.*.zst &
+	./scripts/perfquick.sh ./target/release/scrap | jq .
+
+# Install all dependencies
+install: install-toolchains
+	cargo build --all
+	pipenv install --dev
+
+# Install all recommended toolchains
 install-toolchains:
-	rustup add component rustfmt clippy
+	rustup component add rustfmt clippy
+# pipenv lock --requirements --dev | pipenv install --dev --requirements -
+
+@_clean-analyze:
+	rm heaptrack.*.zst || true
