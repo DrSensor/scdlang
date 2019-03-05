@@ -1,3 +1,6 @@
+# perf data
+*.zst
+
 # Dependencies Lock
 *.lock
 !/Cargo.lock
@@ -5,6 +8,9 @@
 
 !/.github/action/**
 !packages/*
+
+# Python
+.mypy_cache/
 
 # Logs
 logs

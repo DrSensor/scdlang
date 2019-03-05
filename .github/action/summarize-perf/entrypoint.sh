@@ -24,7 +24,11 @@ pipenv --version
 # ${PERF_SETUP:-$(pipenv install --system)}
 
 if [ -z "$PERF_SETUP" ]; then
-  pipenv install --system
+  pipenv install --system --deploy
+  # TODO: support almost all python dependency manager, namely:
+  # pip > requirements.txt
+  # poetry > pyproject.toml
+
 else
   ${PERF_SETUP}
 fi

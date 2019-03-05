@@ -4,8 +4,12 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-pylint = "*"
 pyqt5 = "*"
+flake8 = "*"
+flake8-mypy = "*"
+black = "*"
+#TODO: enable 👇 (and delete scripts/*.sh) after actions published to github marketplace
+# gitman = "*" 
 
 [packages]
 matplotlib = "*"
