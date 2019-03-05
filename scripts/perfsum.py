@@ -74,7 +74,7 @@ for i, command in enumerate(commands):
     cmd_perfs = filter_by(command, perfs, x_axis)
     first_ax = None
     for j, (results, title, limit) in enumerate(cmd_perfs):
-        xy = list(filter(lambda p: p[0] != 0, zip(results, subjects)))
+        xy = list(filter(lambda p: p[0] != 0 if len(cmd_perfs) == 1 else True, zip(results, subjects)))
 
         x = list(map(lambda p: p[0], xy))
         y = list(map(lambda p: shorten(p[1], 25, placeholder="..."), xy))
@@ -83,16 +83,17 @@ for i, command in enumerate(commands):
         ax = fig.add_subplot(grid, sharey=first_ax)
 
         if first_ax is not None:
+            ax.invert_yaxis()
             ax.set_title("/".join(command.split("/")[-2:]), loc="right")
             plt.setp(ax.get_yticklabels(), visible=False)
         elif len(cmd_perfs) == 1:
+            ax.invert_yaxis()
             ax.set_title(command, loc="right")
 
         ax.barh(y, x)
         ax.set_xlim(right=limit)
 
         fig_height += len(xy) / fig.get_figwidth()
-        ax.invert_yaxis()
         ax.set_xlabel(title)
         first_ax = ax if j == 0 else None
 
