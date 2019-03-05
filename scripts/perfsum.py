@@ -12,10 +12,10 @@ x_axis = {"time": "Exec Time (s)", "memory": "Peak Memory (kB)", "cpu": "Load CP
 
 def to_number(var):
     if type(var) == str:
-        if "%" in var:
-            return int(var.strip("%"))
         if "?" in var:
             return 0
+        elif "%" in var:
+            return int(var.strip("%"))
     else:
         return var
 
