@@ -1,0 +1,25 @@
+{
+  "exec": "/github/home/.bin/scrap",
+  "memory": 912,
+  "cpu": "?%"
+}
+{
+  "exec": "cargo build --all",
+  "time": 0.39615341654999997
+}
+{
+  "exec": "cargo build -p scdlang-core",
+  "time": 0.11991455020000001
+}
+{
+  "exec": "cargo build -p scrap",
+  "time": 0.2781627570500001
+}
+{
+  "exec": "cargo run ",
+  "time": 0.37699320185000007
+}
+{
+  "exec": "cargo run -p scrap",
+  "time": 0.2858018083500001
+}
