@@ -74,7 +74,12 @@ for i, command in enumerate(commands):
     cmd_perfs = filter_by(command, perfs, x_axis)
     first_ax = None
     for j, (results, title, limit) in enumerate(cmd_perfs):
-        xy = list(filter(lambda p: p[0] != 0 if len(cmd_perfs) == 1 else True, zip(results, subjects)))
+        xy = list(
+            filter(
+                lambda p: p[0] != 0 if len(cmd_perfs) == 1 else True,
+                zip(results, subjects),
+            )
+        )
 
         x = list(map(lambda p: p[0], xy))
         y = list(map(lambda p: shorten(p[1], 25, placeholder="..."), xy))

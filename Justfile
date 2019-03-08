@@ -1,4 +1,5 @@
-export MPLBACKEND = "Qt5Agg"
+export MPLBACKEND="Qt5Agg"
+export RUST_BACKTRACE="1"
 
 # Start development
 start:
@@ -26,7 +27,11 @@ lint:
 	cargo clippy
 	flake8 scripts
 
-# Clean all artifacts
+# Remove all artifacts but not with the dependencies
+clear: _clean-analyze
+	cargo clean $(cargo metadata --no-deps --format-version=1 | jq -r '["-p" + " " + .packages[].name] | join(" ")')
+
+# Remove all artifacts including the dependencies
 clean: _clean-analyze
 	cargo clean
 	pipenv clean
@@ -61,7 +66,8 @@ install: install-toolchains
 # Install all recommended toolchains
 install-toolchains:
 	rustup component add rustfmt clippy
+	cargo install hjson
 # pipenv lock --requirements --dev | pipenv install --dev --requirements -
 
 @_clean-analyze:
-	rm heaptrack.*.zst || true
+	rm --force heaptrack.*.zst || true
