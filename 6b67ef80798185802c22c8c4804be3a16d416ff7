@@ -15,11 +15,3 @@
   "exec": "cargo build -p scrap",
   "time": 0.24783422685
 }
-{
-  "exec": "cargo run ",
-  "time": 0.33838673035
-}
-{
-  "exec": "cargo run -p scrap",
-  "time": 0.2488209494863636
-}
