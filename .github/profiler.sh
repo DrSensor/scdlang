@@ -36,13 +36,13 @@ mkdir -p ${HOME}/.perf
 for cmd in "$@"; do
   echo "Running '$cmd'..."
   bin=`sh -c "echo $cmd"`
-  if time -f "$json" --append -o "${HOME}/.perf/${GITHUB_ACTION}.json" $bin 1>/dev/null; then
-    echo "Successfully ran '$cmd'"
+  if time -f "$json" -a -o "${HOME}/.perf/${GITHUB_ACTION}.json" $bin 1>/dev/null; then
+    echo "Successfully ran '$bin'"
     echo
   else
     echo
     exit_code=$?
-    echo "Failure running '$cmd', exited with $exit_code"
+    echo "Failure running '$bin', exited with $exit_code"
     exit $exit_code
   fi
 done
