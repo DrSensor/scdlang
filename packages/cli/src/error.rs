@@ -7,10 +7,12 @@ pub enum Error {
 
 pub fn global_reporting(err: Error) {
 	let prompt = "ERROR:";
-	let prompting = |message: &str| println!("{} {}", prompt, message);
+	let prompting = |message: &str| eprintln!("{} {}", prompt, message);
 
 	match err {
 		Error::Parse(msg) => prompting(&msg),
 		Error::IO(msg) => prompting(&msg.to_string()),
 	}
+
+	process::exit(101)
 }
