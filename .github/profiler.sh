@@ -1,5 +1,8 @@
 #!/bin/sh
 # TODO: make it as dedicated gh-action when published to marketplace
+# 1. Add environment variable to set command alias
+# 2. Add ${HOME}/.bin to PATH
+# 3. Inheret exit code from args, not `time`
 set -e
 
 json='{
@@ -29,7 +32,19 @@ json='{
 
 mkdir -p ${HOME}/.perf
 
-bin=`sh -c "echo $*"`
-time -f "$json" -o "${HOME}/.perf/${GITHUB_ACTION}.json" $bin 1>/dev/null
+# TODO: use looping
+for cmd in "$@"; do
+  echo "Running '$cmd'..."
+  bin=`sh -c "echo $cmd"`
+  if time -f "$json" --append -o "${HOME}/.perf/${GITHUB_ACTION}.json" $bin 1>/dev/null; then
+    echo "Successfully ran '$cmd'"
+    echo
+  else
+    echo
+    exit_code=$?
+    echo "Failure running '$cmd', exited with $exit_code"
+    exit $exit_code
+  fi
+done
 
 cat "${HOME}/.perf/${GITHUB_ACTION}.json"

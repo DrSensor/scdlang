@@ -69,13 +69,16 @@ action "Build Release cli as musl" {
 	env = { BIN = "scrap" }
 }
 
-# TODO: Include perfquick.sh + profiler.sh for public consumption❗ (able to run multiple args)
 action "Perf CLI release" {
 	needs = "Build Release cli as musl"
 	uses = "docker://alpine:latest"
 	runs = "./.github/profiler.sh"
-	args = ["${HOME}/.bin/${BIN}"]
-	env = { BIN = "scrap" }
+	args = [
+		# "${HOME}/.bin/scrap code examples/simple.scl --parser asg",
+		# "${HOME}/.bin/scrap code examples/simple.scl --stream --parser asg",
+		"${HOME}/.bin/scrap code examples/simple.scl --parser ast",
+		"${HOME}/.bin/scrap code examples/simple.scl --stream --parser ast",
+	]
 }
 # ---------------------------------------------------------------
 
