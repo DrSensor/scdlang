@@ -3,9 +3,10 @@ mod utils;
 use crate::{
 	cli::{wip::*, Result, CLI},
 	error::Error,
+	prompt,
 };
 use atty::Stream;
-use clap::{App, ArgMatches, SubCommand};
+use clap::{App, ArgMatches};
 use std::io::{self, prelude::*};
 use utils::*;
 
@@ -17,11 +18,9 @@ impl<'c> CLI<'c> for Eval {
 	--strict 'Exit immediately if an error occurred'
 	";
 
-	fn command<'s>() -> App<'s, 'c> {
-		SubCommand::with_name(Self::NAME)
-			.visible_alias("repl")
+	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
+		cmd.visible_alias("repl")
 			.about("Evaluate scdlang expression in interactive manner")
-			.args_from_usage(Self::USAGE)
 	}
 
 	fn invoke(args: &ArgMatches) -> Result {
@@ -29,7 +28,7 @@ impl<'c> CLI<'c> for Eval {
 		let machine = UNIMPLEMENTED;
 		let prompting = || {
 			if atty::is(Stream::Stdin) {
-				prompt("> ").expect(Self::NAME);
+				prompt(prompt::REPL).expect(Self::NAME);
 			}
 		};
 
@@ -51,14 +50,12 @@ impl<'c> CLI<'c> for Eval {
 			prompting();
 		}
 
-		if !args.is_present("interactive") {
-			if atty::isnt(Stream::Stdin) {
-				println!("{}", machine);
-			} else {
-				println!("\r{}", machine);
-			}
-		} else {
+		if args.is_present("interactive") {
 			print!("\r")
+		} else if atty::isnt(Stream::Stdin) {
+			println!("{}", machine);
+		} else {
+			println!("\r{}", machine);
 		}
 
 		Ok(())

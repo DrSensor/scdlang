@@ -5,7 +5,7 @@ pub mod cli;
 mod commands;
 pub mod error;
 
-use cli::{Main, CLI};
+use cli::CLI;
 use commands::*;
 use error::Error;
 
@@ -25,4 +25,9 @@ fn main() {
 	if let Err(err) = run() {
 		error::global_reporting(err)
 	}
+}
+
+pub mod prompt {
+	pub const REPL: &str = ">";
+	pub const ERROR: &str = "ERROR:";
 }

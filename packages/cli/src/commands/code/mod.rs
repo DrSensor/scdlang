@@ -2,7 +2,7 @@ use crate::{
 	cli::{wip::*, Result, CLI},
 	error::Error,
 };
-use clap::{App, Arg, ArgMatches, SubCommand};
+use clap::{App, Arg, ArgMatches};
 use std::{
 	fs::{self, File},
 	io::{BufRead, BufReader},
@@ -17,9 +17,8 @@ impl<'c> CLI<'c> for Code {
 	--stream 'Parse the file line by line'
 	";
 
-	fn command<'s>() -> App<'s, 'c> {
-		SubCommand::with_name(Self::NAME)
-			.aliases(&["generate", "gen", "declaration", "declr"])
+	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
+		cmd.aliases(&["generate", "gen", "declaration", "declr"])
 			.about("Generate from scdlang file declaration to another format")
 			.args(&[Arg::with_name("parser")
 				.long("parser")
@@ -28,16 +27,15 @@ impl<'c> CLI<'c> for Code {
 				.default_value("asg")
 				.default_value_if("stream", None, "ast")
 				.takes_value(true)])
-			.args_from_usage(Self::USAGE)
 	}
 
 	fn invoke(args: &ArgMatches) -> Result {
+		let filepath = args.value_of("FILE").unwrap();
 		let machine = match args.value_of("parser").unwrap() {
 			"ast" => UNIMPLEMENTED,
 			"asg" => UNIMPLEMENTED,
 			_ => return Err(Error::Parse("unknown parser engine".to_string())),
 		};
-		let filepath = args.value_of("FILE").unwrap();
 
 		if args.is_present("stream") {
 			let file = match File::open(filepath) {
@@ -52,7 +50,11 @@ impl<'c> CLI<'c> for Code {
 				}
 			}
 		} else {
-			// unimplemented!("consider adding --stream")
+			let _file = fs::read_to_string(filepath);
+			if let Err(err) = unimplemented_ok() {
+				println!("{}", err);
+				return Err(Error::Parse(err));
+			}
 		}
 
 		match args.value_of("DIST") {

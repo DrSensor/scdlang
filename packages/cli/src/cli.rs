@@ -1,5 +1,5 @@
 use crate::error::Error;
-use clap::{self, App, AppSettings::*, ArgMatches};
+use clap::{App, ArgMatches, SubCommand};
 
 pub mod wip {
 	pub const UNIMPLEMENTED: &str = "not yet implemented";
@@ -15,31 +15,19 @@ pub type Result = core::result::Result<(), Error>;
 pub trait CLI<'c> {
 	const NAME: &'c str;
 	const USAGE: &'c str;
-	// type Result: Try; // ð use this when trait `Try` become stable
+	// type Result: Try; // 👈 use this when trait `Try` become stable
 
-	fn command<'s>() -> App<'s, 'c>;
+	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c>;
+	fn command<'s: 'c>() -> App<'c, 's> {
+		let cmd = SubCommand::with_name(Self::NAME);
+		Self::additional_usage(cmd).args_from_usage(Self::USAGE)
+	}
+
 	fn invoke(args: &ArgMatches) -> Result;
 	fn run_on(matches: &ArgMatches) -> Result {
 		if let Some(args) = matches.subcommand_matches(Self::NAME) {
 			Self::invoke(args)?;
 		}
-		Ok(())
-	}
-}
-
-pub struct Main;
-impl<'c> CLI<'c> for Main {
-	const NAME: &'c str = "Statecharts Rhapsody";
-	const USAGE: &'c str = "";
-
-	fn command<'s>() -> App<'s, 'c> {
-		App::new(Self::NAME)
-			.version(crate_version!())
-			.about(crate_description!())
-			.settings(&[VersionlessSubcommands, SubcommandRequiredElseHelp])
-	}
-
-	fn invoke(_matches: &ArgMatches) -> Result {
 		Ok(())
 	}
 }
