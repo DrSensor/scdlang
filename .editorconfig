@@ -15,12 +15,12 @@ indent_style = tab
 indent_size = 4
 insert_final_newline = true
 
-[*.scl]
+[*.{scl,yml}]
 indent_style = space
 indent_size = 4
 insert_final_newline = false
 
-[Dockerfile]
+[{Dockerfile,*.pest}]
 indent_style = space
 indent_size = 2
 insert_final_newline = false

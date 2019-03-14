@@ -1,7 +1,19 @@
 [package]
 name = "scrap"
 version = "0.1.0"
+description = "A devtools for scdlang"
 authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+atty = "*"
+
+[dependencies.clap]
+version = "*"
+features = ["wrap_help"]
+
+[dev-dependencies]
+predicates = "*"
+assert_fs = "*"
+assert_cmd = "*"
+rexpect = "*"

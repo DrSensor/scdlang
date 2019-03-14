@@ -2,17 +2,17 @@ export MPLBACKEND="Qt5Agg"
 export RUST_BACKTRACE="1"
 
 # Start development
-start:
+start: clear
 	cargo run --quiet --bin scrap
 
 # Run type checker
-check:
+check: clear
 	cargo check
 	mypy scripts
 
 # Run `just +command` whenever some files is changed
 @watch +command:
-	watchexec --clear just {{command}}
+	watchexec --restart --clear just {{command}}
 
 # Run all kind of tests
 test: unit
@@ -23,12 +23,12 @@ format:
 	black scripts
 
 # Run linter check on all code
-lint:
-	cargo clippy
+lint: clear
+	cargo clippy --tests
 	flake8 scripts
 
 # Remove all artifacts but not with the dependencies
-clear: _clean-analyze
+@clear: _clean-analyze
 	cargo clean $(cargo metadata --no-deps --format-version=1 | jq -r '["-p" + " " + .packages[].name] | join(" ")')
 
 # Remove all artifacts including the dependencies

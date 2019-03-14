@@ -1,7 +1,7 @@
 blacklisted-names = []
-type-complexity-threshold = 5
+type-complexity-threshold = 100
 too-many-arguments-threshold = 4
 single-char-binding-names-threshold = 3
 too-large-for-stack = 0
-enum-variant-size-threshold = 0
+enum-variant-size-threshold = 10
 enum-variant-name-threshold = 2
