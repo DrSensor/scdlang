@@ -1,6 +1,5 @@
 /// TODO: keep track on "Environment variable for Cargo Workspace #3946"
 /// https://github.com/rust-lang/cargo/issues/3946
-
 pub use predicates::path::*;
 use std::{ffi::OsString, path::Path};
 
@@ -18,6 +17,6 @@ pub fn example(filepath: &str) -> Option<String> {
 }
 
 #[allow(dead_code)]
-pub fn template<'p>(filepath: &str) -> Option<String> {
+pub fn template(filepath: &str) -> Option<String> {
 	get_from(env!("PWD"), "templates", filepath).ok()
 }

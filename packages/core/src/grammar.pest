@@ -1,0 +1,16 @@
+DescriptionFile = { SOI ~ (
+  NEWLINE? ~ (
+    expression
+  ) ~ NEWLINE?
+)+ ~ EOI }
+
+expression = { StateName ~ transition }
+transition = { TransitionTo ~ StateName }
+
+// #region symbol
+TransitionTo = { "-"+ ~ ">" }
+// #endregion
+
+// #region name
+StateName = { ASCII_ALPHANUMERIC+ }
+// #endregion

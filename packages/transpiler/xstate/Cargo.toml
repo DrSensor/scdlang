@@ -1,0 +1,13 @@
+[package]
+name = "scdlang_xstate"
+version = "0.1.0"
+authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+scdlang-core = { path = "../../core" }
+serde_json = "*"
+serde = { version = "*", features = ["derive"] }
+pest-ast = "*"
+from-pest = "*"
+pest = "*"

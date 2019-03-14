@@ -4,10 +4,10 @@ use crate::{
 	cli::{Result, CLI},
 	error::Error,
 	prompt,
-	wip::*,
 };
 use atty::Stream;
 use clap::{App, ArgMatches};
+use scdlang_xstate::*;
 use std::io::{self, prelude::*};
 use utils::*;
 
@@ -26,7 +26,7 @@ impl<'c> CLI<'c> for Eval {
 
 	fn invoke(args: &ArgMatches) -> Result {
 		let stdin = io::stdin();
-		let machine = UNIMPLEMENTED;
+		let mut machine = ast::Machine::new();
 		let prompting = || {
 			if atty::is(Stream::Stdin) {
 				prompt(prompt::REPL).expect(Self::NAME);
@@ -40,13 +40,15 @@ impl<'c> CLI<'c> for Eval {
 		prompting();
 		for line in stdin.lock().lines() {
 			let expression = line.expect(Self::NAME);
-			if let Err(err) = unimplemented_ok() {
-				println!("{}", err);
-				if args.is_present("strict") {
-					return Err(Error::Parse(expression));
+			if !expression.is_empty() {
+				if let Err(err) = machine.insert_parse(expression.as_str()) {
+					println!("{}", err);
+					if args.is_present("strict") {
+						return Err(Error::Parse(expression));
+					}
+				} else if args.is_present("interactive") {
+					println!("{}", machine);
 				}
-			} else if args.is_present("interactive") && !expression.is_empty() {
-				println!("{}", machine);
 			}
 			prompting();
 		}
