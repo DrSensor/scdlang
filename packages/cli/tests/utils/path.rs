@@ -1,3 +1,6 @@
+/// TODO: keep track on "Environment variable for Cargo Workspace #3946"
+/// https://github.com/rust-lang/cargo/issues/3946
+
 pub use predicates::path::*;
 use std::{ffi::OsString, path::Path};
 

@@ -54,6 +54,7 @@ action "Perf cargo" {
 action "Unit Test cargo" {
 	uses = "docker://rust:slim"
 	args = "cargo test"
+	env = { PWD = "/github/workspace" }
 }
 
 action "Build Release cli as musl" {
