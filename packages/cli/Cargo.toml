@@ -13,5 +13,7 @@ version = "*"
 features = ["wrap_help"]
 
 [dev-dependencies]
+predicates = "*"
+assert_fs = "*"
 assert_cmd = "*"
 rexpect = "*"

@@ -1,6 +1,7 @@
 use crate::{
-	cli::{wip::*, Result, CLI},
+	cli::{Result, CLI},
 	error::Error,
+	wip::*,
 };
 use clap::{App, Arg, ArgMatches};
 use std::{
@@ -50,7 +51,10 @@ impl<'c> CLI<'c> for Code {
 				}
 			}
 		} else {
-			let _file = fs::read_to_string(filepath);
+			let _file = match fs::read_to_string(filepath) {
+				Ok(content) => content,
+				Err(io_error) => return Err(Error::IO(io_error)),
+			};
 			if let Err(err) = unimplemented_ok() {
 				println!("{}", err);
 				return Err(Error::Parse(err));

@@ -1,9 +1,10 @@
 mod utils;
 
 use crate::{
-	cli::{wip::*, Result, CLI},
+	cli::{Result, CLI},
 	error::Error,
 	prompt,
+	wip::*,
 };
 use atty::Stream;
 use clap::{App, ArgMatches};
@@ -44,7 +45,7 @@ impl<'c> CLI<'c> for Eval {
 				if args.is_present("strict") {
 					return Err(Error::Parse(expression));
 				}
-			} else if args.is_present("interactive") {
+			} else if args.is_present("interactive") && !expression.is_empty() {
 				println!("{}", machine);
 			}
 			prompting();
