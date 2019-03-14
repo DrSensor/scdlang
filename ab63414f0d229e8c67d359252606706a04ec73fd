@@ -1,9 +1,4 @@
 {
-  "exec": "/github/home/.bin/scrap",
-  "memory": 896,
-  "cpu": "?%"
-}
-{
   "exec": "cargo build --all",
   "time": 0.6714230020550002
 }
