@@ -4,6 +4,7 @@ use crate::{
 	wip::*,
 };
 use clap::{App, Arg, ArgMatches};
+use scdlang_xstate::*;
 use std::{
 	fs::{self, File},
 	io::{BufRead, BufReader},
@@ -32,9 +33,9 @@ impl<'c> CLI<'c> for Code {
 
 	fn invoke(args: &ArgMatches) -> Result {
 		let filepath = args.value_of("FILE").unwrap();
-		let machine = match args.value_of("parser").unwrap() {
-			"ast" => UNIMPLEMENTED,
-			"asg" => UNIMPLEMENTED,
+		let mut machine = match args.value_of("parser").unwrap() {
+			"ast" => ast::Machine::new(),
+			"asg" => unimplemented!("consider to use `--stream` or `--parser ast`"),
 			_ => return Err(Error::Parse("unknown parser engine".to_string())),
 		};
 
@@ -45,7 +46,7 @@ impl<'c> CLI<'c> for Code {
 			};
 			for line in BufReader::new(file).lines() {
 				let expression: String = line.expect(Self::NAME);
-				if let Err(err) = unimplemented_ok() {
+				if let Err(err) = machine.insert_parse(&expression) {
 					println!("{}", err);
 					return Err(Error::Parse(expression));
 				}

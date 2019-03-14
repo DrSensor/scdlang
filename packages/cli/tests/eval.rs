@@ -1,6 +1,5 @@
 /// TODO: change to parametric test when cargo support it
 /// with parameter Ctrl-C, Ctrl-D, Ctrl-Z, `:exit`
-
 mod utils;
 
 #[allow(unused_imports)] // false alarm on rustc 😅
@@ -18,12 +17,12 @@ mod should_ok {
 		let mut command = subcommand::eval(args).unwrap();
 		command.assert().success();
 
-		let mut repl = spawn_command(command, Some(1500))?;
+		let mut repl = spawn_command(command, None)?;
 		repl.send_line("A->D")?;
 		repl.exp_string(prompt::REPL)?;
 
 		repl.send_control('d')?;
-		repl.exp_string(wip::UNIMPLEMENTED)?;
+		repl.exp_regex(regex::NOEMPTY)?;
 		Ok(())
 	}
 
@@ -33,14 +32,14 @@ mod should_ok {
 		let mut command = subcommand::eval(args).unwrap();
 		command.assert().success();
 
-		let mut repl = spawn_command(command, Some(3500))?;
+		let mut repl = spawn_command(command, None)?;
 		repl.send_line("A->D")?;
-		repl.exp_string(wip::UNIMPLEMENTED)?;
+		repl.exp_regex(regex::NOEMPTY)?;
 
 		repl.send_line("")?;
 		repl.exp_string(prompt::REPL)?;
 
-		repl.send_control('d')?; 
+		repl.send_control('d')?;
 		repl.exp_eof()?;
 		Ok(())
 	}

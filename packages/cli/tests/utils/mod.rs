@@ -1,6 +1,16 @@
 pub mod path;
 pub mod subcommand;
 
+#[allow(dead_code)] // false alarm on rustc 😅
+pub mod regex {
+	pub const NOEMPTY: &str = r".*\S.*";
+}
+
+#[allow(dead_code)] // false alarm on rustc 😅
+pub mod errcode {
+	pub const ENOENT: i32 = 2;
+}
+
 //#region remove this when feature(inner_deref) is stable
 use std::ops::Deref;
 
