@@ -49,8 +49,12 @@ impl Machine {
 
 	pub fn from(source: &str) -> Result<Machine, MachineError> {
 		let mut parse_tree = scdlang::parse(&source)?;
-		let ast = Machine::from_pest(&mut parse_tree).expect("infallible");
-		Ok(ast)
+		if pairs::is_expression(&parse_tree) {
+			let line = &format!(r#"expression("{line}")"#, line = parse_tree.as_str());
+			Ok(Machine::from_pest(&mut parse_tree).expect(line))
+		} else {
+			Ok(Machine::default())
+		}
 	}
 
 	pub fn parse(&mut self, source: &str) -> Result<(), MachineError> {

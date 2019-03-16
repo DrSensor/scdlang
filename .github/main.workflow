@@ -48,6 +48,7 @@ action "Perf cargo" {
 		"build --all",
 		"build -p scdlang-core",
 		"build -p scrap",
+		"build -p scdlang_xstate",
 	]
 }
 
