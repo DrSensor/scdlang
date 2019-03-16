@@ -37,6 +37,7 @@ impl<'c> CLI<'c> for Eval {
 			println!("Press Ctrl-D to exit and print the final results");
 		}
 
+		// TODO: change to https://docs.rs/linefeed
 		prompting();
 		for line in stdin.lock().lines() {
 			let expression = line.expect(Self::NAME);

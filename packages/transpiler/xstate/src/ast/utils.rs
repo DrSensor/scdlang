@@ -1,8 +1,27 @@
+use scdlang_core::Rule;
+
+pub mod pairs {
+	use super::*;
+	use pest::iterators::Pairs;
+
+	pub fn is_expression(pairs: &Pairs<Rule>) -> bool {
+		pairs
+			.peek()
+			.unwrap()
+			.into_inner()
+			.any(|pair| match pair.as_rule() {
+				Rule::expression => true,
+				_ => false,
+			})
+	}
+}
+
 pub mod span {
+	use super::*;
 	use crate::ast::Transition;
 	use from_pest::FromPest;
 	use pest::{Parser, Span};
-	use scdlang_core::{Rule, Scdlang};
+	use scdlang_core::Scdlang;
 	use serde_json::Value;
 	use std::collections::HashMap;
 

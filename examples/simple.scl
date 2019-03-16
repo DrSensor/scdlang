@@ -1,3 +1,11 @@
+    /// simple exmaple to test if it work
+	/// this example contain empty & blank line, whitespace, tab, oneline & block comment
+
+// without whitespace
 A->B
-B->C
-C->D
+
+// with whitespace
+B -> C
+	
+C/*for cheetah*/	->  D//for dimple
+    

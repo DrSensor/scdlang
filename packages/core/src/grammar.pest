@@ -2,15 +2,20 @@ DescriptionFile = { SOI ~ (
   NEWLINE? ~ (
     expression
   ) ~ NEWLINE?
-)+ ~ EOI }
+)* ~ EOI }
 
 expression = { StateName ~ transition }
 transition = { TransitionTo ~ StateName }
 
 // #region symbol
-TransitionTo = { "-"+ ~ ">" }
+TransitionTo = @{ "-"+ ~ ">" }
 // #endregion
 
 // #region name
-StateName = { ASCII_ALPHANUMERIC+ }
+StateName = @{ ASCII_ALPHANUMERIC+ }
 // #endregion
+
+WHITESPACE = _{ " " | "\t" }
+COMMENT = _{ line_comment | block_comment }
+line_comment = _{ "//" ~ (!NEWLINE ~ ANY)* }
+block_comment = _{ "/*" ~ (block_comment|(!"*/" ~ ANY))* ~ "*/" }
