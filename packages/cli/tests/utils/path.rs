@@ -4,11 +4,7 @@ pub use predicates::path::*;
 use std::{ffi::OsString, path::Path};
 
 fn get_from(root: &str, dir: &str, filepath: &str) -> Result<String, OsString> {
-	Path::new(root)
-		.join(dir)
-		.join(filepath)
-		.into_os_string()
-		.into_string()
+	Path::new(root).join(dir).join(filepath).into_os_string().into_string()
 }
 
 #[allow(dead_code)] // false alarm on rustc 😅

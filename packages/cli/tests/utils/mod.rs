@@ -3,7 +3,7 @@ pub mod subcommand;
 
 #[allow(dead_code)] // false alarm on rustc 😅
 pub mod regex {
-	pub const NOEMPTY: &str = r".*\S.*";
+	pub const NOEMPTY: &str = r".+\S.+";
 }
 
 #[allow(dead_code)] // false alarm on rustc 😅

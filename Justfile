@@ -1,5 +1,4 @@
 export MPLBACKEND="Qt5Agg"
-export RUST_BACKTRACE="1"
 
 # Start development
 start: clear
@@ -9,6 +8,10 @@ start: clear
 check: clear
 	cargo check
 	mypy scripts
+
+# Run with backtrace on
+@trace +command:
+	RUST_BACKTRACE="1" just {{command}}
 
 # Run `just +command` whenever some files is changed
 @watch +command:
