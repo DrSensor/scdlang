@@ -5,14 +5,10 @@ pub mod pairs {
 	use pest::iterators::Pairs;
 
 	pub fn is_expression(pairs: &Pairs<Rule>) -> bool {
-		pairs
-			.peek()
-			.unwrap()
-			.into_inner()
-			.any(|pair| match pair.as_rule() {
-				Rule::expression => true,
-				_ => false,
-			})
+		pairs.peek().unwrap().into_inner().any(|pair| match pair.as_rule() {
+			Rule::expression => true,
+			_ => false,
+		})
 	}
 }
 

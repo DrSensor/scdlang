@@ -1,5 +1,3 @@
-mod utils;
-
 use crate::{
 	cli::{Result, CLI},
 	error::Error,
@@ -7,9 +5,9 @@ use crate::{
 };
 use atty::Stream;
 use clap::{App, ArgMatches};
+use linefeed::{Interface, ReadResult};
 use scdlang_xstate::*;
 use std::io::{self, prelude::*};
-use utils::*;
 
 pub struct Eval;
 impl<'c> CLI<'c> for Eval {
@@ -25,35 +23,57 @@ impl<'c> CLI<'c> for Eval {
 	}
 
 	fn invoke(args: &ArgMatches) -> Result {
-		let stdin = io::stdin();
 		let mut machine = ast::Machine::new();
-		let prompting = || {
-			if atty::is(Stream::Stdin) {
-				prompt(prompt::REPL).expect(Self::NAME);
+		let repl = Interface::new(env!("CARGO_PKG_NAME")).map_err(Error::IO)?;
+		let mut previously_error = false;
+
+		let mut parse = |expression: String| -> Result {
+			if !expression.is_empty() {
+				match machine.insert_parse(expression.as_str()) {
+					Ok(_) => {
+						if args.is_present("interactive") {
+							println!("{}", machine);
+						}
+						if previously_error {
+							repl.remove_history(repl.history_len() - 1); // remove errored input
+							previously_error = false;
+						}
+					}
+					Err(err) => {
+						println!("{}", err);
+						if args.is_present("strict") {
+							return Err(Error::Parse(expression));
+						}
+						previously_error = true;
+					}
+				}
+				repl.add_history_unique(expression);
 			}
+			Ok(())
 		};
 
-		if atty::is(Stream::Stdin) && !args.is_present("interactive") {
-			println!("Press Ctrl-D to exit and print the final results");
-		}
-
-		// TODO: change to https://docs.rs/linefeed
-		prompting();
-		for line in stdin.lock().lines() {
-			let expression = line.expect(Self::NAME);
-			if !expression.is_empty() {
-				if let Err(err) = machine.insert_parse(expression.as_str()) {
-					println!("{}", err);
-					if args.is_present("strict") {
-						return Err(Error::Parse(expression));
-					}
-				} else if args.is_present("interactive") {
-					println!("{}", machine);
-				}
+		// parse depend on if it's piped from another process or not
+		if !atty::is(Stream::Stdin) {
+			for line in io::stdin().lock().lines() {
+				parse(line.expect(Self::NAME))?;
 			}
-			prompting();
+		} else {
+			println!(
+				"Press Ctrl-D to exit {}",
+				if !args.is_present("interactive") {
+					"and print the final results"
+				} else {
+					""
+				}
+			);
+
+			repl.set_prompt(&format!("{} ", prompt::REPL)).map_err(Error::IO)?;
+			while let ReadResult::Input(line) = repl.read_line().map_err(Error::IO)? {
+				parse(line)?;
+			}
 		}
 
+		// print final result depend on the condition
 		if args.is_present("interactive") {
 			print!("\r")
 		} else if atty::isnt(Stream::Stdin) {

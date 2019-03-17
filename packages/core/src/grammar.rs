@@ -11,12 +11,7 @@ mod test {
 
 	#[test]
 	fn transition_to() -> Yes {
-		test::correct_expressions(&[
-			r#"A->B"#,
-			r#"Alpha-->B"#,
-			r#"A--->Beta"#,
-			r#"AlphaGo->BetaRust"#,
-		])
+		test::correct_expressions(&[r#"A->B"#, r#"Alpha-->B"#, r#"A--->Beta"#, r#"AlphaGo->BetaRust"#])
 	}
 
 	mod should_fail_when {
@@ -27,8 +22,7 @@ mod test {
 			// From https://github.com/tonsky/FiraCode 😋
 			test::wrong_expressions(&[
 				// #region transition_to
-				r#"A->>B"#, r#"A>->B"#, r#"A>-B"#, r#"A>>-B"#, r#"A~>B"#,
-				r#"A~~>B"#,
+				r#"A->>B"#, r#"A>->B"#, r#"A>-B"#, r#"A>>-B"#, r#"A~>B"#, r#"A~~>B"#,
 				// #endregion
 			])
 		}

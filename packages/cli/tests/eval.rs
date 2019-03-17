@@ -12,6 +12,7 @@ mod should_ok {
 	use super::*;
 
 	#[test]
+	#[ignore] // wait until https://github.com/murarth/linefeed/issues/56 resolved
 	fn non_interactive_mode() -> Result<(), Error> {
 		let args = None;
 		let mut command = subcommand::eval(args).unwrap();
@@ -27,6 +28,7 @@ mod should_ok {
 	}
 
 	#[test]
+	#[ignore] // wait until https://github.com/murarth/linefeed/issues/56 resolved
 	fn interactive_mode() -> Result<(), Error> {
 		let args = Some("--interactive");
 		let mut command = subcommand::eval(args).unwrap();

@@ -13,10 +13,7 @@ mod should_ok {
 
 		#[test]
 		fn parse_valid_file() {
-			let args = Some(format!(
-				"{file} --stream",
-				file = path::example("simple.scl").unwrap()
-			));
+			let args = Some(format!("{file} --stream", file = path::example("simple.scl").unwrap()));
 
 			let mut command = subcommand::code(args.as_deref()).unwrap();
 			command.assert().success();

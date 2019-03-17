@@ -40,24 +40,18 @@ impl<'c> CLI<'c> for Code {
 		};
 
 		if args.is_present("stream") {
-			let file = match File::open(filepath) {
-				Ok(content) => content,
-				Err(io_error) => return Err(Error::IO(io_error)),
-			};
+			let file = File::open(filepath).map_err(Error::IO)?;
 			for line in BufReader::new(file).lines() {
 				let expression: String = line.expect(Self::NAME);
 				if let Err(err) = machine.insert_parse(&expression) {
-					println!("{}", err);
+					eprintln!("{}", err);
 					return Err(Error::Parse(expression));
 				}
 			}
 		} else {
-			let _file = match fs::read_to_string(filepath) {
-				Ok(content) => content,
-				Err(io_error) => return Err(Error::IO(io_error)),
-			};
+			let _file = fs::read_to_string(filepath).map_err(Error::IO)?;
 			if let Err(err) = unimplemented_ok() {
-				println!("{}", err);
+				eprintln!("{}", err);
 				return Err(Error::Parse(err));
 			}
 		}
