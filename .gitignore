@@ -1,3 +1,6 @@
+# initial implementation
+packages/parser-scdlang/*
+
 # perf data
 *.zst
 
