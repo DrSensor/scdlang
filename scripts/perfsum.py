@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 import json
 import requests
+from toolz.curried import pipe, filter, map
 from itertools import chain
 from textwrap import shorten
 from sys import stdin
 from matplotlib import pyplot as plt, get_backend as mplbackend
 
 plt.style.use("bmh")
-x_axis = {"time": "Exec Time (s)", "memory": "Peak Memory (kB)", "cpu": "Load CPU (%)"}
+x_axis_label = {
+    "time": "Exec Time (s)",
+    "memory": "Peak Memory (kB)",
+    "cpu": "Load CPU (%)",
+}
 
 
 def to_number(var):
@@ -29,37 +34,37 @@ def max_number(var):
 
 
 def filter_by(command, perf_data, keys, fillempty=0):
+    def get_log(perf):
+        if len(perf) > 0:
+            return pipe(
+                perf,
+                filter(lambda log: log["exec"] == command and key in log),
+                map(lambda log: to_number(log[key])),
+                next,
+            )
+        return fillempty
+
     result = []
     for key, title in keys.items():
-        _ = list(
-            map(
-                lambda perf: next(
-                    map(
-                        lambda log: to_number(log[key]),
-                        filter(lambda log: log["exec"] == command and key in log, perf),
-                    )
-                )
-                if len(perf) > 0
-                else fillempty,
-                perf_data,
-            )
-        )
-        if len(_) != 0:
-            result.append((_, title, max_number(title)))
+        data = list(map(lambda perf: get_log(perf), perf_data))
+        if len(data) != 0:
+            result.append((data, title, max_number(title)))
+
     return result
 
 
+# =============================== Initialize Data ===============================
 data = json.load(stdin)
 
 subjects = [n["subject"] for n in data]
 perfs = [n["perf"] for n in data]
-commands = list(
-    set(  # get and flatten perf data then dedupe
-        map(
-            lambda p: p["exec"],
-            chain.from_iterable(filter(lambda p: len(list(p)) != 0, perfs)),
-        )
-    )
+commands = pipe(
+    perfs,
+    filter(lambda p: len(list(p)) != 0),
+    chain.from_iterable,  # flatten data
+    map(lambda p: p["exec"]),
+    set,  # remove duplicate
+    list,
 )
 
 max_char_title = max([len(c) for c in commands])
@@ -70,15 +75,15 @@ gs = fig.add_gridspec(len(commands), max_perf_keys - 1)
 fig.set_figwidth(max_char_title / 5)
 fig_height = fig.get_figwidth()
 
+# =============================== Plot Data ===============================
 for i, command in enumerate(commands):
-    cmd_perfs = filter_by(command, perfs, x_axis)
+    cmd_perfs = filter_by(command, perfs, x_axis_label)
     first_ax = None
     for j, (results, title, limit) in enumerate(cmd_perfs):
-        xy = list(
-            filter(
-                lambda p: p[0] != 0 if len(cmd_perfs) == 1 else True,
-                zip(results, subjects),
-            )
+        xy = pipe(
+            zip(results, subjects),
+            filter(lambda p: p[0] != 0 if len(cmd_perfs) == 1 else True),
+            list,
         )
 
         x = list(map(lambda p: p[0], xy))
@@ -104,6 +109,7 @@ for i, command in enumerate(commands):
 
 fig.set_figheight(fig_height)
 
+# =============================== Show graph ===============================
 if mplbackend() == "agg":
     plt.savefig("perf.png", aspect="auto", transparant=True, dpi=300)
 
