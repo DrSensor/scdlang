@@ -1,13 +1,13 @@
 DescriptionFile = { SOI ~ (
-  NEWLINE? ~ (
+  NEWLINE* ~ (
     expression
-  ) ~ NEWLINE?
+  ) ~ NEWLINE*
 )* ~ EOI }
 
 expression = { StateName ~ transition }
 transition = { TransitionTo ~ StateName }
 
-// #region symbol
+// #region symbol/operator
 TransitionTo = @{ "-"+ ~ ">" }
 // #endregion
 

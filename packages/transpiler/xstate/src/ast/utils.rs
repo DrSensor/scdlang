@@ -1,3 +1,4 @@
+use super::*;
 use scdlang_core::Rule;
 
 pub mod pairs {
@@ -14,11 +15,10 @@ pub mod pairs {
 
 pub mod span {
 	use super::*;
-	use crate::ast::Transition;
 	use from_pest::FromPest;
 	use pest::{Parser, Span};
 	use scdlang_core::Scdlang;
-	use serde_json::Value;
+	use serde_json::{json, Value};
 	use std::collections::HashMap;
 
 	pub fn into_string(span: Span) -> String {
@@ -43,7 +43,7 @@ pub mod span {
 	pub fn into_json(span: Span) -> HashMap<String, Value> {
 		let mut json = HashMap::new();
 		let event_name = "".to_string();
-		let state_name = Value::String(span.as_str().to_string());
+		let state_name = json!(span.as_str());
 		json.insert(event_name, state_name);
 		json
 	}

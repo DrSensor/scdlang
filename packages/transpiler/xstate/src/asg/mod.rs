@@ -1,14 +1,13 @@
 #![allow(clippy::unit_arg)]
 mod schema;
-mod utils;
 
 use scdlang_core as scdlang;
 pub use schema::*;
 
 use crate::Parser;
-use from_pest::FromPest;
+use scdlang_core::{prelude::*, Rule, Scdlang};
+use serde_json::json;
 use std::{error, fmt};
-use utils::pairs;
 
 impl Parser for Machine {
 	fn parse(&mut self, source: &str) -> Result<(), DynError> {
@@ -22,14 +21,24 @@ impl Parser for Machine {
 	}
 
 	fn try_parse(source: &str) -> Result<Self, DynError> {
-		let mut parse_tree = scdlang::parse(&source)?;
+		// TODO: remove .unwrap() after scdlang::Error implement std::error:Error
+		let parse_tree = Scdlang::parse_from(source)?;
+		let mut machine = Machine::new();
 
-		if pairs::is_expression(&parse_tree) {
-			let line = &format!(r#"expression("{line}")"#, line = parse_tree.as_str());
-			Ok(Machine::from_pest(&mut parse_tree).expect(line))
-		} else {
-			Ok(Machine::default())
+		for pair in parse_tree {
+			if let Rule::expression = pair.as_rule() {
+				let transition: scdlang::Transition = pair.try_into()?;
+				machine.states.insert(
+					transition.from.name.to_string(),
+					Transition {
+						// TODO: waiting for https://github.com/rust-lang/rfcs/issues/542
+						on: [("".to_string(), json!(transition.to.name))].iter().cloned().collect(),
+					},
+				);
+			}
 		}
+
+		Ok(machine)
 	}
 }
 
