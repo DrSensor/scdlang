@@ -1,9 +1,4 @@
 {
-  "exec": "/github/home/.bin/scrap code examples/simple.scl --parser ast",
-  "memory": 4848,
-  "cpu": "0%"
-}
-{
   "exec": "/github/home/.bin/scrap code examples/simple.scl --stream --parser ast",
   "memory": 4880,
   "cpu": "?%"
