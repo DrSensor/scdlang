@@ -68,7 +68,9 @@ install: install-toolchains
 
 # Install all recommended toolchains
 install-toolchains:
-	rustup component add rustfmt clippy
+	rustup install beta
+	rustup override set beta
+	rustup component add rls rustfmt clippy rust-src rust-analysis
 	cargo install hjson
 # pipenv lock --requirements --dev | pipenv install --dev --requirements -
 

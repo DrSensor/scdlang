@@ -1,6 +1,9 @@
 #!/bin/sh
 set -e
 
+rustup install beta
+rustup default beta
+
 for cmd in "$@"; do
   echo "Running '$cmd'..."
   if sh -c "$cmd"; then

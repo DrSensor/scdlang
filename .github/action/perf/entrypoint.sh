@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+rustup default beta
+
 members=`cargo metadata --no-deps --format-version=1 | jq -r '["-p" + " " + .packages[].name] | join(" ")'`
 
 PERF_HOME=${PERF_HOME:-${HOME}/.perf}
