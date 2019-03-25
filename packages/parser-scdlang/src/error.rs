@@ -4,3 +4,14 @@ pub enum Error {
     IllegalToken,
     MissingOperator,
 }
+
+fn stuff() {
+    #cfg(mac)
+    {
+      // here
+    } 
+    cfg(not(mac))
+    {
+      // there
+    }
+}
