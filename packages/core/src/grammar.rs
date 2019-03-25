@@ -1,8 +1,25 @@
+use crate::error::*;
+use pest::{error::Error as PestError, iterators::Pairs, Parser};
 use pest_derive::Parser;
 
 #[derive(Parser)]
 #[grammar = "grammar.pest"]
 pub struct Scdlang;
+type RuleError = PestError<Rule>;
+
+impl Scdlang {
+	pub fn parse_from(source: &str) -> Result<Pairs<Rule>, Error> {
+		Ok(parse(&source)
+			.map_err(|e| Error::Parse(e.into()))?
+			.peek()
+			.ok_or(Error::EmptyDeclaration)?
+			.into_inner())
+	}
+}
+
+pub fn parse(source: &str) -> Result<Pairs<Rule>, RuleError> {
+	Scdlang::parse(Rule::DescriptionFile, source)
+}
 
 #[cfg(test)]
 mod test {

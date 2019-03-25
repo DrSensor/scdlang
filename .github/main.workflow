@@ -47,8 +47,8 @@ action "Perf cargo" {
 	args = [
 		"build --all",
 		"build -p scdlang-core",
-		"build -p scrap",
 		"build -p scdlang_xstate",
+		"build -p scrap",
 	]
 }
 
@@ -77,9 +77,8 @@ action "Perf CLI release" {
 	uses = "docker://alpine:latest"
 	runs = "./.github/profiler.sh"
 	args = [
-		# "${HOME}/.bin/scrap code examples/simple.scl --parser asg",
-		# "${HOME}/.bin/scrap code examples/simple.scl --stream --parser asg",
-		"${HOME}/.bin/scrap code examples/simple.scl --parser ast",
+		"${HOME}/.bin/scrap code examples/simple.scl --parser asg",
+		"${HOME}/.bin/scrap code examples/simple.scl --stream --parser asg",
 		"${HOME}/.bin/scrap code examples/simple.scl --stream --parser ast",
 	]
 }
