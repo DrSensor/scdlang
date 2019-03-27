@@ -3,6 +3,7 @@
 # 1. Add environment variable to set command alias
 # 2. Add ${HOME}/.bin to PATH
 # 3. Inheret exit code from args, not `time`
+# 4. Add environment variable for preparation (e.g execute script to generate sample data)
 set -e
 
 json='{
@@ -31,6 +32,7 @@ json='{
 }'
 
 mkdir -p ${HOME}/.perf
+sh -c "${PREPARE}"
 
 # TODO: use looping
 for cmd in "$@"; do

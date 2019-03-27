@@ -80,7 +80,8 @@ action "Perf CLI release" {
 		"${HOME}/.bin/scrap code examples/simple.scl --parser asg",
 		"${HOME}/.bin/scrap code examples/simple.scl --stream --parser asg",
 		"${HOME}/.bin/scrap code examples/simple.scl --stream --parser ast",
-	]
+	],
+	env = { PREPARE = "./scripts/gensample.py 1000 > examples/simple.scl" }
 }
 # ---------------------------------------------------------------
 
