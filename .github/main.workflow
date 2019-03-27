@@ -74,7 +74,7 @@ action "Build Release cli as musl" {
 
 action "Perf CLI release" {
 	needs = "Build Release cli as musl"
-	uses = "docker://alpine:latest"
+	uses = "docker://python:alpine"
 	runs = "./.github/profiler.sh"
 	args = [
 		"${HOME}/.bin/scrap code examples/simple.scl --parser asg",
