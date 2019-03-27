@@ -31,7 +31,7 @@ printlog() {
       email: "%cE"
       date: "%cD"
     }
-  }' $base..; echo ']' ) | hjson -c
+  }' $base.. --; echo ']' ) | hjson -c
 }
 
 # auto detect if it's piped https://stackoverflow.com/a/30811869/5221998
