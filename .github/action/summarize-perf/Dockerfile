@@ -15,9 +15,8 @@ RUN apt-get update && \
         jq \
         curl \
         ca-certificates \
-    && curl -sSL \
-    https://github.com/hjson/hjson-go/releases/download/v3.0.0/linux_amd64.tar.gz | \
-    tar -xz -C /usr/bin && \
+    && \
+    pip --no-cache-dir install hjson && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

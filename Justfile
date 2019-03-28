@@ -71,7 +71,7 @@ install-toolchains:
 	rustup install beta
 	rustup override set beta
 	rustup component add rls rustfmt clippy rust-src rust-analysis
-	cargo install hjson
+	# pip install hooks4git hjson --user
 # pipenv lock --requirements --dev | pipenv install --dev --requirements -
 
 @_clean-analyze:
