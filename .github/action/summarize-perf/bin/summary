@@ -2,49 +2,30 @@
 # TODO: add optional argument to query json just like bin/query does
 set -e
 
-printlog() {
-  base=$(jq -r .pull_request.base.ref $GITHUB_EVENT_PATH)
-  head=$(jq -r .pull_request.head.ref $GITHUB_EVENT_PATH)
+base=$(jq -r .pull_request.base.ref $GITHUB_EVENT_PATH)
+head=$(jq -r .pull_request.head.ref $GITHUB_EVENT_PATH)
 
-  git fetch origin $base
-  git checkout $base
-  git checkout $head
+git fetch origin $base
+git checkout $base
+git checkout $head
 
-  ( echo '['; git --no-pager log --decorate --first-parent --no-merges --format='{
-    refs: "%D"
-    subject: "%s"
-    perf: [%N]
-    sha: {
-      commit: "%H"
-      tree: "%T"
-      parent: "%P"
-    }
-    author: {
-      name: "%aN"
-      email: "%aE"
-      date: "%aD"
-    }
-    commiter: {
-      name: "%cN"
-      email: "%cE"
-      date: "%cD"
-    }
-  }' $base.. --; echo ']' ) | hjson -c
-}
-
-# auto detect if it's piped https://stackoverflow.com/a/30811869/5221998
-sanitize() {
-  read log
-  if [ -t 1 ]; then
-    echo $log | jq .
-  else
-    echo $log | jq -c .
-  fi
-}
-
-echo '==================== git status --porcelain ======================='
-git status --porcelain
-echo '==================== printlog ======================='
-printlog
-echo '============================= printlog | jq -c . ============================'
-printlog | jq -c .
+( echo '['; git --no-pager log --decorate --first-parent --no-merges --format='{
+  refs: "%D"
+  subject: "%s"
+  perf: [%N]
+  sha: {
+    commit: "%H"
+    tree: "%T"
+    parent: "%P"
+  }
+  author: {
+    name: "%aN"
+    email: "%aE"
+    date: "%aD"
+  }
+  commiter: {
+    name: "%cN"
+    email: "%cE"
+    date: "%cD"
+  }
+}' $base.. --; echo ']' ) | hjson -c
