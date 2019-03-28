@@ -6,11 +6,9 @@ printlog() {
   base=$(jq -r .pull_request.base.ref $GITHUB_EVENT_PATH)
   head=$(jq -r .pull_request.head.ref $GITHUB_EVENT_PATH)
 
-  # if there's nothing to be committed in the current branch
-  if [ ! -n "$(git status --porcelain)" ]; then
-    git checkout $base --quiet
-    git checkout $head --quiet
-  fi
+  git fetch origin $base --quiet
+  git checkout $base --quiet
+  git checkout $head --quiet
 
   ( echo '['; git --no-pager log --decorate --first-parent --no-merges --format='{
     refs: "%D"
@@ -31,7 +29,7 @@ printlog() {
       email: "%cE"
       date: "%cD"
     }
-  }' $base..; echo ']' ) | hjson -c
+  }' $base.. --; echo ']' ) | hjson -c
 }
 
 # auto detect if it's piped https://stackoverflow.com/a/30811869/5221998
