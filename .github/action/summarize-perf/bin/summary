@@ -6,6 +6,7 @@ printlog() {
   base=$(jq -r .pull_request.base.ref $GITHUB_EVENT_PATH)
   head=$(jq -r .pull_request.head.ref $GITHUB_EVENT_PATH)
 
+  git stash --quiet
   git fetch origin $base --quiet
   git checkout $base --quiet
   git checkout $head --quiet
