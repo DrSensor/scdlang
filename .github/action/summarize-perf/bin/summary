@@ -5,9 +5,9 @@ set -e
 base=$(jq -r .pull_request.base.ref $GITHUB_EVENT_PATH)
 head=$(jq -r .pull_request.head.ref $GITHUB_EVENT_PATH)
 
-git fetch origin $base
-git checkout $base
-git checkout $head
+git fetch origin $base --quiet
+git checkout $base --quiet
+git checkout $head --quiet
 
 ( echo '['; git --no-pager log --decorate --first-parent --no-merges --format='{
   refs: "%D"
