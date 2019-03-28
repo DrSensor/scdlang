@@ -46,5 +46,5 @@ echo '==================== git status --porcelain ======================='
 git status --porcelain
 echo '==================== printlog ======================='
 printlog
-echo '============================= printlog | jq ============================'
-printlog | sanitize
+echo '============================= printlog | jq -c . ============================'
+printlog | jq -c .
