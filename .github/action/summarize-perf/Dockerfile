@@ -15,7 +15,8 @@ RUN apt-get update && \
         jq \
         curl \
         ca-certificates \
-    && pip --no-cache-dir install hjson \
+    && \
+    pip --no-cache-dir install hjson && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
