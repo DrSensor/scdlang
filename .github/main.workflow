@@ -35,7 +35,8 @@ action "Save perf results" {
 action "Summarize perf" {
 	needs = ["Save perf results"]
 	uses = "./.github/action/summarize-perf"
-	args = "summary | ./scripts/perfsum.py | comment"
+	# args = "summary | ./scripts/perfsum.py | comment"
+	args = "summary"
 	secrets = ["GITHUB_TOKEN"]
 }
 # ---------------------------------------------------------------

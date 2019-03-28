@@ -42,4 +42,9 @@ sanitize() {
   fi
 }
 
+echo '==================== git status --porcelain ======================='
+git status --porcelain
+echo '==================== printlog ======================='
+printlog
+echo '============================= printlog | jq ============================'
 printlog | sanitize
