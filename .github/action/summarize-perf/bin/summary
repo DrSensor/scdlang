@@ -6,8 +6,7 @@ printlog() {
   base=$(jq -r .pull_request.base.ref $GITHUB_EVENT_PATH)
   head=$(jq -r .pull_request.head.ref $GITHUB_EVENT_PATH)
 
-  git checkout $base
-  git checkout $head
+  git fetch origin $base
 
   ( echo '['; git --no-pager log --decorate --first-parent --no-merges --format='{
     refs: "%D"
