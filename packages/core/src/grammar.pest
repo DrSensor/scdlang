@@ -4,15 +4,18 @@ DescriptionFile = { SOI ~ (
   ) ~ NEWLINE*
 )* ~ EOI }
 
-expression = { StateName ~ transition }
+expression = { StateName ~ transition ~ trigger? }
 transition = { TransitionTo ~ StateName }
+trigger = { TriggerAt ~ EventName }
 
 // #region symbol/operator
 TransitionTo = @{ "-"+ ~ ">" }
+TriggerAt = @{ "@" }
 // #endregion
 
 // #region name
 StateName = @{ ASCII_ALPHANUMERIC+ }
+EventName = @{ ASCII_ALPHANUMERIC+ }
 // #endregion
 
 WHITESPACE = _{ " " | "\t" }

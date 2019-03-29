@@ -1,9 +1,11 @@
 pub mod error;
 mod grammar;
+mod parser;
 pub mod semantics;
 pub mod utils;
 
 pub use grammar::*;
+pub use parser::parse;
 pub use semantics::*;
 
 pub mod prelude {
