@@ -17,7 +17,12 @@ impl Parser for Machine {
 
 	fn insert_parse(&mut self, source: &str) -> Result<(), DynError> {
 		let ast = Self::try_parse(source)?;
-		Ok(self.states.extend(ast.states))
+		Ok(for (current_state, transition) in ast.states {
+			self.states
+				.entry(current_state)
+				.and_modify(|t| t.on.extend(transition.on.clone()))
+				.or_insert(transition);
+		})
 	}
 
 	fn try_parse(source: &str) -> Result<Self, DynError> {
@@ -28,13 +33,21 @@ impl Parser for Machine {
 		for pair in parse_tree {
 			if let Rule::expression = pair.as_rule() {
 				let transition: scdlang::Transition = pair.try_into()?;
-				machine.states.insert(
-					transition.from.name.to_string(),
-					Transition {
+
+				let event_name = transition.at.map(|e| e.name).unwrap_or("");
+				let current_state = transition.from.name.to_string();
+				let next_state = transition.to.name;
+
+				machine
+					.states
+					.entry(current_state)
+					.and_modify(|t| {
+						t.on.entry(event_name.to_string()).or_insert_with(|| json!(next_state));
+					})
+					.or_insert(Transition {
 						// TODO: waiting for https://github.com/rust-lang/rfcs/issues/542
-						on: [("".to_string(), json!(transition.to.name))].iter().cloned().collect(),
-					},
-				);
+						on: [(event_name.to_string(), json!(next_state))].iter().cloned().collect(),
+					});
 			}
 		}
 
@@ -53,15 +66,47 @@ type DynError = Box<dyn error::Error>;
 #[cfg(test)]
 mod test {
 	use super::*;
+	use assert_json_diff::assert_json_eq;
 
 	#[test]
-	fn parse_to_json_string() -> Result<(), DynError> {
+	fn transient_transition() -> Result<(), DynError> {
 		let mut machine = Machine::new();
-		machine.parse("A->B")?;
+		machine.parse("A -> B")?;
 
-		let mut json = machine.to_string();
-		json.retain(|c| c != ' ' && c != '\t' && c != '\n');
+		Ok(assert_json_eq!(
+			json!({
+				"states": {
+					"A": {
+						"on": {
+							"": "B"
+						}
+					}
+				}
+			}),
+			json!(machine)
+		))
+	}
 
-		Ok(assert_eq!(r#"{"states":{"A":{"on":{"":"B"}}}}"#, json))
+	#[test]
+	fn eventful_transition() -> Result<(), DynError> {
+		let mut machine = Machine::new();
+		machine.parse(
+			"A -> B @ C
+			A -> D @ E",
+		)?;
+
+		Ok(assert_json_eq!(
+			json!({
+				"states": {
+					"A": {
+						"on": {
+							"C":"B",
+							"E":"D"
+						}
+					}
+				}
+			}),
+			json!(machine)
+		))
 	}
 }

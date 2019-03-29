@@ -7,8 +7,7 @@ pub enum Error {
 }
 
 pub fn global_reporting(err: Error) {
-	let prompt = prompt::ERROR;
-	let prompting = |message: &str| eprintln!("{} {}", prompt, message);
+	let prompting = |message: &str| eprintln!("{} {}", prompt::ERROR, message);
 
 	match err {
 		Error::Parse(msg) => prompting(&msg),

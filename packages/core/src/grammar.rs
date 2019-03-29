@@ -1,24 +1,25 @@
-use crate::error::*;
-use pest::{error::Error as PestError, iterators::Pairs, Parser};
 use pest_derive::Parser;
 
 #[derive(Parser)]
 #[grammar = "grammar.pest"]
 pub struct Scdlang;
-type RuleError = PestError<Rule>;
 
-impl Scdlang {
-	pub fn parse_from(source: &str) -> Result<Pairs<Rule>, Error> {
-		Ok(parse(&source)
-			.map_err(|e| Error::Parse(e.into()))?
-			.peek()
-			.ok_or(Error::EmptyDeclaration)?
-			.into_inner())
-	}
+#[allow(non_snake_case)]
+#[rustfmt::skip]
+pub mod Symbol {
+	pub use super::Rule::{
+		TransitionTo as to,
+		TriggerAt as at
+	};
 }
 
-pub fn parse(source: &str) -> Result<Pairs<Rule>, RuleError> {
-	Scdlang::parse(Rule::DescriptionFile, source)
+#[allow(non_snake_case)]
+#[rustfmt::skip]
+pub mod Name {
+	pub use super::Rule::{
+		StateName as state,
+		EventName as event
+	};
 }
 
 #[cfg(test)]
@@ -31,6 +32,11 @@ mod test {
 		test::correct_expressions(&[r#"A->B"#, r#"Alpha-->B"#, r#"A--->Beta"#, r#"AlphaGo->BetaRust"#])
 	}
 
+	#[test]
+	fn trigger_at() -> Yes {
+		test::correct_expressions(&[r#"A->B@C"#, r#"A->B @Carlie"#, r#"A->B @ C"#, r#"A->B@ CarlieErlang"#])
+	}
+
 	mod should_fail_when {
 		use super::*;
 
@@ -39,7 +45,15 @@ mod test {
 			// From https://github.com/tonsky/FiraCode 😋
 			test::wrong_expressions(&[
 				// #region transition_to
-				r#"A->>B"#, r#"A>->B"#, r#"A>-B"#, r#"A>>-B"#, r#"A~>B"#, r#"A~~>B"#,
+				r#"A->>B"#,
+				r#"A>->B"#,
+				r#"A>-B"#,
+				r#"A>>-B"#,
+				r#"A~>B"#,
+				r#"A~~>B"#,
+				// #endregion
+				// #region trigger_at
+				r#"A->B@@C"#,
 				// #endregion
 			])
 		}

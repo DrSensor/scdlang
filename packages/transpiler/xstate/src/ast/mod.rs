@@ -44,15 +44,49 @@ type DynError = Box<dyn error::Error>;
 #[cfg(test)]
 mod test {
 	use super::*;
+	use assert_json_diff::assert_json_eq;
+	use serde_json::json;
 
 	#[test]
-	fn parse_to_json_string() -> Result<(), DynError> {
+	fn transient_transition() -> Result<(), DynError> {
 		let mut machine = Machine::new();
-		machine.parse("A->B")?;
+		machine.parse("A -> B")?;
 
-		let mut json = machine.to_string();
-		json.retain(|c| c != ' ' && c != '\t' && c != '\n');
+		Ok(assert_json_eq!(
+			json!({
+				"states": {
+					"A": {
+						"on": {
+							"": "B"
+						}
+					}
+				}
+			}),
+			json!(machine)
+		))
+	}
 
-		Ok(assert_eq!(r#"{"states":{"A":{"on":{"":"B"}}}}"#, json))
+	#[test]
+	#[ignore] // 🤔 seems it's difficult to support this, maybe I should drop AST parser 😕
+	fn eventful_transition() -> Result<(), DynError> {
+		let mut machine = Machine::new();
+		machine.parse(
+			"A -> B @ C
+			A -> D @ E",
+		)?;
+
+		Ok(assert_json_eq!(
+			json!({
+				"states": {
+					"A": {
+						"on": {
+							"C":"B",
+							"E":"D"
+						}
+					}
+				}
+			}),
+			json!(machine)
+		))
 	}
 }

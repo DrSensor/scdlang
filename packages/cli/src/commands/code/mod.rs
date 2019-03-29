@@ -17,28 +17,34 @@ impl<'c> CLI<'c> for Code {
 	[DIST] 'Output the result to this directory / file'
 	";
 
+	#[rustfmt::skip]
 	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
 		cmd.aliases(&["generate", "gen", "declaration", "declr"])
 			.about("Generate from scdlang file declaration to another format")
 			.args(&[
-				Arg::with_name("stream")
+				Arg::with_name("stream").help("Parse the file line by line")
 					.long("stream")
-					.help("Parse the file line by line")
 					.required_if("parser", "ast"),
-				Arg::with_name("parser")
+				Arg::with_name("format").help("Select output format")
+					.long("format").short("f")
+					.possible_values(&["xstate"])
+					.default_value("xstate"),
+				Arg::with_name("parser").help("Select parser engine")
+					.hidden(true) // TODO: don't hide it when AST parser is complete (or at least has same feature as ASG)
 					.long("parser")
-					.help("Select parser engine")
 					.possible_values(&["ast", "asg"])
-					.default_value("asg")
-					.takes_value(true),
+					.default_value("asg"),
 			])
 	}
 
 	fn invoke(args: &ArgMatches) -> Result {
 		let filepath = args.value_of("FILE").unwrap();
-		let mut machine: Box<dyn xstate::Parser> = match args.value_of("parser").unwrap() {
-			"ast" => Box::new(xstate::ast::Machine::new()),
-			"asg" => Box::new(xstate::Machine::new()),
+		let mut machine: Box<dyn xstate::Parser> = match args.value_of("format").unwrap() {
+			"xstate" => match args.value_of("parser").unwrap() {
+				"ast" => Box::new(xstate::ast::Machine::new()),
+				"asg" => Box::new(xstate::Machine::new()),
+				_ => unreachable!(),
+			},
 			_ => unreachable!(),
 		};
 

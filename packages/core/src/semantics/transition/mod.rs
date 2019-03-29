@@ -12,18 +12,24 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 		let mut lhs = "";
 		let mut ops = Rule::EOI;
 		let mut rhs = "";
+		let mut event = None;
 
 		if let Rule::expression = rule {
 			// determine the lhs, rhs, and operators
 			for span in pair.into_inner() {
 				let ident = span.as_str();
 				match span.as_rule() {
-					Rule::StateName => lhs = ident,
+					Name::state => lhs = ident,
 					Rule::transition => {
 						// TODO: waiting for https://github.com/rust-lang/rfcs/pull/2649 (Destructuring without `let`)
 						let (operators, target) = get::transition(span)?;
 						rhs = target;
 						ops = operators;
+					}
+					Rule::trigger => {
+						event = Some(Event {
+							name: get::trigger(span)?,
+						})
 					}
 					_ => unreachable!(),
 				}
@@ -31,7 +37,7 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 
 			// determine the current, next, and type of the State
 			let (current_state, next_state) = match ops {
-				Rule::TransitionTo => get::state(lhs, rhs, &StateType::Atomic),
+				Symbol::to => get::state(lhs, rhs, &StateType::Atomic),
 				_ => unreachable!(),
 			};
 
@@ -39,6 +45,7 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 			Ok(Transition {
 				from: current_state,
 				to: next_state,
+				at: event,
 				kind: TransitionType::External,
 			})
 		} else {
@@ -60,6 +67,7 @@ mod pair {
 		test::parse::expression(
 			r#"
             A -> B
+			A -> D @ C
         "#,
 			|expression| {
 				Ok(match expression.as_str() {
@@ -67,6 +75,14 @@ mod pair {
 						let state: Transition = expression.try_into()?;
 						assert_eq!(state.from.name, "A");
 						assert_eq!(state.to.name, "B");
+						assert!(state.at.is_none());
+					}
+					"A -> D @ C" => {
+						let state: Transition = expression.try_into()?;
+						assert_eq!(state.from.name, "A");
+						assert_eq!(state.to.name, "D");
+						let event = state.at.expect("struct Event");
+						assert_eq!(event.name, "C");
 					}
 					_ => unreachable!(),
 				})

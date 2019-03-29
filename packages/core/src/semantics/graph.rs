@@ -8,6 +8,7 @@
 pub struct Transition<'t> {
 	pub from: State<'t>,
 	pub to: State<'t>,
+	pub at: Option<Event<'t>>,
 	pub kind: TransitionType<'t>, // 🤔 maybe I should hide it then implement kind() method
 }
 
@@ -38,3 +39,21 @@ pub struct State<'s> {
 pub enum StateType {
 	Atomic,
 }
+
+#[derive(Debug)]
+/// SCXML equivalent:
+/// ```scxml
+/// <transition event="name"/>
+/// ```
+pub struct Event<'s> {
+	// pub kind: &'s EventType, // 🤔 probably should not be a field but more like kind() method because the type can be deduce on the available field
+	pub name: &'s str, // TODO: should be None when it only have a Guard or it just an Internal Event
+}
+
+// 👇 still not sure 🤔
+// #[derive(Debug)]
+// /// see https://statecharts.github.io/glossary/internal-event.html
+// pub enum EventType {
+// 	External,
+// }
+// ☝️ maybe I need it if kind() method is exposed 🤔
