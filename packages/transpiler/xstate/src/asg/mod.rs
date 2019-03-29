@@ -8,6 +8,7 @@ use crate::Parser;
 use scdlang_core::{prelude::*, Rule, Scdlang};
 use serde_json::json;
 use std::{error, fmt};
+use voca_rs::case::{camel_case, shouty_snake_case};
 
 impl Parser for Machine {
 	fn parse(&mut self, source: &str) -> Result<(), DynError> {
@@ -34,9 +35,9 @@ impl Parser for Machine {
 			if let Rule::expression = pair.as_rule() {
 				let transition: scdlang::Transition = pair.try_into()?;
 
-				let event_name = transition.at.map(|e| e.name).unwrap_or("");
-				let current_state = transition.from.name.to_string();
-				let next_state = transition.to.name;
+				let event_name = shouty_snake_case(transition.at.map(|e| e.name).unwrap_or(""));
+				let current_state = camel_case(transition.from.name);
+				let next_state = camel_case(transition.to.name);
 
 				machine
 					.states
@@ -71,14 +72,14 @@ mod test {
 	#[test]
 	fn transient_transition() -> Result<(), DynError> {
 		let mut machine = Machine::new();
-		machine.parse("A -> B")?;
+		machine.parse("AlphaGo -> BetaRust")?;
 
 		Ok(assert_json_eq!(
 			json!({
 				"states": {
-					"A": {
+					"alphaGo": {
 						"on": {
-							"": "B"
+							"": "betaRust"
 						}
 					}
 				}
@@ -91,17 +92,17 @@ mod test {
 	fn eventful_transition() -> Result<(), DynError> {
 		let mut machine = Machine::new();
 		machine.parse(
-			"A -> B @ C
-			A -> D @ E",
+			"A -> B @ CarlieCaplin
+			A -> D @ EnhancedErlang",
 		)?;
 
 		Ok(assert_json_eq!(
 			json!({
 				"states": {
-					"A": {
+					"a": {
 						"on": {
-							"C":"B",
-							"E":"D"
+							"CARLIE_CAPLIN": "b",
+							"ENHANCED_ERLANG": "d"
 						}
 					}
 				}

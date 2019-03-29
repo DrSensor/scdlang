@@ -11,6 +11,7 @@ serde = { version = "*", features = ["derive"] }
 pest-ast = "*"
 from-pest = "*"
 pest = "*"
+voca_rs = "*"
 
 [dev-dependencies]
 assert-json-diff = "*"

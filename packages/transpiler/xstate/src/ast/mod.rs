@@ -10,6 +10,10 @@ use from_pest::FromPest;
 use std::{error, fmt};
 use utils::pairs;
 
+/** Finally, found the downside of AST as a direct structure 😏
+ * Because it doesn't have a process of breaking down the semantics into specific structure,
+ * it's too much hasle for adding simple process like converting state name from PascalCase into camelCase
+ */
 impl Parser for Machine {
 	fn parse(&mut self, source: &str) -> Result<(), DynError> {
 		let ast = Self::try_parse(source)?;
