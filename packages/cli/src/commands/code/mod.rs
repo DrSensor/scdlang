@@ -1,7 +1,4 @@
-use crate::{
-	cli::{Result, CLI},
-	error::Error,
-};
+use crate::{cli::*, error::Error, print::*, typedef::tuple::Printer};
 use clap::{App, Arg, ArgMatches};
 use scdlang_xstate as xstate;
 use std::{
@@ -39,12 +36,15 @@ impl<'c> CLI<'c> for Code {
 
 	fn invoke(args: &ArgMatches) -> Result {
 		let filepath = args.value_of("FILE").unwrap();
-		let mut machine: Box<dyn xstate::Parser> = match args.value_of("format").unwrap() {
-			"xstate" => match args.value_of("parser").unwrap() {
-				"ast" => Box::new(xstate::ast::Machine::new()),
-				"asg" => Box::new(xstate::Machine::new()),
-				_ => unreachable!(),
-			},
+		let (print, mut machine): Printer<dyn xstate::Parser> = match args.value_of("format").unwrap() {
+			"xstate" => (
+				PRINTER("json", Mode::Default),
+				match args.value_of("parser").unwrap() {
+					"ast" => Box::new(xstate::ast::Machine::new()),
+					"asg" => Box::new(xstate::Machine::new()),
+					_ => unreachable!(),
+				},
+			),
 			_ => unreachable!(),
 		};
 
@@ -66,8 +66,8 @@ impl<'c> CLI<'c> for Code {
 		}
 
 		match args.value_of("DIST") {
-			Some(dist) => fs::write(dist, format!("{}", machine)).expect(Self::NAME),
-			None => println!("{}", machine),
+			Some(dist) => fs::write(dist, format!("{}", machine)).map_err(Error::IO)?,
+			None => print.string(machine.to_string()).map_err(|e| Error::Whatever(e.into()))?,
 		}
 
 		Ok(())

@@ -1,12 +1,13 @@
 use crate::{
 	cli::{Result, CLI},
 	error::Error,
+	print::*,
 	prompt,
 };
 use atty::Stream;
-use clap::{App, ArgMatches};
-use linefeed::{Interface, ReadResult};
-use scdlang_xstate::*;
+use clap::{App, Arg, ArgMatches};
+use linefeed::{Interface, ReadResult}; // TODO: change implementation using Rustyline
+use scdlang_xstate::{self as xstate, *};
 use std::io::{self, prelude::*};
 
 pub struct Eval;
@@ -17,13 +18,26 @@ impl<'c> CLI<'c> for Eval {
 	--strict 'Exit immediately if an error occurred'
 	";
 
+	#[rustfmt::skip]
 	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
 		cmd.visible_alias("repl")
 			.about("Evaluate scdlang expression in interactive manner")
+			.args(&[Arg::with_name("format").help("Select output format")
+					.long("format").short("f")
+					.possible_values(&["xstate"])
+					.default_value("xstate")])
 	}
 
 	fn invoke(args: &ArgMatches) -> Result {
-		let mut machine = ast::Machine::new();
+		#[rustfmt::skip]
+		let (print, mut machine) = match args.value_of("format").unwrap() {
+			"xstate" => (
+				// TODO: refactor 👇 after https://github.com/mre/prettyprint/pull/7 MERGED
+				|string: String| PRINTER("json", Mode::REPL).string(string).map_err(|e| Error::Whatever(e.into())),
+				xstate::Machine::new(),
+			),
+			_ => unreachable!(),
+		};
 		let repl = Interface::new(env!("CARGO_PKG_NAME")).map_err(Error::IO)?;
 		let mut previously_error = false;
 
@@ -32,7 +46,7 @@ impl<'c> CLI<'c> for Eval {
 				match machine.insert_parse(expression.as_str()) {
 					Ok(_) => {
 						if args.is_present("interactive") {
-							println!("{}", machine);
+							print(machine.to_string())?;
 						}
 						if previously_error {
 							repl.remove_history(repl.history_len() - 1); // remove errored input
@@ -75,11 +89,9 @@ impl<'c> CLI<'c> for Eval {
 
 		// print final result depend on the condition
 		if args.is_present("interactive") {
-			print!("\r")
-		} else if atty::isnt(Stream::Stdin) {
-			println!("{}", machine);
+			print!("\r") // TODO: 🤔 figure out how to remove prompt because this line can't
 		} else {
-			println!("\r{}", machine);
+			print(machine.to_string())?;
 		}
 
 		Ok(())
