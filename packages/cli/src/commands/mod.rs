@@ -4,7 +4,7 @@ mod eval;
 pub use code::*;
 pub use eval::*;
 
-use crate::cli::{Result, CLI};
+use crate::cli::*;
 use clap::{App, AppSettings::*, ArgMatches};
 
 pub struct Main;

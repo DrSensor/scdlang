@@ -9,6 +9,7 @@ edition = "2018"
 scdlang_xstate = { path = "../transpiler/xstate" }
 atty = "*"
 linefeed = "*"
+prettyprint = "*"
 
 [dependencies.clap]
 version = "*"

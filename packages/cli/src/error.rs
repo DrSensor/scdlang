@@ -4,12 +4,14 @@ use std::*;
 pub enum Error {
 	IO(io::Error),
 	Parse(String),
+	Whatever(Box<dyn error::Error>),
 }
 
 pub fn global_reporting(err: Error) {
 	let prompting = |message: &str| eprintln!("{} {}", prompt::ERROR, message);
 
 	match err {
+		Error::Whatever(msg) => prompting(&msg.to_string()),
 		Error::Parse(msg) => prompting(&msg),
 		Error::IO(msg) => {
 			let sanitize_msg = remove_os_error(msg.to_string());
