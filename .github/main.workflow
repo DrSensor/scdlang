@@ -65,6 +65,7 @@ action "Build Release cli as musl" {
 	runs = "./.github/entrypoint.sh"
 	args = [
 		"rustup target add x86_64-unknown-linux-musl",
+		"apt-get update && apt-get install -y musl-tools",
 		"cargo build --target x86_64-unknown-linux-musl --release -p ${BIN}",
 		"mkdir -p ${HOME}/.bin/",
 		"mv target/x86_64-unknown-linux-musl/release/${BIN} ${HOME}/.bin/${BIN}",
