@@ -56,8 +56,8 @@ def filter_by(command, perf_data, keys, fillempty=0):
 # =============================== Initialize Data ===============================
 data = json.load(stdin)
 
-subjects = [n["subject"] for n in data]
-perfs = [n["perf"] for n in data]
+subjects = [n["subject"] for n in data if len(n["perf"]) != 0]
+perfs = [n["perf"] for n in data if len(n["perf"]) != 0]
 commands = pipe(
     perfs,
     filter(lambda p: len(list(p)) != 0),
