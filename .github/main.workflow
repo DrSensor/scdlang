@@ -55,7 +55,7 @@ action "Perf cargo" {
 action "Unit Test cargo" {
 	uses = "docker://rust:slim"
 	runs = "./.github/entrypoint.sh"
-	args = ["cargo test"]
+	args = ["cargo test -- --test-threads=1"]
 	env = { PWD = "/github/workspace" }
 }
 
