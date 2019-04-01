@@ -18,7 +18,7 @@ check: clear
 	watchexec --restart --clear just {{command}}
 
 # Run all kind of tests
-test: unit
+test: unit integration
 
 # Autoformat all code
 format:
@@ -49,7 +49,11 @@ build:
 
 # Run all unit test
 unit:
-	cargo test
+	cargo test --lib --all --exclude scrap
+
+# Run all integration test
+integration:
+	cargo test --tests -p scrap -- --test-threads=1
 
 # Show reports of macro-benchmark
 @stats git-flags='':

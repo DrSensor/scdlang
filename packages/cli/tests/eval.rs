@@ -10,31 +10,33 @@ use utils::*;
 
 mod should_ok {
 	use super::*;
+	const TIMEOUT: u64 = 1500; // in milliseconds
 
 	#[test]
-	#[ignore] // wait until https://github.com/murarth/linefeed/issues/56 resolved
 	fn non_interactive_mode() -> Result<(), Error> {
 		let args = None;
 		let mut command = subcommand::eval(args).unwrap();
 		command.assert().success();
 
-		let mut repl = spawn_command(command, None)?;
+		let mut repl = spawn_command(command, Some(TIMEOUT))?;
+		repl.exp_string(prompt::REPL)?;
+
 		repl.send_line("A->D")?;
 		repl.exp_string(prompt::REPL)?;
 
 		repl.send_control('d')?;
-		repl.exp_regex(regex::NOEMPTY)?;
-		Ok(())
+		repl.exp_regex(regex::NOEMPTY).map(|_| ())
 	}
 
 	#[test]
-	#[ignore] // wait until https://github.com/murarth/linefeed/issues/56 resolved
 	fn interactive_mode() -> Result<(), Error> {
 		let args = Some("--interactive");
 		let mut command = subcommand::eval(args).unwrap();
 		command.assert().success();
 
-		let mut repl = spawn_command(command, None)?;
+		let mut repl = spawn_command(command, Some(TIMEOUT))?;
+		repl.exp_string(prompt::REPL)?;
+
 		repl.send_line("A->D")?;
 		repl.exp_regex(regex::NOEMPTY)?;
 
@@ -42,7 +44,6 @@ mod should_ok {
 		repl.exp_string(prompt::REPL)?;
 
 		repl.send_control('d')?;
-		repl.exp_eof()?;
-		Ok(())
+		repl.exp_eof().map(|_| ())
 	}
 }

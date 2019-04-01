@@ -6,9 +6,8 @@ use crate::{
 };
 use atty::Stream;
 use clap::{App, Arg, ArgMatches};
-use linefeed::{Interface, ReadResult}; // TODO: change implementation using Rustyline
+use rustyline::Editor;
 use scdlang_xstate::{self as xstate, *};
-use std::io::{self, prelude::*};
 
 pub struct Eval;
 impl<'c> CLI<'c> for Eval {
@@ -29,69 +28,43 @@ impl<'c> CLI<'c> for Eval {
 	}
 
 	fn invoke(args: &ArgMatches) -> Result {
-		#[rustfmt::skip]
+		let mut repl = Editor::<()>::new();
 		let (print, mut machine) = match args.value_of("format").unwrap() {
-			"xstate" => (
-				// TODO: refactor 👇 after https://github.com/mre/prettyprint/pull/7 MERGED
-				|string: String| PRINTER("json", Mode::REPL).string(string).map_err(|e| Error::Whatever(e.into())),
-				xstate::Machine::new(),
-			),
+			"xstate" => (PRINTER("json", Mode::REPL), xstate::Machine::new()),
 			_ => unreachable!(),
 		};
-		let repl = Interface::new(env!("CARGO_PKG_NAME")).map_err(Error::IO)?;
-		let mut previously_error = false;
+		let pprint = |string| print.string(string).map_err(|e| Error::Whatever(e.into()));
 
-		let mut parse = |expression: String| -> Result {
+		let mut parse = |expression: &str| -> Result {
 			if !expression.is_empty() {
-				match machine.insert_parse(expression.as_str()) {
+				match machine.insert_parse(expression) {
 					Ok(_) => {
 						if args.is_present("interactive") {
-							print(machine.to_string())?;
-						}
-						if previously_error {
-							repl.remove_history(repl.history_len() - 1); // remove errored input
-							previously_error = false;
+							pprint(machine.to_string())?
 						}
 					}
 					Err(err) => {
 						println!("{}", err);
 						if args.is_present("strict") {
-							return Err(Error::Parse(expression));
+							return Err(Error::Parse(expression.to_string()));
 						}
-						previously_error = true;
 					}
 				}
-				repl.add_history_unique(expression);
 			}
 			Ok(())
 		};
 
-		// parse depend on if it's piped from another process or not
-		if !atty::is(Stream::Stdin) {
-			for line in io::stdin().lock().lines() {
-				parse(line.expect(Self::NAME))?;
-			}
-		} else {
-			println!(
-				"Press Ctrl-D to exit {}",
-				if !args.is_present("interactive") {
-					"and print the final results"
-				} else {
-					""
-				}
-			);
-
-			repl.set_prompt(&format!("{} ", prompt::REPL)).map_err(Error::IO)?;
-			while let ReadResult::Input(line) = repl.read_line().map_err(Error::IO)? {
-				parse(line)?;
-			}
+		if !args.is_present("interactive") && atty::is(Stream::Stdin) {
+			println!("Press Ctrl-D to exit and print the final results");
 		}
 
-		// print final result depend on the condition
-		if args.is_present("interactive") {
-			print!("\r") // TODO: 🤔 figure out how to remove prompt because this line can't
-		} else {
-			print(machine.to_string())?;
+		while let Ok(line) = repl.readline(&format!("{} ", prompt::REPL)) {
+			parse(&line)?;
+			repl.add_history_entry(line);
+		}
+
+		if !args.is_present("interactive") {
+			pprint(machine.to_string())?;
 		}
 
 		Ok(())

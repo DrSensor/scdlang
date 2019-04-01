@@ -1,4 +1,4 @@
-DescriptionFile = { SOI ~ (
+DescriptionFile = { SOI ~ CRLF? ~ (
   NEWLINE* ~ (
     expression
   ) ~ NEWLINE*
@@ -22,3 +22,12 @@ WHITESPACE = _{ " " | "\t" }
 COMMENT = _{ line_comment | block_comment }
 line_comment = _{ "//" ~ (!NEWLINE ~ ANY)* }
 block_comment = _{ "/*" ~ (block_comment|(!"*/" ~ ANY))* ~ "*/" }
+
+// use for handling data from `stdin`
+CRLF = _{
+  ("\u{000D}" ~ "\u{000A}")
+  | ("\u{000A}" ~ "\u{000D}")
+  | "\u{000A}" | "\u{000D}"
+  | "\u{001E}"
+}
+// see https://en.wikipedia.org/wiki/Newline#Representation
