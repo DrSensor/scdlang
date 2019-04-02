@@ -28,8 +28,7 @@ action "On Merged|Sync" {
 action "Save perf results" {
 	needs = ["Perf cargo", "Perf CLI release"]
 	uses = "./.github/action/summarize-perf"
-	# args = "query '{exec: .command, memory: .memory.peak, cpu: .cpu, time: .mean}' | commit"
-	args = "query '.'"
+	args = "query '{exec: .command, memory: .memory.peak, cpu: .cpu, time: .mean}' | commit"
 	secrets = ["GITHUB_TOKEN"]
 }
 
