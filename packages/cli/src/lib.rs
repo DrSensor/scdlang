@@ -6,7 +6,7 @@ pub mod prompt {
 }
 
 pub mod print {
-	use prettyprint::{PrettyPrint, PrettyPrinter};
+	use prettyprint::{PagingMode::*, PrettyPrint, PrettyPrinter};
 
 	pub enum Mode {
 		REPL,
@@ -20,6 +20,7 @@ pub mod print {
 			.header(false)
 			.grid(false)
 			.line_numbers(false)
+			.paging_mode(Never) // to support Alpine linux
 			.theme("TwoDark")
 			.language(lang);
 		(match mode /*👆*/ {
