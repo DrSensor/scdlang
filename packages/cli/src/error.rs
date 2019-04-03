@@ -1,4 +1,5 @@
-use crate::prompt;
+use crate::{print::*, prompt};
+use colored::*;
 use std::*;
 
 pub enum Error {
@@ -8,11 +9,15 @@ pub enum Error {
 }
 
 pub fn global_reporting(err: Error) {
-	let prompting = |message: &str| eprintln!("{} {}", prompt::ERROR, message);
+	let print = PRINTER("haskell", Mode::Error);
+	let error = |message: &str| format!("{} {}", prompt::ERROR.red().bold(), message.red());
+	let prompting = |message: &str| eprintln!("{}", error(message));
+	let pprompting = |message: &str, header: &str| print.string_with_header(message, &error(header)).unwrap();
+	// TODO: ☝️ should output to stderr instead of stdout
 
 	match err {
 		Error::Whatever(msg) => prompting(&msg.to_string()),
-		Error::Parse(msg) => prompting(&msg),
+		Error::Parse(msg) => pprompting(&msg, "can't parse"),
 		Error::IO(msg) => {
 			let sanitize_msg = remove_os_error(msg.to_string());
 			prompting(&sanitize_msg);

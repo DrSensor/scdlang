@@ -1,4 +1,5 @@
 use crate::{cli::*, error::Error, print::*, typedef::tuple::Printer};
+use atty::Stream;
 use clap::{App, Arg, ArgMatches};
 use scdlang_xstate as xstate;
 use std::{
@@ -51,23 +52,18 @@ impl<'c> CLI<'c> for Code {
 		if args.is_present("stream") {
 			let file = File::open(filepath).map_err(Error::IO)?;
 			for line in BufReader::new(file).lines() {
-				let expression: String = line.expect(Self::NAME);
-				if let Err(err) = machine.insert_parse(&expression) {
-					eprintln!("{}", err);
-					return Err(Error::Parse(expression));
-				}
+				let expression: String = line.map_err(Error::IO)?;
+				machine.insert_parse(&expression).map_err(|e| Error::Parse(e.to_string()))?;
 			}
 		} else {
 			let file = fs::read_to_string(filepath).map_err(Error::IO)?;
-			if let Err(err) = machine.parse(&file) {
-				eprintln!("{}", err);
-				return Err(Error::Parse(err.to_string()));
-			}
+			machine.parse(&file).map_err(|e| Error::Parse(e.to_string()))?;
 		}
 
 		match args.value_of("DIST") {
 			Some(dist) => fs::write(dist, format!("{}", machine)).map_err(Error::IO)?,
-			None => print.string(machine.to_string()).map_err(|e| Error::Whatever(e.into()))?,
+			None if atty::isnt(Stream::Stdout) => println!("{}", machine), // non-interactive shell
+			None => print.string(machine.to_string()).map_err(|e| Error::Whatever(e.into()))?, // interactive shell
 		}
 
 		Ok(())
