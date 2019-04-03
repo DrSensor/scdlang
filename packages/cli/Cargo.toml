@@ -15,6 +15,7 @@ scdlang_xstate = { path = "../transpiler/xstate" }
 atty = "*"
 rustyline = "*"
 prettyprint = "*"
+colored = "*"
 
 [dependencies.clap]
 version = "*"

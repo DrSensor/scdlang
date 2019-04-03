@@ -1,8 +1,20 @@
 #![allow(clippy::type_complexity)]
 
 pub mod prompt {
+	use rustyline::config::{self, *};
+
 	pub const REPL: &str = ">";
 	pub const ERROR: &str = "ERROR:";
+
+	// TODO: PR are welcome 😆
+	pub const CONFIG: fn() -> config::Config = || {
+		config::Builder::new()
+			.history_ignore_dups(true)
+			.history_ignore_space(true)
+			.auto_add_history(true)
+			.completion_type(CompletionType::List)
+			.build()
+	};
 }
 
 pub mod print {
@@ -10,6 +22,9 @@ pub mod print {
 
 	pub enum Mode {
 		REPL,
+		Debug,
+		Error,
+		MultiLine,
 		Default,
 	}
 
@@ -25,7 +40,10 @@ pub mod print {
 			.language(lang);
 		(match mode /*👆*/ {
 			Mode::Default => printer.build(),
-			Mode::REPL => printer.line_numbers(true).build(),
+			Mode::MultiLine => printer.grid(true).build(),
+			Mode::Error => printer.grid(true).header(true).build(),
+			Mode::REPL => printer.line_numbers(true).grid(true).build(),
+			Mode::Debug => printer.line_numbers(true).grid(true).header(true).build(),
 		})
 		.unwrap() // because it only throw error if field not been initialized
 	};

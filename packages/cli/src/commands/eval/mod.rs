@@ -6,6 +6,7 @@ use crate::{
 };
 use atty::Stream;
 use clap::{App, Arg, ArgMatches};
+use colored::*;
 use rustyline::Editor;
 use scdlang_xstate::{self as xstate, *};
 
@@ -28,23 +29,48 @@ impl<'c> CLI<'c> for Eval {
 	}
 
 	fn invoke(args: &ArgMatches) -> Result {
-		let mut repl = Editor::<()>::new();
+		let mut repl: REPL = Editor::with_config(prompt::CONFIG());
+
+		let (print_mode, eprint_mode) = if atty::is(Stream::Stdin) || !args.is_present("interactive") {
+			(Mode::REPL, Mode::MultiLine)
+		} else {
+			(Mode::Debug, Mode::Error)
+		};
+
+		let eprint = PRINTER("haskell", eprint_mode);
 		let (print, mut machine) = match args.value_of("format").unwrap() {
-			"xstate" => (PRINTER("json", Mode::REPL), xstate::Machine::new()),
+			"xstate" => (PRINTER("json", print_mode), xstate::Machine::new()),
 			_ => unreachable!(),
 		};
-		let pprint = |string| print.string(string).map_err(|e| Error::Whatever(e.into()));
+
+		let pprint = |string, header: &str| {
+			(if atty::is(Stream::Stdin) || header.is_empty() {
+				print.string(string)
+			} else {
+				print.string_with_header(string, header.replace("\n", ""))
+			})
+			.map_err(|e| Error::Whatever(e.into()))
+		};
+
+		let epprint = |string, header: &str| {
+			(if atty::is(Stream::Stdin) || header.is_empty() {
+				eprint.string(string)
+			} else {
+				eprint.string_with_header(string, format!("{}", header.replace("\n", "").red()))
+			})
+			.map_err(|e| Error::Whatever(e.into()))
+		};
 
 		let mut parse = |expression: &str| -> Result {
 			if !expression.is_empty() {
 				match machine.insert_parse(expression) {
 					Ok(_) => {
 						if args.is_present("interactive") {
-							pprint(machine.to_string())?
+							pprint(machine.to_string(), expression)?;
 						}
 					}
 					Err(err) => {
-						println!("{}", err);
+						epprint(err.to_string(), expression)?;
 						if args.is_present("strict") {
 							return Err(Error::Parse(expression.to_string()));
 						}
@@ -60,13 +86,14 @@ impl<'c> CLI<'c> for Eval {
 
 		while let Ok(line) = repl.readline(&format!("{} ", prompt::REPL)) {
 			parse(&line)?;
-			repl.add_history_entry(line);
 		}
 
 		if !args.is_present("interactive") {
-			pprint(machine.to_string())?;
+			pprint(machine.to_string(), "")?;
 		}
 
 		Ok(())
 	}
 }
+
+type REPL = Editor<()>;
