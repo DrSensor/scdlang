@@ -1,19 +1,96 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+# TODO:
+# 1. Cross compilation targeting different architecture using `cross` https://nbsoftsolutions.com/blog/azure-pipelines-for-rust-projects 
 
-trigger:
-- master
+strategy:
+  matrix:
+    linux:
+      target: 'x86_64-unknown-linux-gnu'
+      imageName: 'ubuntu-16.04'
+      rustup_toolchain: beta
+    alpine:
+      target: 'x86_64-unknown-linux-musl'
+      imageName: 'ubuntu-16.04'
+      rustup_toolchain: beta
+    mac:
+      target: 'x86_64-apple-darwin'
+      imageName: 'macos-10.13'
+      rustup_toolchain: beta
+    windows:
+      target: 'x86_64-pc-windows-msvc'
+      imageName: 'windows-2019'
+      rustup_toolchain: beta
+    mingw:
+      target: 'x86_64-pc-windows-gnu'
+      imageName: 'windows-2019'
+      rustup_toolchain: beta
 
 pool:
-  vmImage: 'Ubuntu-16.04'
+  vmImage: $(imageName)
+
+# trigger:
+#   tags:
+#     include:
+#     - v*
+
+# container: rust:slim
+
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
 - script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+    curl -sSf -o rustup-init.exe https://win.rustup.rs
+    rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
+    echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
+  displayName: Windows install rust
+  condition: eq( variables['Agent.OS'], 'Windows_NT' )
+- script: |
+    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
+    echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
+  displayName: Install rust
+  condition: ne( variables['Agent.OS'], 'Windows_NT' )
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/scripts/cross-platform-scripting?view=azure-devops&tabs=yaml#switch-based-on-platform
+
+- script: rustup target add $TARGET
+- script: apt-get install musl-tools
+  condition: contains( variables['target'], 'musl' )
+
+- script: cargo build --release --target $TARGET
+
+- task: CopyFiles@2
+  displayName: Copy assets
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)/target/$(TARGET)/release'
+    contents: |
+      scrap
+    targetFolder: '$(Build.BinariesDirectory)/scrap'
+- task: ArchiveFiles@2
+  displayName: Gather assets
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)/scrap'
+    archiveType: 'tar'
+    tarCompression: 'gz'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/scrap-$(build.my_tag)-$(TARGET).tar.gz'
+
+# - task: CopyFiles@2
+#   displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+#   inputs:
+#     contents: |
+#       target\**\release\scrap*
+#       !target\**\release\*.d
+#     targetFolder: $(Build.ArtifactStagingDirectory)
+
+# - task: PublishBuildArtifacts@1
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/github-release?view=azure-devops
+- task: GitHubRelease@0
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  inputs:
+    gitHubConnection: 'DrSensor'
+    repositoryName: 'DrSensor/scdlang'
+    action: 'edit'
+    target: '$(build.sourceVersion)'
+    tagSource: 'manual'
+    tag: '$(build.my_tag)'
+    assets: '$(Build.ArtifactStagingDirectory)/scrap-$(build.my_tag)-$(TARGET).tar.gz'
+    title: '$(build.my_tag) - $(build.date)'
+    assetUploadMode: 'replace'
+    addChangeLog: true
