@@ -49,11 +49,11 @@ steps:
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/scripts/cross-platform-scripting?view=azure-devops&tabs=yaml#switch-based-on-platform
 
-- script: rustup target add $TARGET
+- bash: rustup target add $TARGET
 - script: sudo apt-get install musl-tools
   condition: contains( variables['target'], 'musl' )
 
-- script: cargo build --release --target $TARGET
+- bash: cargo build --release --target $TARGET
 
 - task: CopyFiles@2
   displayName: Copy assets
