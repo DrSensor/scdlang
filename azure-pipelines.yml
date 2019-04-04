@@ -69,8 +69,8 @@ steps:
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)/target/$(TARGET)/release'
     contents: |
-      scrap*
-      !*.d
+      scrap
+      scrap.exe
     targetFolder: '$(Build.BinariesDirectory)/scrap'
 - task: ArchiveFiles@2
   displayName: Gather assets
@@ -88,7 +88,7 @@ steps:
 #       !target\**\release\*.d
 #     targetFolder: $(Build.ArtifactStagingDirectory)
 
-# - task: PublishBuildArtifacts@1
+- task: PublishBuildArtifacts@1
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/github-release?view=azure-devops
 # - task: GitHubRelease@0
