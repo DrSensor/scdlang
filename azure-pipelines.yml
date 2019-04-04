@@ -34,8 +34,11 @@ pool:
 #     include:
 #     - v*
 
-# container: rust:slim
-
+trigger:
+  branches:
+    include: ['*']
+  tags:
+    include: ['*']
 
 steps:
 - script: |
@@ -61,11 +64,7 @@ steps:
 - script: cargo build --release --target $(TARGET)
   displayName: Build release
 
-- script: ls $(Build.SourcesDirectory)/target
-  displayName: Check content
-
 - task: CopyFiles@2
-  displayName: Copy assets
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)/target/$(TARGET)/release'
     contents: |
@@ -73,34 +72,26 @@ steps:
       scrap.exe
     targetFolder: '$(Build.BinariesDirectory)/scrap'
 - task: ArchiveFiles@2
-  displayName: Gather assets
   inputs:
     rootFolderOrFile: '$(Build.BinariesDirectory)/scrap'
     archiveType: 'tar'
     tarCompression: 'gz'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/scrap-$(build.my_tag)-$(TARGET).tar.gz'
-
-# - task: CopyFiles@2
-#   displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
-#   inputs:
-#     contents: |
-#       target\**\release\scrap*
-#       !target\**\release\*.d
-#     targetFolder: $(Build.ArtifactStagingDirectory)
-
+    archiveFile: '$(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz'
 - task: PublishBuildArtifacts@1
+  inputs:
+    artifactName: 'scrap'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/github-release?view=azure-devops
-# - task: GitHubRelease@0
-#   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-#   inputs:
-#     gitHubConnection: 'DrSensor'
-#     repositoryName: 'DrSensor/scdlang'
-#     action: 'edit'
-#     target: '$(build.sourceVersion)'
-#     tagSource: 'manual'
-#     tag: '$(build.my_tag)'
-#     assets: '$(Build.ArtifactStagingDirectory)/scrap-$(build.my_tag)-$(TARGET).tar.gz'
-#     title: '$(build.my_tag) - $(build.date)'
-#     assetUploadMode: 'replace'
-#     addChangeLog: false
+- task: GitHubRelease@0
+  # condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  condition: succeeded()
+  inputs:
+    gitHubConnection: drsensor
+    title: ($(Build.SourceBranch) -> $(Build.SourceBranchName)) $(Build.SourceVersionMessage)
+    repositoryName: $(Build.Repository.Name)
+    action: edit
+    tag: $(Build.SourceBranch)
+    assets: $(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz
+    assetUploadMode: replace
+    isDraft: true
+    addChangeLog: true
