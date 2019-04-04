@@ -1,5 +1,6 @@
 # TODO:
-# 1. Cross compilation targeting different architecture using `cross` https://nbsoftsolutions.com/blog/azure-pipelines-for-rust-projects 
+# 1. Cross compilation targeting different architectures using `cross`
+#     see https://nbsoftsolutions.com/blog/azure-pipelines-for-rust-projects
 
 strategy:
   matrix:
@@ -49,18 +50,29 @@ steps:
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
 - script: rustup target add $(TARGET)
+  displayName: Install target toolchain
 
 - script: sudo apt-get install musl-tools
+  displayName: Install musl-gcc
   condition: contains( variables['target'], 'musl' )
 
+- script: choco install -y mingw
+  displayName: Install MinGW
+  condition: contains( variables['target'], 'windows-gnu' )
+
 - script: cargo build --release --target $(TARGET)
+  displayName: Build release
+
+- script: ls $(Build.SourcesDirectory)/target/$(TARGET)/release
+  displayName: Check content
 
 - task: CopyFiles@2
   displayName: Copy assets
   inputs:
     sourceFolder: '$(Build.SourcesDirectory)/target/$(TARGET)/release'
     contents: |
-      scrap
+      scrap*
+      !*.d
     targetFolder: '$(Build.BinariesDirectory)/scrap'
 - task: ArchiveFiles@2
   displayName: Gather assets
