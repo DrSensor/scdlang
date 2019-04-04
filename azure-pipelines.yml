@@ -50,7 +50,7 @@ steps:
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/scripts/cross-platform-scripting?view=azure-devops&tabs=yaml#switch-based-on-platform
 
 - script: rustup target add $TARGET
-- script: apt-get install musl-tools
+- script: sudo apt-get install musl-tools
   condition: contains( variables['target'], 'musl' )
 
 - script: cargo build --release --target $TARGET
