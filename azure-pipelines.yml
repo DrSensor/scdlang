@@ -20,10 +20,11 @@ strategy:
       target: 'x86_64-pc-windows-msvc'
       imageName: 'windows-2019'
       rustup_toolchain: beta
-    mingw:
-      target: 'x86_64-pc-windows-gnu'
-      imageName: 'windows-2019'
-      rustup_toolchain: beta
+    # TODO: enable this when https://github.com/rust-lang/rust/issues/53454 resolved
+    # mingw:
+    #   target: 'x86_64-pc-windows-gnu'
+    #   imageName: 'windows-2019'
+    #   rustup_toolchain: beta
 
 pool:
   vmImage: $(imageName)
@@ -52,18 +53,15 @@ steps:
 - script: rustup target add $(TARGET)
   displayName: Install target toolchain
 
+# TODO: Remove this when backtrace-sys don't cause trouble or this project can be compiled on stable channel
 - script: sudo apt-get install musl-tools
   displayName: Install musl-gcc
   condition: contains( variables['target'], 'musl' )
 
-- script: choco install -y mingw
-  displayName: Install MinGW
-  condition: contains( variables['target'], 'windows-gnu' )
-
 - script: cargo build --release --target $(TARGET)
   displayName: Build release
 
-- script: ls $(Build.SourcesDirectory)/target/$(TARGET)/release
+- script: ls $(Build.SourcesDirectory)/target
   displayName: Check content
 
 - task: CopyFiles@2
@@ -105,4 +103,4 @@ steps:
 #     assets: '$(Build.ArtifactStagingDirectory)/scrap-$(build.my_tag)-$(TARGET).tar.gz'
 #     title: '$(build.my_tag) - $(build.date)'
 #     assetUploadMode: 'replace'
-#     addChangeLog: true
+#     addChangeLog: false
