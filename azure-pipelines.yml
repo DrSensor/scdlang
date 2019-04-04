@@ -81,16 +81,16 @@ steps:
 # - task: PublishBuildArtifacts@1
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/github-release?view=azure-devops
-- task: GitHubRelease@0
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-  inputs:
-    gitHubConnection: 'DrSensor'
-    repositoryName: 'DrSensor/scdlang'
-    action: 'edit'
-    target: '$(build.sourceVersion)'
-    tagSource: 'manual'
-    tag: '$(build.my_tag)'
-    assets: '$(Build.ArtifactStagingDirectory)/scrap-$(build.my_tag)-$(TARGET).tar.gz'
-    title: '$(build.my_tag) - $(build.date)'
-    assetUploadMode: 'replace'
-    addChangeLog: true
+# - task: GitHubRelease@0
+#   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+#   inputs:
+#     gitHubConnection: 'DrSensor'
+#     repositoryName: 'DrSensor/scdlang'
+#     action: 'edit'
+#     target: '$(build.sourceVersion)'
+#     tagSource: 'manual'
+#     tag: '$(build.my_tag)'
+#     assets: '$(Build.ArtifactStagingDirectory)/scrap-$(build.my_tag)-$(TARGET).tar.gz'
+#     title: '$(build.my_tag) - $(build.date)'
+#     assetUploadMode: 'replace'
+#     addChangeLog: true
