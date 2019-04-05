@@ -2,24 +2,24 @@
 # 1. Cross compilation targeting different architectures using `cross`
 #     see https://nbsoftsolutions.com/blog/azure-pipelines-for-rust-projects
 
+variables:
+  rustup_toolchain: beta
+  architecture: x86_64
+
 strategy:
   matrix:
     linux:
-      target: 'x86_64-unknown-linux-gnu'
+      target: '$(architecture)-unknown-linux-gnu'
       imageName: 'ubuntu-16.04'
-      rustup_toolchain: beta
     alpine:
-      target: 'x86_64-unknown-linux-musl'
+      target: '$(architecture)-unknown-linux-musl'
       imageName: 'ubuntu-16.04'
-      rustup_toolchain: beta
     mac:
-      target: 'x86_64-apple-darwin'
+      target: '$(architecture)-apple-darwin'
       imageName: 'macos-10.13'
-      rustup_toolchain: beta
     windows:
-      target: 'x86_64-pc-windows-msvc'
+      target: '$(architecture)-pc-windows-msvc'
       imageName: 'windows-2019'
-      rustup_toolchain: beta
     # TODO: enable this when https://github.com/rust-lang/rust/issues/53454 resolved
     # mingw:
     #   target: 'x86_64-pc-windows-gnu'
@@ -29,11 +29,6 @@ strategy:
 pool:
   vmImage: $(imageName)
 
-# trigger:
-#   tags:
-#     include:
-#     - v*
-
 trigger:
   branches:
     include: ['*']
@@ -41,27 +36,20 @@ trigger:
     include: ['*']
 
 steps:
-- script: |
-    curl -sSf -o rustup-init.exe https://win.rustup.rs
-    rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
-    echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
-  displayName: Windows install rust
-  condition: eq( variables['Agent.OS'], 'Windows_NT' )
-- script: |
+- bash: |
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
     echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
   displayName: Install rust
-  condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
-- script: rustup target add $(TARGET)
+- bash: rustup target add $(TARGET)
   displayName: Install target toolchain
 
 # TODO: Remove this when backtrace-sys don't cause trouble or this project can be compiled on stable channel
-- script: sudo apt-get install musl-tools
+- bash: sudo apt-get install musl-tools
   displayName: Install musl-gcc
   condition: contains( variables['target'], 'musl' )
 
-- script: cargo build --release --target $(TARGET)
+- bash: cargo build --release --target $(TARGET)
   displayName: Build release
 
 - task: CopyFiles@2
@@ -79,15 +67,13 @@ steps:
     archiveFile: '$(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz'
 - task: PublishBuildArtifacts@1
   inputs:
-    artifactName: 'scrap'
+    artifactName: ''
 
-# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/github-release?view=azure-devops
 - task: GitHubRelease@0
-  # condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-  condition: succeeded()
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
     gitHubConnection: drsensor
-    title: ($(Build.SourceBranch) -> $(Build.SourceBranchName)) $(Build.SourceVersionMessage)
+    title: $(Build.SourceVersionMessage)
     repositoryName: $(Build.Repository.Name)
     action: edit
     tag: $(Build.SourceBranch)
