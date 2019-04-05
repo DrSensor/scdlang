@@ -29,6 +29,14 @@ strategy:
 pool:
   vmImage: $(imageName)
 
+pr:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - packages/*
+
 trigger:
   branches:
     include: ['*']
@@ -36,20 +44,27 @@ trigger:
     include: ['*']
 
 steps:
-- bash: |
+- script: |
+    curl -sSf -o rustup-init.exe https://win.rustup.rs
+    rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
+    echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
+  displayName: Windows install rust
+  condition: eq( variables['Agent.OS'], 'Windows_NT' )
+- script: |
     curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
     echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
   displayName: Install rust
+  condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
-- bash: rustup target add $(TARGET)
+- script: rustup target add $(TARGET)
   displayName: Install target toolchain
 
 # TODO: Remove this when backtrace-sys don't cause trouble or this project can be compiled on stable channel
-- bash: sudo apt-get install musl-tools
+- script: sudo apt-get install musl-tools
   displayName: Install musl-gcc
   condition: contains( variables['target'], 'musl' )
 
-- bash: cargo build --release --target $(TARGET)
+- script: cargo build --release --target $(TARGET)
   displayName: Build release
 
 - task: CopyFiles@2
@@ -58,16 +73,17 @@ steps:
     contents: |
       scrap
       scrap.exe
-    targetFolder: '$(Build.BinariesDirectory)/scrap'
+    targetFolder: '$(Build.BinariesDirectory)'
+
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)/scrap'
+    rootFolderOrFile: '$(Build.BinariesDirectory)'
     archiveType: 'tar'
     tarCompression: 'gz'
     archiveFile: '$(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz'
 - task: PublishBuildArtifacts@1
   inputs:
-    artifactName: ''
+    artifactName: cli
 
 - task: GitHubRelease@0
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
