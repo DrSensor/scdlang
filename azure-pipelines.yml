@@ -9,22 +9,21 @@ variables:
 strategy:
   matrix:
     linux:
-      target: '$(architecture)-unknown-linux-gnu'
-      imageName: 'ubuntu-16.04'
+      target: $(architecture)-unknown-linux-gnu
+      imageName: ubuntu-16.04
     alpine:
-      target: '$(architecture)-unknown-linux-musl'
-      imageName: 'ubuntu-16.04'
+      target: $(architecture)-unknown-linux-musl
+      imageName: ubuntu-16.04
     mac:
-      target: '$(architecture)-apple-darwin'
-      imageName: 'macos-10.13'
+      target: $(architecture)-apple-darwin
+      imageName: macos-10.13
     windows:
-      target: '$(architecture)-pc-windows-msvc'
-      imageName: 'windows-2019'
+      target: $(architecture)-pc-windows-msvc
+      imageName: windows-2019
     # TODO: enable this when https://github.com/rust-lang/rust/issues/53454 resolved
     # mingw:
-    #   target: 'x86_64-pc-windows-gnu'
-    #   imageName: 'windows-2019'
-    #   rustup_toolchain: beta
+    #   target: $(architecture)-pc-windows-gnu
+    #   imageName: windows-2019
 
 pool:
   vmImage: $(imageName)
@@ -38,10 +37,9 @@ pr:
       - packages/*
 
 trigger:
-  branches:
-    include: ['*']
   tags:
-    include: ['*']
+    include:
+      - v*
 
 steps:
 - script: |
@@ -69,18 +67,18 @@ steps:
 
 - task: CopyFiles@2
   inputs:
-    sourceFolder: '$(Build.SourcesDirectory)/target/$(TARGET)/release'
+    sourceFolder: $(Build.SourcesDirectory)/target/$(TARGET)/release
     contents: |
       scrap
       scrap.exe
-    targetFolder: '$(Build.BinariesDirectory)'
+    targetFolder: $(Build.BinariesDirectory)
 
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)'
-    archiveType: 'tar'
-    tarCompression: 'gz'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz'
+    rootFolderOrFile: $(Build.BinariesDirectory)
+    archiveType: tar
+    tarCompression: gz
+    archiveFile: $(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz
 - task: PublishBuildArtifacts@1
   inputs:
     artifactName: cli
