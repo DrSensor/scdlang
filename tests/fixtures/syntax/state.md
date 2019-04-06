@@ -11,6 +11,16 @@ syntax:
 ![type state picture]()
 ---
 #### atomic/simple
+- keyword: *state*
+- symbol: `{`$declarations$`}`
+```scl
+state P {...}
+```
+Read as: "*state **P*** have ..."
+
+> declaration are optional
+
+##### transition
 - symbol: $current_state `->` $next_state
 
 ```scl
@@ -38,17 +48,44 @@ B -> B
 ```
 or
 ```scl
-=> B 
+=> B
 ```
 Read as: "*state **B*** transition to *state **B***"
 
 #### compound/composite/nested
-- keyword: *state*
-- symbol: `{`$declarations$`}`
+- keyword: *compund*|*composite*
+- symbol: `$keyword state {`$declarations$`}`
 ```scl
-state P {...}
+compound state P {...}
 ```
-Read as: "inside *state **P***, ..."
+Read as: "inside *compound state **P***, ..."
+
+##### ~~type~~statecasting
+This will force state B to be a compound state when transitioning from A
+```scl
+state B { ... }
+
+A -> [B]
+```
+Read as: "*state **A*** transition to *compound state **B***"
+
+##### transition to nested state
+```scl
+state B {
+  C -> A
+}
+
+A -> B[C]
+```
+or
+```scl
+compund state B {
+  C -> A
+}
+
+A -> B[C]
+```
+Read as: "*state **A*** transition to *compound state **B***"
 
 #### parallel
 - keyword: *parallel*
@@ -60,6 +97,43 @@ parallel state P {
 ```
 Read as: "inside *state **P***, there is *state **P1*** and **P2** which run on *parallel*"
 
+##### ~~type~~statecasting
+This will force state B to be a parallel state when transitioning from A
+```scl
+state B { ... }
+
+A ->| B,C
+```
+Read as: "*state **A*** fork to *state **B*** and *state **C***"
+
+```scl
+state B { ... }
+
+B,C |-> A
+```
+Read as: "*state **B*** and *state **C*** join to *state **A***"
+
+<details>
+<summary>examples</summary>
+
+```scl
+A ->| B,D,E
+parallel { // 👈 is this really neccessary 🤔
+  {
+    B -> L1 @ C
+    L1 -> L2
+    L2 -> L
+  }
+  D -> G
+  E -> I
+}
+L,G |-> A
+A,I |-> Z
+```
+</details>
+
+> **no transitions should exist between parallel state nodes**
+
 #### history shallow & deep
 > default is shallow
 - keyword: *history* or *cache*
@@ -70,12 +144,17 @@ cache state P {...}
 ```
 Read as: "inside *state **P*** which is *cache*able, ..."
 
+##### ~~type~~statecasting
 ```scl
+state P { ... }
+
 A -> P[history]
 ```
 Read as: "*state **A*** transition to *pervious* *state* of **P***"
 
 ```scl
+state P { ... }
+
 P[cache] -> A
 ```
 Read as: "cache the *current* *state* of **P** then transition to *state **A***"
