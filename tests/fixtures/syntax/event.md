@@ -80,6 +80,78 @@ Read as: "at *event **E***:
 ```
 </details>
 
+##### 3rd form
+```scl
+A -> B @ C[isG],D[isT],F
+A -> B @ E |> run
+```
+can be written as:
+```scl
+A -> B @ C[isG]
+|@ D[isT]
+|@ E |> run
+|@ F
+```
+Read as: "*state **A*** transition to *state **B*** at *event **C***
+<br>- or at *event **D*** only if *condition **isT*** is true"
+<br>- or at *event **E*** and will execute *action **run***
+
+<details>
+<summary>Also, the guards/actions can be expressed beforehand</summary>
+
+```scl
+A -> B @ C[isT]
+A -> B @ D[isT & isE]
+A -> B @ [isT] |> run
+```
+can be written as:
+```scl
+A -> B @ [isT & *]
+|      @ C
+|      @ D[isE]
+|      |> run
+```
+---
+```scl
+A -> B @ C |> reset
+A -> B @ D[isT] |> reset
+A -> B @ F |> reset,run
+```
+can be written as:
+```scl
+A -> B |> reset,*
+|      @ C
+|      @ D[isE]
+|      @ F |> run
+```
+---
+```scl
+A -> B @ C[isT] |> reset
+A -> B @ D[isE | isT] |> reset
+A -> B @ F[isT] |> run,reset
+```
+can be written as:
+```scl
+A -> B @ [* | isT] |> *,reset
+|      @ C[isT]
+|      @ D[isE | isT]
+|      @ F[isT] |> run,reset
+```
+---
+```scl
+A -> B @ C[isT]
+A -> B @ C[isE] |> run
+A -> B @ C |> reset
+```
+can be written as:
+```scl
+A -> B @ C[*] |> *
+|      @ [isT]
+|      @ [isE] |> run
+|      |> reset
+```
+</details>
+
 #### guard
 - symbol: `[`$guardNames$|$expression$`]`
 
@@ -119,10 +191,9 @@ state A {
   E -> G @ F
   G -> E @ F
 }
-A -> B @ C[{G}]
+A -> B @ C[<G>] //TODO: consider to use `in` keyword 🤔
 ```
 Read as: "*state **A*** transition to *state **B*** at *event **C*** only if **A** is in *state **G***"
-
 
 #### action
 - symbol: `|>`
