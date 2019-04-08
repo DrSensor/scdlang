@@ -1,6 +1,7 @@
 use crate::{cli::*, error::Error, print::*, typedef::tuple::Printer};
 use atty::Stream;
 use clap::{App, Arg, ArgMatches};
+use scdlang_core::Transpiler;
 use scdlang_xstate as xstate;
 use std::{
 	fs::{self, File},
@@ -37,17 +38,19 @@ impl<'c> CLI<'c> for Code {
 
 	fn invoke(args: &ArgMatches) -> Result {
 		let filepath = args.value_of("FILE").unwrap();
-		let (print, mut machine): Printer<dyn xstate::Parser> = match args.value_of("format").unwrap() {
+		let (print, mut machine): Printer<dyn Transpiler> = match args.value_of("format").unwrap() {
 			"xstate" => (
 				PRINTER("json", Mode::Default),
 				match args.value_of("parser").unwrap() {
-					"ast" => Box::new(xstate::ast::Machine::new()),
-					"asg" => Box::new(xstate::Machine::new()),
+					"ast" => Box::new(xstate::ast::Machine::default()),
+					"asg" => Box::new(xstate::Machine::default()),
 					_ => unreachable!(),
 				},
 			),
 			_ => unreachable!(),
 		};
+
+		machine.configure().with_err_path(filepath);
 
 		if args.is_present("stream") {
 			let file = File::open(filepath).map_err(Error::IO)?;

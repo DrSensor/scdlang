@@ -5,7 +5,7 @@ WARNING: order in the struct fields is matter❗
 
 use super::utils::*;
 use pest_ast::FromPest;
-use scdlang_core::Rule;
+use scdlang_core::grammar::Rule;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -25,7 +25,7 @@ pub struct Transition {
 
 #[derive(Debug, Default, FromPest, Serialize, Deserialize)]
 #[pest_ast(rule(Rule::DescriptionFile))]
-pub struct Machine {
+pub struct StateChart {
 	#[pest_ast(inner(with(span::into_pair)))]
 	pub states: HashMap<String, Transition>,
 
@@ -36,12 +36,3 @@ pub struct Machine {
 #[derive(Debug, Default, FromPest)]
 #[pest_ast(rule(Rule::EOI))]
 struct EOI;
-
-impl Machine {
-	pub fn new() -> Self {
-		Machine {
-			states: HashMap::default(),
-			eoi: EOI,
-		}
-	}
-}

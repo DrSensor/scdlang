@@ -1,26 +1,8 @@
-use pest_derive::Parser;
+mod builder;
+mod parser;
 
-#[derive(Parser)]
-#[grammar = "grammar.pest"]
-pub struct Scdlang;
-
-#[allow(non_snake_case)]
-#[rustfmt::skip]
-pub mod Symbol {
-	pub use super::Rule::{
-		TransitionTo as to,
-		TriggerAt as at
-	};
-}
-
-#[allow(non_snake_case)]
-#[rustfmt::skip]
-pub mod Name {
-	pub use super::Rule::{
-		StateName as state,
-		EventName as event
-	};
-}
+pub use builder::*;
+pub use parser::*;
 
 #[cfg(test)]
 mod test {

@@ -1,24 +1,47 @@
+mod core;
+
 pub mod error;
-mod grammar;
-mod parser;
+pub mod external;
 pub mod semantics;
 pub mod utils;
 
-pub use grammar::*;
-pub use parser::parse;
+pub use crate::core::{parse, Scdlang};
+pub use external::Parser as Transpiler;
 pub use semantics::*;
 
 pub mod prelude {
-	use super::*;
+	pub use super::{external::*, utils::iterators::*};
 
-	pub use pest::Parser;
+	pub use pest::Parser as PestParser;
 	pub use std::convert::*;
-	pub use utils::iterators::*;
+}
+
+pub mod grammar {
+	pub use super::core::Rule;
+
+	#[allow(non_snake_case)]
+	#[rustfmt::skip]
+	pub mod Symbol {
+		pub use super::Rule::{
+			TransitionTo as to,
+			TriggerAt as at
+		};
+	}
+
+	#[allow(non_snake_case)]
+	#[rustfmt::skip]
+	pub mod Name {
+		pub use super::Rule::{
+			StateName as state,
+			EventName as event
+		};
+	}
 }
 
 #[cfg(test)]
 pub mod test {
 	use super::*;
+	use grammar::Rule;
 	use pest::error::Error;
 
 	pub fn expression(expression: &str) -> Result<&str, Error<Rule>> {

@@ -10,14 +10,6 @@ pub struct Transition {
 }
 
 #[derive(Debug, Default, Serialize, Deserialize)]
-pub struct Machine {
+pub struct StateChart {
 	pub states: HashMap<String, Transition>,
-}
-
-impl Machine {
-	pub fn new() -> Self {
-		Machine {
-			states: HashMap::default(),
-		}
-	}
 }

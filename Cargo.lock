@@ -1235,6 +1235,7 @@ dependencies = [
  "prettyprint 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rexpect 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustyline 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scdlang-core 0.1.0",
  "scdlang_xstate 0.1.0",
 ]
 

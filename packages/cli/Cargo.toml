@@ -11,6 +11,7 @@ test = false
 doctest = false
 
 [dependencies]
+scdlang-core = { path = "../core" }
 scdlang_xstate = { path = "../transpiler/xstate" }
 atty = "*"
 rustyline = "*"

@@ -8,7 +8,7 @@ use atty::Stream;
 use clap::{App, Arg, ArgMatches};
 use colored::*;
 use rustyline::Editor;
-use scdlang_xstate::{self as xstate, *};
+use scdlang_xstate::{self as xstate, Transpiler};
 
 pub struct Eval;
 impl<'c> CLI<'c> for Eval {
@@ -39,7 +39,7 @@ impl<'c> CLI<'c> for Eval {
 
 		let eprint = PRINTER("haskell", eprint_mode);
 		let (print, mut machine) = match args.value_of("format").unwrap() {
-			"xstate" => (PRINTER("json", print_mode), xstate::Machine::new()),
+			"xstate" => (PRINTER("json", print_mode), xstate::Machine::default()),
 			_ => unreachable!(),
 		};
 

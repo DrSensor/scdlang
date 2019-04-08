@@ -1,5 +1,5 @@
 use super::*;
-use scdlang_core::Rule;
+use scdlang_core::grammar::Rule;
 
 pub mod pairs {
 	use super::*;
@@ -27,7 +27,7 @@ pub mod span {
 
 	pub fn into_pair(span: Span) -> HashMap<String, Transition> {
 		let mut json = HashMap::new();
-		if let Ok(expressions) = Scdlang::parse(Rule::expression, span.as_str()) {
+		if let Ok(expressions) = <Scdlang as Parser<Rule>>::parse(Rule::expression, span.as_str()) {
 			for expr in expressions {
 				let mut inner = expr.into_inner();
 				|| -> Option<_> {
