@@ -1,3 +1,5 @@
+mod console;
+
 use crate::{
 	cli::{Result, CLI},
 	error::Error,
@@ -7,6 +9,7 @@ use crate::{
 use atty::Stream;
 use clap::{App, Arg, ArgMatches};
 use colored::*;
+use console::*;
 use rustyline::Editor;
 use scdlang_xstate::{self as xstate, Transpiler};
 
@@ -43,23 +46,19 @@ impl<'c> CLI<'c> for Eval {
 			_ => unreachable!(),
 		};
 
-		let pprint = |string, header: &str| {
-			(if atty::is(Stream::Stdin) || header.is_empty() {
-				print.string(string)
-			} else {
-				print.string_with_header(string, header.replace("\n", ""))
-			})
-			.map_err(|e| Error::Whatever(e.into()))
-		};
+		#[rustfmt::skip]
+		let pprint = |string, header: &str| Console {
+			header,
+			printer: &print,
+			fallback: |s| println!("{}\n", s)
+		}.print(string);
 
-		let epprint = |string, header: &str| {
-			(if atty::is(Stream::Stdin) || header.is_empty() {
-				eprint.string(string)
-			} else {
-				eprint.string_with_header(string, format!("{}", header.replace("\n", "").red()))
-			})
-			.map_err(|e| Error::Whatever(e.into()))
-		};
+		#[rustfmt::skip]
+		let epprint = |string, header: &str| Console {
+			header: &header.red().to_string(),
+			printer: &eprint,
+			fallback: |s| eprintln!("{}\n", s)
+		}.print(string);
 
 		let mut parse = |expression: &str| -> Result {
 			if !expression.is_empty() {

@@ -60,10 +60,10 @@ integration:
 	./scripts/summary.sh {{git-flags}} | ./scripts/perfsum.py
 
 # Profile debug/development build
-analyze: release _clean-analyze
-	heaptrack ./target/release/scrap
+analyze +args: release _clean-analyze
+	heaptrack ./target/release/scrap {{args}}
 	heaptrack --analyze heaptrack.*.zst &
-	./scripts/perfquick.sh ./target/release/scrap | jq .
+	./scripts/perfquick.sh './target/release/scrap {{args}}' | jq .
 
 # Install all dependencies
 install: install-toolchains

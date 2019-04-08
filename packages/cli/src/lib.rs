@@ -18,7 +18,7 @@ pub mod prompt {
 }
 
 pub mod print {
-	use prettyprint::{PagingMode::*, PrettyPrint, PrettyPrinter};
+	use prettyprint::{PagingMode, PrettyPrint, PrettyPrinter};
 
 	pub enum Mode {
 		REPL,
@@ -35,13 +35,13 @@ pub mod print {
 			.header(false)
 			.grid(false)
 			.line_numbers(false)
-			.paging_mode(Never) // to support Alpine linux
+			.paging_mode(PagingMode::Never) // to support Alpine linux
 			.theme("TwoDark")
 			.language(lang);
 		(match mode /*👆*/ {
 			Mode::Default => printer.build(),
 			Mode::MultiLine => printer.grid(true).build(),
-			Mode::Error => printer.grid(true).header(true).build(),
+			Mode::Error => printer.grid(true).header(true).paging_mode(PagingMode::Error).build(),
 			Mode::REPL => printer.line_numbers(true).grid(true).build(),
 			Mode::Debug => printer.line_numbers(true).grid(true).header(true).build(),
 		})
