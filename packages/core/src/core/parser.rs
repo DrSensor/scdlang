@@ -1,18 +1,34 @@
 use super::{Rule, Scdlang};
 use crate::error::*;
-use pest::{self, error::Error as PestError, iterators::Pairs};
-use std::fmt;
+use pest::{self, error::Error as PestError, iterators::Pairs, Position};
+use std::{fmt, iter};
 
 impl<'g> Scdlang<'g> {
 	pub fn parse(&self, source: &'g str) -> Result<Pairs<Rule>, Error> {
+		use pest::error::InputLocation::*;
 		inner(parse(&source).map_err(|e| {
-			Error::Parse(
-				(match self.path {
-					Some(path) => e.with_path(path),
-					None => e,
-				})
-				.into(),
-			)
+			let mut error = e;
+			if let Some(offset) = self.line {
+				//TODO: make PR on pest to add `fn with_line(self, offset: usize) -> Error<R>`
+				if let Pos(line) = error.location {
+					error = PestError::new_from_pos(
+						error.variant,
+						Position::new(
+							&format!(
+								"{offset}{src}",
+								offset = iter::repeat('\n').take(offset).collect::<String>(),
+								src = source
+							),
+							line + offset,
+						)
+						.unwrap(),
+					);
+				}
+			}
+			if let Some(path) = self.path {
+				error = error.with_path(path);
+			}
+			Error::Parse(error.into())
 		})?)
 	}
 

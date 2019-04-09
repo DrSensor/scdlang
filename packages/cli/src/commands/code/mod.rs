@@ -54,7 +54,8 @@ impl<'c> CLI<'c> for Code {
 
 		if args.is_present("stream") {
 			let file = File::open(filepath).map_err(Error::IO)?;
-			for line in BufReader::new(file).lines() {
+			for (i, line) in BufReader::new(file).lines().enumerate() {
+				machine.configure().with_err_line(i);
 				let expression: String = line.map_err(Error::IO)?;
 				machine.insert_parse(&expression).map_err(|e| Error::Parse(e.to_string()))?;
 			}

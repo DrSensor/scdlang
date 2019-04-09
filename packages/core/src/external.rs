@@ -13,7 +13,7 @@ pub trait Parser<'t>: fmt::Display {
 
 pub trait Builder<'t> {
 	fn with_err_path(&mut self, path: &'t str);
-	fn with_err_line(&mut self, line: u16);
+	fn with_err_line(&mut self, line: usize);
 }
 
 type DynError = Box<dyn std::error::Error>;

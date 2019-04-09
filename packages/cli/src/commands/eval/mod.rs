@@ -60,7 +60,9 @@ impl<'c> CLI<'c> for Eval {
 			fallback: |s| eprintln!("{}\n", s)
 		}.print(string);
 
+		let mut line = 0;
 		let mut parse = |expression: &str| -> Result {
+			machine.configure().with_err_line(line);
 			if !expression.is_empty() {
 				match machine.insert_parse(expression) {
 					Ok(_) => {
@@ -75,6 +77,7 @@ impl<'c> CLI<'c> for Eval {
 						}
 					}
 				}
+				line += 1;
 			}
 			Ok(())
 		};
