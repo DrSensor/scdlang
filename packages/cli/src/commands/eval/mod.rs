@@ -46,6 +46,8 @@ impl<'c> CLI<'c> for Eval {
 			_ => unreachable!(),
 		};
 
+		machine.configure().auto_clear_cache(false);
+
 		#[rustfmt::skip]
 		let pprint = |string, header: &str| Console {
 			header,

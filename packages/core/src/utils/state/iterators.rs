@@ -2,6 +2,7 @@ use crate::{grammar::Rule, prelude::StateIterator, semantics::Transition};
 use pest::iterators::Pairs;
 use std::{collections::HashMap, convert::TryFrom};
 
+// TODO: Rewrite to https://stackoverflow.com/a/28036224/5221998
 impl<'p> StateIterator for Pairs<'p, Rule> {
 	type Iter = Vec<Self::Item>; // beacuse `FromIterator` not implemented on `Pairs` 😢
 	type Map = HashMap<&'p str, Self::Item>;
@@ -38,7 +39,7 @@ mod pairs {
 	const FIXTURE: &str = r#"
 		A -> B
 		C -> B
-		A -> C
+		A -> C @ D
 	"#;
 
 	#[test]

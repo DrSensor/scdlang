@@ -1,5 +1,6 @@
 mod helper;
 
+use crate::cache;
 use helper::{get, prelude::*};
 
 pub use std::convert::TryFrom;
@@ -40,6 +41,28 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 				Symbol::to => get::state(lhs, rhs, &StateType::Atomic),
 				_ => unreachable!(),
 			};
+
+			// analyze semantics error
+			let mut t = cache::transition()?;
+			let (current, target) = (current_state.name.to_string(), next_state.name.to_string());
+			if let Some(trigger) = event.clone() {
+				if let Some(prev_target) = t.insert(
+					cache::Transition::new(current.clone(), trigger.name.to_string()),
+					target.clone(),
+				) {
+					return Err(Semantic(
+						format!(
+							"duplicate transition: {} -> {},{} @ {}",
+							current, target, prev_target, trigger.name
+						)
+						.into(),
+					));
+				}
+			} else if let Some(prev_target) = t.insert(current.clone().into(), target.clone()) {
+				return Err(Semantic(
+					format!("duplicate transient transition: {} -> {},{}", current, target, prev_target).into(),
+				));
+			}
 
 			// register into Transition graph
 			Ok(Transition {
@@ -88,5 +111,98 @@ mod pair {
 				})
 			},
 		)
+	}
+
+	mod semantics_error {
+		use super::*;
+		use crate::prelude::*;
+
+		#[test]
+		fn duplicate_transient_transition() -> ParseResult {
+			test::parse::expression(
+				r#"
+				A -> B
+				A -> D
+			"#,
+				|expression| {
+					Ok(match expression.as_str() {
+						"A -> B" => Transition::try_from(expression).ok().map_or((), |_| ()),
+						"A -> D" => {
+							let error = Transition::try_from(expression).err().expect("Error::Semantic");
+							assert!(error.to_string().contains("A ->"), "multiple transient transition on state A");
+						}
+						_ => unreachable!(),
+					})
+				},
+			)
+		}
+
+		#[test]
+		fn duplicate_transition_with_same_trigger() -> ParseResult {
+			test::parse::expression(
+				r#"
+				A -> B @ C
+				A -> D @ C
+			"#,
+				|expression| {
+					Ok(match expression.as_str() {
+						"A -> B @ C" => Transition::try_from(expression).ok().map_or((), |_| ()),
+						"A -> D @ C" => {
+							let error = Transition::try_from(expression).err().expect("Error::Semantic");
+							for message in &["A ->", "@ C"] {
+								assert!(error.to_string().contains(message), "multiple transition on state A");
+							}
+						}
+						_ => unreachable!(),
+					})
+				},
+			)
+		}
+
+		mod ambigous_transition {
+			use super::*;
+
+			#[test]
+			#[ignore]
+			fn transient_transition_before_trigger() -> ParseResult {
+				test::parse::expression(
+					r#"
+					A -> B
+					A -> B @ C
+				"#,
+					|expression| {
+						Ok(match expression.as_str() {
+							"A -> B" => Transition::try_from(expression).ok().map_or((), |_| ()),
+							"A -> B @ C" => {
+								let error = Transition::try_from(expression).err().expect("Error::Semantic");
+								assert!(error.to_string().contains("A ->"), "multiple transition on state A");
+							}
+							_ => unreachable!(),
+						})
+					},
+				)
+			}
+
+			#[test]
+			#[ignore]
+			fn transient_transition_after_trigger() -> ParseResult {
+				test::parse::expression(
+					r#"
+					A -> B @ C
+					A -> B
+				"#,
+					|expression| {
+						Ok(match expression.as_str() {
+							"A -> B @ C" => Transition::try_from(expression).ok().map_or((), |_| ()),
+							"A -> B" => {
+								let error = Transition::try_from(expression).err().expect("Error::Semantic");
+								assert!(error.to_string().contains("A ->"), "multiple transition on state A");
+							}
+							_ => unreachable!(),
+						})
+					},
+				)
+			}
+		}
 	}
 }

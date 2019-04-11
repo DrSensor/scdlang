@@ -1,5 +1,7 @@
 mod core;
 
+pub(crate) mod cache;
+
 pub mod error;
 pub mod external;
 pub mod semantics;
@@ -69,7 +71,7 @@ pub mod test {
 
 	pub mod parse {
 		use super::*;
-		use crate::error::Error;
+		use crate::{cache, error::Error};
 		use pest::iterators::{Pair, Pairs};
 		pub type Result = std::result::Result<(), Error>;
 		type Closure<P> = fn(P) -> Result;
@@ -81,12 +83,13 @@ pub mod test {
 					callback(expression)?
 				}
 			}
-			Ok(())
+			cache::drop()
 		}
 
 		pub fn from(text: &'static str, callback: Closure<Pairs<'_, Rule>>) -> Result {
 			let declaration = Scdlang::parse_from(text)?;
-			callback(declaration)
+			callback(declaration)?;
+			cache::drop()
 		}
 	}
 }

@@ -40,7 +40,7 @@ pub enum StateType {
 	Atomic,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// SCXML equivalent:
 /// ```scxml
 /// <transition event="name"/>

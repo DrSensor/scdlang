@@ -67,7 +67,7 @@ impl<'a> Parser<'a> for Machine<'a> {
 
 		Ok(Machine {
 			schema,
-			builder: self.builder,
+			builder: self.builder.clone(),
 		})
 	}
 }

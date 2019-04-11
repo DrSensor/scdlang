@@ -1,5 +1,5 @@
 use super::{Rule, Scdlang};
-use crate::error::*;
+use crate::{cache, error::*};
 use pest::{self, error::Error as PestError, iterators::Pairs, Position};
 use std::{fmt, iter};
 
@@ -34,6 +34,16 @@ impl<'g> Scdlang<'g> {
 
 	pub fn parse_from(source: &str) -> Result<Pairs<Rule>, Error> {
 		inner(parse(&source).map_err(|e| Error::Parse(e.into()))?)
+	}
+}
+
+impl<'g> Drop for Scdlang<'g> {
+	fn drop(&mut self) {
+		match self.clear_cache {
+			None => cache::drop().expect("Deadlock"), // default behaviour
+			Some(auto_clear) if auto_clear => cache::drop().expect("Deadlock"),
+			_ => {}
+		}
 	}
 }
 

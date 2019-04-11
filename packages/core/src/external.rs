@@ -14,6 +14,12 @@ pub trait Parser<'t>: fmt::Display {
 pub trait Builder<'t> {
 	fn with_err_path(&mut self, path: &'t str);
 	fn with_err_line(&mut self, line: usize);
+
+	/// Automatically clear cache when out of scope
+	/// The cahce is used for analyzing semantics error
+	/// This can be handy when parsing in streaming fashion
+	/// default `true`
+	fn auto_clear_cache(&mut self, default: bool);
 }
 
 type DynError = Box<dyn std::error::Error>;
