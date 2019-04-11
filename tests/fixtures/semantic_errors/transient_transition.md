@@ -6,7 +6,7 @@ references:
 #### Transient Transition
 ![diagram]()
 
-##### 1. Have more than one
+##### 1. Have more than one ✔
 Transient transition must only occur once.
 ```scl,error
 A -> B
@@ -14,7 +14,7 @@ A -> C
 ```
 Which state should `A` immediately transtition to?
 
-##### 2. Accompany with triggered event
+##### 2. Accompany with triggered event ✔
 The state machine interpreter will confused if there is 2 things can be happened at the same time.
 This will likely to cause a paradox.
 ```scl,error

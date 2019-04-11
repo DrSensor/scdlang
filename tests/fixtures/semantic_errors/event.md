@@ -6,7 +6,7 @@ references:
 #### Event Transition
 ![diagram]()
 
-##### 1. Have more than one transition with same trigger
+##### 1. Have more than one transition with same trigger ✔
 Transition with specific event must only occur once.
 ```scl,error
 A -> B @ D
