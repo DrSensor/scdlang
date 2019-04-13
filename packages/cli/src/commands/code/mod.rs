@@ -50,17 +50,25 @@ impl<'c> CLI<'c> for Code {
 			_ => unreachable!(),
 		};
 
+		let mut count_parse_err = 0;
 		let config = machine.configure();
 		config.with_err_path(filepath);
 
 		if args.is_present("stream") {
 			let file = File::open(filepath).map_err(Error::IO)?;
 			config.auto_clear_cache(false);
+
 			for (i, line) in BufReader::new(file).lines().enumerate() {
 				machine.configure().with_err_line(i);
 				let expression: String = line.map_err(Error::IO)?;
-				machine.insert_parse(&expression).map_err(|e| Error::Parse(e.to_string()))?;
+
+				if let Err(err) = machine.insert_parse(&expression).map_err(|e| Error::Parse(e.to_string())) {
+					Error::report(err, None);
+					count_parse_err += 1;
+				}
 			}
+
+			machine.clear_cache().map_err(Error::Whatever)?;
 		} else {
 			let file = fs::read_to_string(filepath).map_err(Error::IO)?;
 			machine.parse(&file).map_err(|e| Error::Parse(e.to_string()))?;
@@ -72,6 +80,11 @@ impl<'c> CLI<'c> for Code {
 			None => print.string(machine.to_string()).map_err(|e| Error::Whatever(e.into()))?, // interactive shell
 		}
 
-		Ok(())
+		if count_parse_err > 0 {
+			eprintln!();
+			Err(Error::Whatever(format!("Found {} error on parsing", count_parse_err).into()))
+		} else {
+			Ok(())
+		}
 	}
 }

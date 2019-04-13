@@ -23,7 +23,7 @@ fn main() {
 	};
 
 	if let Err(err) = run() {
-		error::global_reporting(err)
+		Error::report(err, Some(-1));
 	}
 }
 

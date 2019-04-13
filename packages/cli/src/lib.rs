@@ -3,7 +3,7 @@
 pub mod prompt {
 	use rustyline::config::{self, *};
 
-	pub const REPL: &str = ">";
+	pub const REPL: &str = "🐌≫";
 	pub const ERROR: &str = "ERROR:";
 
 	// TODO: PR are welcome 😆
