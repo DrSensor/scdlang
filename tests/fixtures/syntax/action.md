@@ -120,7 +120,7 @@ Read as: "
 
 #### action with expression
 ```scl
-context VarX as x
+let VarX as x
 
 state Alpha {
   entry |> --x
@@ -144,18 +144,30 @@ Read as: "perform *activity **beeping*** when on *state **Beta***"
 ```scl
 state Beta { @ Click }
 ```
+or
+```scl
+Beta @ Click
+```
 Read as: "*event **Click*** can occurred while in *state **Beta***"
 
 ##### with action
 ```scl
 state Beta { @ Click |> something }
 ```
+or
+```scl
+Beta @ Click |> something
+```
 Read as: "execute *action **something*** when *event **Click*** occurred while in *state **Beta***"
 
 ##### with guard 🤔
 ```scl
-state Beta { @ Click[x > 0 & {A}] }
+state Beta { @ Click[x > 0 & In(A)] |> something }
 ```
-Read as: "*event **Click*** can occurred while in *state **Beta*** only if in *state **Alpha***"
+or
+```scl
+Beta @ Click[x > 0 & In(A)] |> something
+```
+Read as: "execute *action **something*** *event **Click*** can occurred while in *state **Beta*** only if in *state **Alpha***"
 
 ---

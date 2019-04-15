@@ -162,8 +162,13 @@ Read as: "cache the *current* *state* of **P** then transition to *state **A***"
 ##### shallow
 - keyword: *shallow.*
 ```scl
-shallow.history state P {...}
-shallow.cache state P {...}
+history[shallow] state P {...}
+state[shallow.cache] B {...}
+```
+or
+```scl
+history state P {...}
+state[cache] B {...}
 ```
 Read as: "inside *state **P*** which is *cache*able, ..."
 
@@ -171,10 +176,12 @@ Read as: "inside *state **P*** which is *cache*able, ..."
 - keyword: *deep.*
 - symbol: `*`
 ```scl
-deep.history state P {...}
-deep.cache state P {...}
-*history state P {...}
-*cache state P {...}
+history[deep] state P {...}
+state[deep.cache] B {...}
+```
+or
+```scl
+history[*] state P {...}
 ```
 Read as: "inside *state **P*** and all *state* inside *state **P*** which is *cache*able, ..."
 

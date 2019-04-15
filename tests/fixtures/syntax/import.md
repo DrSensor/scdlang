@@ -26,7 +26,7 @@ use {
 ```scl
 import './relative/path/explicit/extension.scl'
 ```
-Read as: "import all things on the `extension.scl`, including the transition expression"
+Read as: "import all transitions on the `extension.scl`, including the nested transition"
 
 #### Partial use statement but with/include the side effect
 ```scl
@@ -39,3 +39,29 @@ use {
   ],
 } import './relative/path/explicit/extension.scl'
 ```
+
+### Import as a service (a.k.a external State Machine)
+```scl
+import './relative/path/explicit/extension.scl' as service extMachine
+```
+Read as: "import all transition as a *service* with a name **extMachine**"
+
+```scl
+use * import './relative/path/explicit/extension.scl' as service extMachine
+```
+Read as: "use all statements in the `extension.scl` while also import all transitions as a *service* with a name **extMachine**""
+
+### Import as a specific state
+```scl
+import './relative/path/explicit/extension.scl' as state Extend
+```
+or
+```scl
+import './relative/path/explicit/extension.scl' as compound state Extend
+```
+Read as: "import all transition as a *compound state* with a name **Extend**"
+
+```scl
+import './relative/path/explicit/extension.scl' as parallel state Extend
+```
+Read as: "import all transition as a *parallel state* with a name **Extend**"
