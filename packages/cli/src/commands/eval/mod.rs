@@ -42,11 +42,9 @@ impl<'c> CLI<'c> for Eval {
 
 		let eprint = PRINTER("haskell", eprint_mode);
 		let (print, mut machine) = match args.value_of("format").unwrap() {
-			"xstate" => (PRINTER("json", print_mode), xstate::Machine::default()),
+			"xstate" => (PRINTER("json", print_mode), xstate::Machine::new()),
 			_ => unreachable!(),
 		};
-
-		machine.configure().auto_clear_cache(false);
 
 		#[rustfmt::skip]
 		let pprint = |string, header: &str| Console {
@@ -62,9 +60,9 @@ impl<'c> CLI<'c> for Eval {
 			fallback: |s| eprintln!("{}\n", s)
 		}.print(string);
 
-		let mut line = 0;
+		let mut loc = 0;
 		let mut parse = |expression: &str| -> Result {
-			machine.configure().with_err_line(line);
+			machine.configure().with_err_line(loc);
 			if !expression.is_empty() {
 				match machine.insert_parse(expression) {
 					Ok(_) => {
@@ -79,7 +77,7 @@ impl<'c> CLI<'c> for Eval {
 						}
 					}
 				}
-				line += 1;
+				loc += 1;
 			}
 			Ok(())
 		};
@@ -88,7 +86,7 @@ impl<'c> CLI<'c> for Eval {
 			println!("Press Ctrl-D to exit and print the final results");
 		}
 
-		while let Ok(line) = repl.readline(&format!("{} ", prompt::REPL)) {
+		while let Ok(line) = repl.readline(&format!("{} ", prompt::REPL.bold())) {
 			parse(&line)?;
 		}
 

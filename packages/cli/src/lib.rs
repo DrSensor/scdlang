@@ -3,7 +3,7 @@
 pub mod prompt {
 	use rustyline::config::{self, *};
 
-	pub const REPL: &str = "🐌≫";
+	pub const REPL: &str = "»";
 	pub const ERROR: &str = "ERROR:";
 
 	// TODO: PR are welcome 😆
@@ -25,6 +25,7 @@ pub mod print {
 		Debug,
 		Error,
 		MultiLine,
+		UseHeader,
 		Default,
 	}
 
@@ -40,6 +41,7 @@ pub mod print {
 			.language(lang);
 		(match mode /*👆*/ {
 			Mode::Default => printer.build(),
+			Mode::UseHeader => printer.grid(true).header(true).build(),
 			Mode::MultiLine => printer.grid(true).build(),
 			Mode::Error => printer.grid(true).header(true).paging_mode(PagingMode::Error).build(),
 			Mode::REPL => printer.line_numbers(true).grid(true).build(),

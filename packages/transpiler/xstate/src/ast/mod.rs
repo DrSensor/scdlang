@@ -29,16 +29,16 @@ impl<'a> Parser<'a> for Machine<'a> {
 	}
 
 	fn parse(&mut self, source: &str) -> Result<(), DynError> {
-		let ast = self.try_parse(source)?;
+		let ast = Self::try_parse(source, self.builder.to_owned())?;
 		Ok(self.schema.states = ast.schema.states)
 	}
 
 	fn insert_parse(&mut self, source: &str) -> Result<(), DynError> {
-		let ast = self.try_parse(source)?;
+		let ast = Self::try_parse(source, self.builder.to_owned())?;
 		Ok(self.schema.states.extend(ast.schema.states))
 	}
 
-	fn try_parse(&self, source: &str) -> Result<Self, DynError> {
+	fn try_parse(source: &str, builder: Scdlang<'a>) -> Result<Self, DynError> {
 		let mut parse_tree = scdlang::parse(&source)?;
 
 		let schema = if pairs::is_expression(&parse_tree) {
@@ -48,10 +48,7 @@ impl<'a> Parser<'a> for Machine<'a> {
 			StateChart::default()
 		};
 
-		Ok(Machine {
-			schema,
-			builder: self.builder.clone(),
-		})
+		Ok(Machine { schema, builder })
 	}
 }
 

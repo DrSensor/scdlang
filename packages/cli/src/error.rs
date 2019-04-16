@@ -26,7 +26,7 @@ impl Error {
 			if atty::is(Stream::Stderr) {
 				print.string_with_header(message, &error(header)).unwrap()
 			} else {
-				eprintln!("{}\n{}\n", error(header), message)
+				eprintln!("{}\n---\n{}\n---", error(header), message)
 			}
 		};
 

@@ -39,10 +39,11 @@ impl<'g> Scdlang<'g> {
 
 impl<'g> Drop for Scdlang<'g> {
 	fn drop(&mut self) {
+		let clear_cache = || cache::drop().expect("Deadlock");
 		match self.clear_cache {
-			None => cache::drop().expect("Deadlock"), // default behaviour
-			Some(auto_clear) if auto_clear => cache::drop().expect("Deadlock"),
-			_ => {}
+			None => clear_cache(), // default behaviour
+			Some(auto_clear) if auto_clear => clear_cache(),
+			_ => { /* don't clear cache */ }
 		}
 	}
 }

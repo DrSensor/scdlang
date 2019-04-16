@@ -7,16 +7,17 @@ pub use schema::*;
 use scdlang_core::{grammar::Rule, prelude::*, Scdlang};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use std::{error, fmt};
+use std::{error, fmt, mem::ManuallyDrop};
 use voca_rs::case::{camel_case, shouty_snake_case};
 
 #[derive(Default, Serialize, Deserialize)]
 pub struct Machine<'a> {
-	#[serde(flatten)]
-	schema: StateChart,
-
 	#[serde(skip)]
 	builder: Scdlang<'a>,
+
+	#[serde(flatten)]
+	schema: StateChart, // TODO: replace with 👇 when https://github.com/serde-rs/serde/issues/1507 resolved
+	                    // schema: mem::ManuallyDrop<StateChart>,
 }
 
 impl<'a> Parser<'a> for Machine<'a> {
@@ -25,23 +26,26 @@ impl<'a> Parser<'a> for Machine<'a> {
 	}
 
 	fn parse(&mut self, source: &str) -> Result<(), DynError> {
-		let ast = self.try_parse(source)?;
-		Ok(self.schema.states = ast.schema.states)
+		self.clear_cache()?;
+		let ast = ManuallyDrop::new(Self::try_parse(source, self.builder.to_owned())?);
+		Ok(self.schema = ast.schema.to_owned()) // FIXME: expensive clone
 	}
 
 	fn insert_parse(&mut self, source: &str) -> Result<(), DynError> {
-		let ast = self.try_parse(source)?;
-		Ok(for (current_state, transition) in ast.schema.states {
-			self.schema
-				.states
-				.entry(current_state)
-				.and_modify(|t| t.on.extend(transition.on.clone()))
-				.or_insert(transition);
-		})
+		let ast = ManuallyDrop::new(Self::try_parse(source, self.builder.to_owned())?);
+		Ok(
+			for (current_state, transition) in ast.schema.states.to_owned(/*FIXME: expensive clone*/) {
+				self.schema
+					.states
+					.entry(current_state)
+					.and_modify(|t| t.on.extend(transition.on.clone()))
+					.or_insert(transition);
+			},
+		)
 	}
 
-	fn try_parse(&self, source: &str) -> Result<Self, DynError> {
-		let parse_tree = self.builder.parse(source)?;
+	fn try_parse(source: &str, builder: Scdlang<'a>) -> Result<Self, DynError> {
+		let parse_tree = builder.parse(source)?;
 		let mut schema = StateChart::default();
 
 		for pair in parse_tree {
@@ -65,10 +69,21 @@ impl<'a> Parser<'a> for Machine<'a> {
 			}
 		}
 
-		Ok(Machine {
-			schema,
-			builder: self.builder.clone(),
-		})
+		Ok(Machine { schema, builder })
+	}
+}
+
+impl<'a> Machine<'a> {
+	pub fn new() -> Self {
+		let mut machine = Self::default();
+		machine.builder.auto_clear_cache(false);
+		machine
+	}
+}
+
+impl Drop for Machine<'_> {
+	fn drop(&mut self) {
+		self.clear_cache().expect("xstate: Deadlock");
 	}
 }
 
@@ -87,7 +102,7 @@ mod test {
 
 	#[test]
 	fn transient_transition() -> Result<(), DynError> {
-		let mut machine = Machine::default();
+		let mut machine = Machine::new();
 		machine.parse("AlphaGo -> BetaRust")?;
 
 		Ok(assert_json_eq!(
@@ -106,7 +121,7 @@ mod test {
 
 	#[test]
 	fn eventful_transition() -> Result<(), DynError> {
-		let mut machine = Machine::default();
+		let mut machine = Machine::new();
 		machine.parse(
 			"A -> B @ CarlieCaplin
 			A -> D @ EnhancedErlang",
@@ -125,5 +140,45 @@ mod test {
 			}),
 			json!(machine)
 		))
+	}
+
+	#[test]
+	fn no_clear_cache() {
+		let mut machine = Machine::new();
+		machine.parse("A -> B").expect("Nothing happened");
+		machine.insert_parse("A -> C").expect_err("Duplicate transition");
+
+		assert_json_eq!(
+			json!({
+				"states": {
+					"a": {
+						"on": {
+							"": "b"
+						}
+					}
+				}
+			}),
+			json!(machine)
+		)
+	}
+
+	#[test]
+	fn clear_cache() {
+		let mut machine = Machine::new();
+		machine.insert_parse("A -> B").expect("Nothing happened");
+		machine.parse("A -> C").expect("Clear cache and replace schema");
+
+		assert_json_eq!(
+			json!({
+				"states": {
+					"a": {
+						"on": {
+							"": "c"
+						}
+					}
+				}
+			}),
+			json!(machine)
+		)
 	}
 }

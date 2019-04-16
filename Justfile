@@ -10,8 +10,8 @@ check: clear
 	mypy scripts
 
 # Run with backtrace on
-@trace +command:
-	RUST_BACKTRACE="1" just {{command}}
+@trace mode +command:
+	RUST_BACKTRACE={{mode}} just {{command}}
 
 # Run `just +command` whenever some files is changed
 @watch +command:
@@ -49,7 +49,7 @@ build:
 
 # Run all unit test
 unit:
-	cargo test --lib --all --exclude scrap
+	cargo test --lib --all --exclude scrap -- --test-threads=1
 
 # Run all integration test
 integration:
