@@ -1,6 +1,10 @@
 pub mod prelude {
-	pub use crate::{error::Error as ScdlError, grammar::*, semantics::*};
-	pub use pest::iterators::Pair;
+	pub use crate::{
+		error::{Error as ScdlError, ParseError},
+		grammar::*,
+		semantics::*,
+	};
+	pub use pest::{error::ErrorVariant, iterators::Pair};
 	pub type TokenPair<'i> = Pair<'i, Rule>;
 }
 

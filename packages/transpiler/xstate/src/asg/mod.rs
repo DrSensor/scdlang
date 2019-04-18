@@ -50,7 +50,7 @@ impl<'a> Parser<'a> for Machine<'a> {
 
 		for pair in parse_tree {
 			if let Rule::expression = pair.as_rule() {
-				let transition: scdlang::Transition = pair.try_into()?;
+				let transition: scdlang::Transition = (&builder, pair).try_into()?;
 
 				let event_name = shouty_snake_case(transition.at.map(|e| e.name).unwrap_or(""));
 				let current_state = camel_case(transition.from.name);

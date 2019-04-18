@@ -1,14 +1,15 @@
 mod helper;
 
-use crate::cache;
+use crate::{cache, Scdlang};
 use helper::{get, prelude::*};
 
 pub use std::convert::TryFrom;
-impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
+impl<'t> TryFrom<(&Scdlang<'t>, TokenPair<'t>)> for Transition<'t> {
 	type Error = ScdlError;
-	fn try_from(pair: TokenPair<'t>) -> Result<Self, Self::Error> {
+	fn try_from((options, pair): (&Scdlang<'t>, TokenPair<'t>)) -> Result<Self, Self::Error> {
 		use ScdlError::*;
 		let rule = pair.as_rule();
+		let span = pair.as_span();
 
 		let mut lhs = "";
 		let mut ops = Rule::EOI;
@@ -50,18 +51,15 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 					cache::Transition::new(current.clone(), trigger.name.to_string()),
 					target.clone(),
 				) {
-					return Err(Semantic(
-						format!(
-							"duplicate transition: {} -> {},{} @ {}",
-							current, target, prev_target, trigger.name
-						)
-						.into(),
-					));
+					let message = format!(
+						"duplicate transition: {} -> {},{} @ {}",
+						current, target, prev_target, trigger.name
+					);
+					return Err(options.err_from_span(span, message).into());
 				}
 			} else if let Some(prev_target) = t.insert(current.clone().into(), target.clone()) {
-				return Err(Semantic(
-					format!("duplicate transient transition: {} -> {},{}", current, target, prev_target).into(),
-				));
+				let message = format!("duplicate transient transition: {} -> {},{}", current, target, prev_target);
+				return Err(options.err_from_span(span, message).into());
 			}
 
 			// register into Transition graph

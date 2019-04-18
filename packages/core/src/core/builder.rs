@@ -4,8 +4,8 @@ use pest_derive::Parser;
 #[derive(Parser, Default, Clone)] // 🤔 is it wise to derive from Copy&Clone ?
 #[grammar = "grammar.pest"]
 pub struct Scdlang<'g> {
-	pub(super) path: Option<&'g str>,
-	pub(super) line: Option<usize>,
+	pub(crate) path: Option<&'g str>,
+	pub(crate) line: Option<usize>,
 	pub(super) clear_cache: Option<bool>,
 }
 

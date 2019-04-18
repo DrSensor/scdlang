@@ -5,14 +5,14 @@ pub(crate) mod cache;
 pub mod error;
 pub mod external;
 pub mod semantics;
-pub mod utils;
+// pub mod utils;
 
 pub use crate::core::{parse, Scdlang};
 pub use external::Parser as Transpiler;
 pub use semantics::*;
 
 pub mod prelude {
-	pub use super::{external::*, utils::iterators::*};
+	pub use super::external::*;
 
 	pub use pest::Parser as PestParser;
 	pub use std::convert::*;
@@ -86,7 +86,7 @@ pub mod test {
 			cache::drop()
 		}
 
-		pub fn from(text: &'static str, callback: Closure<Pairs<'_, Rule>>) -> Result {
+		pub fn from<'a>(text: &'a str, callback: Closure<Pairs<'a, Rule>>) -> Result {
 			let declaration = Scdlang::parse_from(text)?;
 			callback(declaration)?;
 			cache::drop()
