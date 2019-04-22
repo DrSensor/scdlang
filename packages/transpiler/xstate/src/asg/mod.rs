@@ -25,7 +25,7 @@ impl<'a> Parser<'a> for Machine<'a> {
 	}
 
 	fn parse(&mut self, source: &str) -> Result<(), DynError> {
-		self.clear_cache()?;
+		self.clean_cache()?;
 		let ast = ManuallyDrop::new(Self::try_parse(source, self.builder.to_owned())?);
 		Ok(self.schema = ast.schema.to_owned()) // FIXME: expensive clone
 	}
@@ -72,17 +72,20 @@ impl<'a> Parser<'a> for Machine<'a> {
 	}
 }
 
-impl<'a> Machine<'a> {
+impl Machine<'_> {
 	pub fn new() -> Self {
-		let mut machine = Self::default();
-		machine.builder.auto_clear_cache(false);
-		machine
+		let mut builder = Scdlang::new();
+		builder.auto_clear_cache(false);
+		Self {
+			builder,
+			schema: StateChart::default(),
+		}
 	}
 }
 
 impl Drop for Machine<'_> {
 	fn drop(&mut self) {
-		self.clear_cache().expect("xstate: Deadlock");
+		self.flush_cache().expect("xstate: Deadlock");
 	}
 }
 

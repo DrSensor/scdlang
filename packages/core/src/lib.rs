@@ -82,13 +82,13 @@ pub mod test {
 					callback(expression)?
 				}
 			}
-			cache::drop()
+			cache::clear()?.shrink()
 		}
 
 		pub fn from<'a>(text: &'a str, callback: Closure<Pairs<'a, Rule>>) -> Result {
 			let declaration = Scdlang::parse_from(text)?;
 			callback(declaration)?;
-			cache::drop()
+			cache::clear()?.shrink()
 		}
 	}
 }

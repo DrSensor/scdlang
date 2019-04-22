@@ -45,12 +45,14 @@ impl<'g> Scdlang<'g> {
 	}
 
 	pub fn iter_from(&self, source: &'g str) -> Result<Vec<Kind<'_>>, Error> {
+		use convert::TryFrom;
 		let pairs = self.parse(source)?;
 		pairs
 			.filter(|pair| if let Rule::EOI = pair.as_rule() { false } else { true })
 			.map(|pair| {
 				Ok(match pair.as_rule() {
-					Rule::expression => Transition::analyze_from(pair, &self)?.into_kind(),
+					Rule::expression if self.semantic_error => Transition::analyze_from(pair, &self)?.into_kind(),
+					Rule::expression => Transition::try_from(pair)?.into_kind(),
 					_ => unreachable!("Rule::{:?}", pair.as_rule()),
 				})
 			})

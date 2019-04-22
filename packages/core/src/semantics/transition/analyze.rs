@@ -3,32 +3,30 @@ use crate::{cache, semantics};
 use semantics::{analyze, Kind, Transition};
 
 impl<'t> analyze::SemanticCheck<'t> for Transition<'t> {
-	fn analyze_from(pair: TokenPair<'t>, options: &'t Scdlang) -> Result<Self, ScdlError> {
-		let span = pair.as_span();
-		let transition: Transition = pair.try_into()?;
+	fn analyze_error(&self, span: Span<'t>, options: &'t Scdlang) -> Result<(), ScdlError> {
 		let mut t1_cache = cache::transition()?;
 
-		let (current, target) = (transition.from.name.to_string(), transition.to.name.to_string());
+		let (current, target) = (self.from.name.to_string(), self.to.name.to_string());
 		let t2_cache = t1_cache.entry(current).or_default();
 
-		match &transition.at {
+		match &self.at {
 			Some(trigger) => {
 				if t2_cache.contains_key(&None) {
-					return Err(options.err_from_span(span, transition.warn_conflict(&t2_cache)).into());
+					return Err(options.err_from_span(span, self.warn_conflict(&t2_cache)).into());
 				} else if let Some(prev_target) = t2_cache.insert(Some(trigger.into()), target) {
-					return Err(options.err_from_span(span, transition.warn_duplicate(&prev_target)).into());
+					return Err(options.err_from_span(span, self.warn_duplicate(&prev_target)).into());
 				}
 			}
 			None => {
 				if t2_cache.keys().any(Option::is_some) {
-					return Err(options.err_from_span(span, transition.warn_conflict(&t2_cache)).into());
+					return Err(options.err_from_span(span, self.warn_conflict(&t2_cache)).into());
 				} else if let Some(prev_target) = t2_cache.insert(None, target) {
-					return Err(options.err_from_span(span, transition.warn_duplicate(&prev_target)).into());
+					return Err(options.err_from_span(span, self.warn_duplicate(&prev_target)).into());
 				}
 			}
 		}
 
-		Ok(transition)
+		Ok(())
 	}
 
 	fn into_kind(self) -> Kind<'t> {
