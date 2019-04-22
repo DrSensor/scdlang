@@ -1,15 +1,17 @@
-pub mod prelude {
+pub(super) mod prelude {
 	pub use crate::{
 		error::{Error as ScdlError, ParseError},
 		grammar::*,
-		semantics::*,
+		semantics::analyze::TokenPair,
+		Scdlang,
 	};
-	pub use pest::{error::ErrorVariant, iterators::Pair};
-	pub type TokenPair<'i> = Pair<'i, Rule>;
+	pub use pest::{error::ErrorVariant, iterators::Pair, Span};
+	pub use std::convert::TryInto;
 }
 
-pub mod get {
+pub(super) mod get {
 	use super::prelude::*;
+	use crate::semantics::*;
 	use ScdlError::*;
 
 	pub fn state<'t>(current: &'t str, next: &'t str, kind: &'t StateType) -> (State<'t>, State<'t>) {

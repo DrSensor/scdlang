@@ -5,18 +5,7 @@ use lazy_static::lazy_static;
 use prelude::*;
 use std::sync::{Mutex, MutexGuard};
 
-#[macro_use] // TODO: move this declaration to the bottom when rust support that 😂
-pub mod prelude {
-	pub use std::collections::HashMap;
-	#[macro_export]
-	macro_rules! drop_map {
-		($cache:ident) => {
-			let mut map_cache = $cache.lock().map_err(|_| Error::Deadlock)?;
-			map_cache.clear();
-			map_cache.shrink_to_fit();
-		};
-	}
-}
+type MapTransition = HashMap<CurrentState, HashMap<Trigger, NextState>>;
 
 // TODO: replace with https://github.com/rust-lang-nursery/lazy-static.rs/issues/111 when resolved
 // 🤔 or is there any better way?
@@ -30,35 +19,26 @@ pub fn transition<'a>() -> Result<MutexGuard<'a, MapTransition>, Error> {
 	TRANSITION.lock().map_err(|_| Error::Deadlock)
 }
 
+#[macro_use] // TODO: move this declaration to the bottom when rust support that 😂
+pub mod prelude {
+	pub use std::collections::HashMap;
+	#[macro_export]
+	macro_rules! drop_map {
+		($cache:ident) => {
+			let mut map_cache = $cache.lock().map_err(|_| Error::Deadlock)?;
+			map_cache.clear();
+			map_cache.shrink_to_fit();
+		};
+	}
+}
+
 /// Completely purge cache memory
 pub fn drop() -> Result<(), Error> {
 	drop_map!(TRANSITION);
 	Ok(())
 }
 
-type MapTransition = HashMap<Transition, String>;
-
-#[derive(Hash, Eq, PartialEq)]
-pub struct Transition {
-	// WARNING: can the memory footprint be reduced more 🤔
-	pub current_state: String,
-	pub event: Option<String>,
-}
-
-impl Transition {
-	pub fn new(current_state: String, event: String) -> Self {
-		Self {
-			current_state,
-			event: Some(event),
-		}
-	}
-}
-
-impl From<String> for Transition {
-	fn from(current_state: String) -> Self {
-		Transition {
-			current_state,
-			event: None,
-		}
-	}
-}
+// TODO: 🤔 consider using this approach http://idubrov.name/rust/2018/06/01/tricking-the-hashmap.html
+type CurrentState = String;
+type NextState = String;
+type Trigger = Option<String>;

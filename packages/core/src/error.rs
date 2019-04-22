@@ -14,18 +14,15 @@ pub enum Error {
 	Deadlock,
 }
 
-impl Error {
-	pub fn from_span(span: Span, message: String) -> ParseError {
-		ParseError::new_from_span(ErrorVariant::CustomError { message }, span)
-	}
-}
-
 impl<'t> Scdlang<'t> {
+	/// Used to beutifully format semantics error
 	pub(crate) fn err_from_span(&self, span: Span, message: String) -> ParseError {
 		use pest::error::InputLocation;
-		let mut error = ParseError::new_from_span(ErrorVariant::CustomError { message }, span.clone());
+		let span_str = span.as_str();
+		let mut error = ParseError::new_from_span(ErrorVariant::CustomError { message }, span);
 		if let Some(offset) = self.line {
 			//TODO: make PR on pest to add `fn with_line(self, offset: usize) -> Error<R>`
+			// or refactor this by implement & add trait fn with_line(offset) for Span and Pair
 			if let InputLocation::Span((start, end)) = error.location {
 				error = ParseError::new_from_span(
 					error.variant,
@@ -33,12 +30,12 @@ impl<'t> Scdlang<'t> {
 						&format!(
 							"{offset}{src}",
 							offset = iter::repeat('\n').take(offset).collect::<String>(),
-							src = span.as_str()
+							src = span_str
 						),
 						start + offset,
 						end + offset,
 					)
-					.unwrap(),
+					.expect("Index (offset) not out of bound"),
 				);
 			}
 		}

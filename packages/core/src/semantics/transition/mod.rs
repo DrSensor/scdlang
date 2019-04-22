@@ -1,84 +1,27 @@
+mod analyze;
+mod convert;
 mod helper;
 
-use crate::{cache, Scdlang};
-use helper::{get, prelude::*};
+use crate::semantics::{Event, Expression, State, Transition};
 
-pub use std::convert::TryFrom;
-impl<'t> TryFrom<(&Scdlang<'t>, TokenPair<'t>)> for Transition<'t> {
-	type Error = ScdlError;
-	fn try_from((options, pair): (&Scdlang<'t>, TokenPair<'t>)) -> Result<Self, Self::Error> {
-		use ScdlError::*;
-		let rule = pair.as_rule();
-		let span = pair.as_span();
+impl Expression for Transition<'_> {
+	fn current_state(&self) -> &State {
+		&self.from
+	}
 
-		let mut lhs = "";
-		let mut ops = Rule::EOI;
-		let mut rhs = "";
-		let mut event = None;
+	fn next_state(&self) -> &State {
+		&self.to
+	}
 
-		if let Rule::expression = rule {
-			// determine the lhs, rhs, and operators
-			for span in pair.into_inner() {
-				let ident = span.as_str();
-				match span.as_rule() {
-					Name::state => lhs = ident,
-					Rule::transition => {
-						// TODO: waiting for https://github.com/rust-lang/rfcs/pull/2649 (Destructuring without `let`)
-						let (operators, target) = get::transition(span)?;
-						rhs = target;
-						ops = operators;
-					}
-					Rule::trigger => {
-						event = Some(Event {
-							name: get::trigger(span)?,
-						})
-					}
-					_ => unreachable!(),
-				}
-			}
-
-			// determine the current, next, and type of the State
-			let (current_state, next_state) = match ops {
-				Symbol::to => get::state(lhs, rhs, &StateType::Atomic),
-				_ => unreachable!(),
-			};
-
-			// analyze semantics error
-			let mut t = cache::transition()?;
-			let (current, target) = (current_state.name.to_string(), next_state.name.to_string());
-			if let Some(trigger) = event.clone() {
-				if let Some(prev_target) = t.insert(
-					cache::Transition::new(current.clone(), trigger.name.to_string()),
-					target.clone(),
-				) {
-					let message = format!(
-						"duplicate transition: {} -> {},{} @ {}",
-						current, target, prev_target, trigger.name
-					);
-					return Err(options.err_from_span(span, message).into());
-				}
-			} else if let Some(prev_target) = t.insert(current.clone().into(), target.clone()) {
-				let message = format!("duplicate transient transition: {} -> {},{}", current, target, prev_target);
-				return Err(options.err_from_span(span, message).into());
-			}
-
-			// register into Transition graph
-			Ok(Transition {
-				from: current_state,
-				to: next_state,
-				at: event,
-				kind: TransitionType::External,
-			})
-		} else {
-			Err(WrongRule(rule))
-		}
+	fn event(&self) -> Option<&Event> {
+		self.at.as_ref()
 	}
 }
 
 #[cfg(test)]
 mod pair {
 	#![allow(clippy::unit_arg)]
-	use crate::{error::Error, semantics::Transition, test};
+	use crate::{error::Error, semantics::Transition, test, Scdlang};
 	use std::convert::TryInto;
 
 	pub type ParseResult = Result<(), Error>;
@@ -113,7 +56,8 @@ mod pair {
 
 	mod semantics_error {
 		use super::*;
-		use crate::prelude::*;
+		use crate::semantics::analyze::SemanticCheck;
+		use std::mem::ManuallyDrop;
 
 		#[test]
 		fn duplicate_transient_transition() -> ParseResult {
@@ -123,10 +67,11 @@ mod pair {
 				A -> D
 			"#,
 				|expression| {
+					let options = ManuallyDrop::new(Scdlang::default());
 					Ok(match expression.as_str() {
-						"A -> B" => Transition::try_from(expression).ok().map_or((), |_| ()),
+						"A -> B" => Transition::analyze_from(expression, &options).ok().map_or((), |_| ()),
 						"A -> D" => {
-							let error = Transition::try_from(expression).err().expect("Error::Semantic");
+							let error = Transition::analyze_from(expression, &options).err().expect("Error::Semantic");
 							assert!(error.to_string().contains("A ->"), "multiple transient transition on state A");
 						}
 						_ => unreachable!(),
@@ -143,10 +88,11 @@ mod pair {
 				A -> D @ C
 			"#,
 				|expression| {
+					let options = ManuallyDrop::new(Scdlang::default());
 					Ok(match expression.as_str() {
-						"A -> B @ C" => Transition::try_from(expression).ok().map_or((), |_| ()),
+						"A -> B @ C" => Transition::analyze_from(expression, &options).ok().map_or((), |_| ()),
 						"A -> D @ C" => {
-							let error = Transition::try_from(expression).err().expect("Error::Semantic");
+							let error = Transition::analyze_from(expression, &options).err().expect("Error::Semantic");
 							for message in &["A ->", "@ C"] {
 								assert!(error.to_string().contains(message), "multiple transition on state A");
 							}
@@ -161,7 +107,6 @@ mod pair {
 			use super::*;
 
 			#[test]
-			#[ignore]
 			fn transient_transition_before_trigger() -> ParseResult {
 				test::parse::expression(
 					r#"
@@ -169,10 +114,11 @@ mod pair {
 					A -> B @ C
 				"#,
 					|expression| {
+						let options = ManuallyDrop::new(Scdlang::default());
 						Ok(match expression.as_str() {
-							"A -> B" => Transition::try_from(expression).ok().map_or((), |_| ()),
+							"A -> B" => Transition::analyze_from(expression, &options).ok().map_or((), |_| ()),
 							"A -> B @ C" => {
-								let error = Transition::try_from(expression).err().expect("Error::Semantic");
+								let error = Transition::analyze_from(expression, &options).err().expect("Error::Semantic");
 								assert!(error.to_string().contains("A ->"), "multiple transition on state A");
 							}
 							_ => unreachable!(),
@@ -182,7 +128,6 @@ mod pair {
 			}
 
 			#[test]
-			#[ignore]
 			fn transient_transition_after_trigger() -> ParseResult {
 				test::parse::expression(
 					r#"
@@ -190,10 +135,11 @@ mod pair {
 					A -> B
 				"#,
 					|expression| {
+						let options = ManuallyDrop::new(Scdlang::default());
 						Ok(match expression.as_str() {
-							"A -> B @ C" => Transition::try_from(expression).ok().map_or((), |_| ()),
+							"A -> B @ C" => Transition::analyze_from(expression, &options).ok().map_or((), |_| ()),
 							"A -> B" => {
-								let error = Transition::try_from(expression).err().expect("Error::Semantic");
+								let error = Transition::analyze_from(expression, &options).err().expect("Error::Semantic");
 								assert!(error.to_string().contains("A ->"), "multiple transition on state A");
 							}
 							_ => unreachable!(),

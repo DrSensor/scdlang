@@ -9,7 +9,6 @@ pub mod semantics;
 
 pub use crate::core::{parse, Scdlang};
 pub use external::Parser as Transpiler;
-pub use semantics::*;
 
 pub mod prelude {
 	pub use super::external::*;

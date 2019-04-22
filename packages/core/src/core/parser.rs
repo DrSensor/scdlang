@@ -1,7 +1,15 @@
 use super::{Rule, Scdlang};
-use crate::{cache, error::*};
+use crate::{
+	error::*,
+	semantics::{analyze::SemanticCheck, *},
+};
 use pest::{self, error::Error as PestError, iterators::Pairs, Position};
-use std::{fmt, iter};
+use std::{fmt, iter, *};
+
+/// Wrapper for pest::Parser::parse(...)
+pub fn parse(source: &str) -> Result<Pairs<Rule>, RuleError> {
+	<Scdlang as pest::Parser<Rule>>::parse(Rule::DescriptionFile, source)
+}
 
 impl<'g> Scdlang<'g> {
 	pub fn parse(&self, source: &'g str) -> Result<Pairs<Rule>, Error> {
@@ -9,7 +17,7 @@ impl<'g> Scdlang<'g> {
 		inner(parse(&source).map_err(|e| {
 			let mut error = e;
 			if let Some(offset) = self.line {
-				//TODO: make PR on pest to add `fn with_line(self, offset: usize) -> Error<R>`
+				//TODO: make PR on pest to add `fn with_line(self, offset: usize) -> Error<R>` on enum error::Error
 				if let Pos(line) = error.location {
 					error = PestError::new_from_pos(
 						error.variant,
@@ -35,21 +43,19 @@ impl<'g> Scdlang<'g> {
 	pub fn parse_from(source: &str) -> Result<Pairs<Rule>, Error> {
 		inner(parse(&source).map_err(|e| Error::Parse(e.into()))?)
 	}
-}
 
-impl<'g> Drop for Scdlang<'g> {
-	fn drop(&mut self) {
-		let clear_cache = || cache::drop().expect("Deadlock");
-		match self.clear_cache {
-			None => clear_cache(), // default behaviour
-			Some(auto_clear) if auto_clear => clear_cache(),
-			_ => { /* don't clear cache */ }
-		}
+	pub fn iter_from(&self, source: &'g str) -> Result<Vec<Kind<'_>>, Error> {
+		let pairs = self.parse(source)?;
+		pairs
+			.filter(|pair| if let Rule::EOI = pair.as_rule() { false } else { true })
+			.map(|pair| {
+				Ok(match pair.as_rule() {
+					Rule::expression => Transition::analyze_from(pair, &self)?.into_kind(),
+					_ => unreachable!("Rule::{:?}", pair.as_rule()),
+				})
+			})
+			.collect()
 	}
-}
-
-pub fn parse(source: &str) -> Result<Pairs<Rule>, RuleError> {
-	<Scdlang as pest::Parser<Rule>>::parse(Rule::DescriptionFile, source)
 }
 
 fn inner(root_pairs: Pairs<Rule>) -> Result<Pairs<Rule>, Error> {

@@ -1,10 +1,9 @@
 #![allow(clippy::unit_arg)]
 mod schema;
 
-use scdlang_core as scdlang;
 pub use schema::*;
 
-use scdlang_core::{grammar::Rule, prelude::*, Scdlang};
+use scdlang_core::{prelude::*, semantics::Kind, Scdlang};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::{error, fmt, mem::ManuallyDrop};
@@ -45,27 +44,27 @@ impl<'a> Parser<'a> for Machine<'a> {
 	}
 
 	fn try_parse(source: &str, builder: Scdlang<'a>) -> Result<Self, DynError> {
-		let parse_tree = builder.parse(source)?;
 		let mut schema = StateChart::default();
 
-		for pair in parse_tree {
-			if let Rule::expression = pair.as_rule() {
-				let transition: scdlang::Transition = (&builder, pair).try_into()?;
+		for kind in builder.iter_from(source)? {
+			match kind {
+				Kind::Expression(expr) => {
+					let current_state = camel_case(expr.current_state().name);
+					let next_state = camel_case(expr.next_state().name);
+					let event_name = shouty_snake_case(expr.event().map(|e| e.name).unwrap_or(""));
 
-				let event_name = shouty_snake_case(transition.at.map(|e| e.name).unwrap_or(""));
-				let current_state = camel_case(transition.from.name);
-				let next_state = camel_case(transition.to.name);
-
-				schema
-					.states
-					.entry(current_state)
-					.and_modify(|t| {
-						t.on.entry(event_name.to_string()).or_insert_with(|| json!(next_state));
-					})
-					.or_insert(Transition {
-						// TODO: waiting for map macros https://github.com/rust-lang/rfcs/issues/542
-						on: [(event_name.to_string(), json!(next_state))].iter().cloned().collect(),
-					});
+					schema
+						.states
+						.entry(current_state)
+						.and_modify(|t| {
+							t.on.entry(event_name.to_string()).or_insert_with(|| json!(next_state));
+						})
+						.or_insert(Transition {
+							// TODO: waiting for map macros https://github.com/rust-lang/rfcs/issues/542
+							on: [(event_name.to_string(), json!(next_state))].iter().cloned().collect(),
+						});
+				}
+				_ => unreachable!("not yet implemented"),
 			}
 		}
 

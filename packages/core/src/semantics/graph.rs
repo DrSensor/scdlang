@@ -5,7 +5,7 @@
 ///     <transition target="to.name"/>
 /// </state>
 /// ```
-pub struct Transition<'t> {
+pub(crate) struct Transition<'t> {
 	pub from: State<'t>,
 	pub to: State<'t>,
 	pub at: Option<Event<'t>>,
@@ -40,6 +40,12 @@ pub enum StateType {
 	Atomic,
 }
 
+impl Into<String> for &State<'_> {
+	fn into(self) -> String {
+		self.name.to_string()
+	}
+}
+
 #[derive(Debug, Clone)]
 /// SCXML equivalent:
 /// ```scxml
@@ -48,6 +54,12 @@ pub enum StateType {
 pub struct Event<'s> {
 	// pub kind: &'s EventType, // 🤔 probably should not be a field but more like kind() method because the type can be deduce on the available field
 	pub name: &'s str, // TODO: should be None when it only have a Guard or it just an Internal Event
+}
+
+impl Into<String> for &Event<'_> {
+	fn into(self) -> String {
+		self.name.to_string()
+	}
 }
 
 // 👇 still not sure 🤔
