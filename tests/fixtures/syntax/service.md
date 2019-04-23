@@ -16,38 +16,26 @@ service fetchData {
   @ done {
     A -> B
     C -> B
-    D -> A
   }
 
   @ error {
     A -> C
-    C -> D
-    D -> B
+    D -> D
   }
 }
 ```
-
+---
 ```scl
 autoforward service fetchData {
-  @ done {
-    A -> B
-  }
-
-  @ error {
-    A -> C
-  }
+  A -> B @ done
+  A -> C @ error
 }
 ```
 or
 ```scl
 service[forward] fetchData {
-  @ done {
-    A -> B
-  }
-
-  @ error {
-    A -> C
-  }
+  A -> B @ done
+  A -> C @ error
 }
 ```
 
@@ -60,7 +48,7 @@ or
 ```scl
 A -> B @ done(forward fetchData) // 🤔
 ```
-
+---
 ```scl
 A -> B @ error(fetchData)
 ```
@@ -77,19 +65,74 @@ autoforward service fetchData {
 ##### Send an event to other services
 
 ```scl
-B |> Send(C -> otherMachine)
+B |> Send(C ~> otherMachine)
 ```
-
+or
 ```scl
-B |> Send(C -> service1,service2,serviceN)
+B |> (C ~> otherMachine)
 ```
+Read as: ""
+
+---
+```scl
+B |> Send(C ~> service1,service2,serviceN)
+```
+or
+```scl
+B |> (C ~> service1,service2,serviceN)
+```
+Read as: ""
+
+---
+```scl
+A -> B @ D |> Send(C ~> service1,service2,serviceN)
+```
+or
+```scl
+A -> B @ D |> (C ~> service1,service2,serviceN)
+```
+Read as: ""
+
+---
+```scl
+A -> B @ D |> doSomething, Send(C ~> service1,service2,serviceN)
+```
+or
+```scl
+A -> B @ D |> doSomething, (C ~> service1,service2,serviceN)
+```
+Read as: ""
 
 ##### Send an event to other services and myself
 
 ```scl
-B |> Send(<-C -> otherMachine)
+B |> Send(<~ C ~> otherMachine)
 ```
-
+or
 ```scl
-B |> Send(<-C -> service1,service2,serviceN)
+B |> (<~ C ~> otherMachine)
+```
+---
+```scl
+B |> Send(<~ C ~> service1,service2,serviceN)
+```
+or
+```scl
+B |> (<~ C ~> service1,service2,serviceN)
+```
+---
+```scl
+B |> Send(D), Send(C~> service1,service2,serviceN)
+```
+or
+```scl
+B |> (<~ D), (C ~> service1,service2,serviceN)
+```
+or
+```scl
+B |> Send(<~D | C~> service1,service2,serviceN)
+```
+or
+```scl
+B |> (<~D | C~> service1,service2,serviceN)
 ```

@@ -34,6 +34,14 @@ A -> B |> Send(C)
 ```scl
 Send(C) |> A
 ```
+or
+```scl
+(C ~>) |> A
+```
+or
+```scl
+state A { @entry |> Send(C) }
+```
 
 <details><summary>self transition loop</summary>
 
@@ -65,6 +73,11 @@ is a shortcut of
 A <| Send(UUID, after=0.5s)
 A -> B @ UUID
 ```
+or
+```scl
+state A { @entry |> Send(UUID, after=0.5s) }
+A -> B @ UUID
+```
 </details>
 
 ##### Canceling delayed transition
@@ -91,6 +104,10 @@ A -> B @ C |> Send(C, instantly)
 or
 ```scl
 A -> B @ C |> Send(|C|)
+```
+or
+```scl
+A -> B @ C |> Raise(C)
 ```
 
 #### Assigning data
