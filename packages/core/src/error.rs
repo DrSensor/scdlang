@@ -1,43 +1,29 @@
 use crate::*;
-use pest::{error::ErrorVariant, Span};
+use pest::{
+	error::{ErrorVariant::CustomError, InputLocation},
+	Position, Span,
+};
 use std::{error, fmt, iter};
 
-pub type ParseError = pest::error::Error<grammar::Rule>;
+pub type PestError = pest::error::Error<grammar::Rule>;
 
 #[derive(Debug)]
 // WARNING: this enum doesn't support lifetime which will break Parser trait (lifetime refactoring hell)
 pub enum Error {
 	WrongRule(grammar::Rule),
-	Parse(Box<ParseError>),
+	Parse(Box<PestError>),
 	EmptyDeclaration,
 	MissingOperator,
 	Deadlock,
 }
 
 impl<'t> Scdlang<'t> {
-	/// Used to beutifully format semantics error
-	pub(crate) fn err_from_span(&self, span: Span, message: String) -> ParseError {
-		use pest::error::InputLocation;
-		let span_str = span.as_str();
-		let mut error = ParseError::new_from_span(ErrorVariant::CustomError { message }, span);
+	/// Used to beutifully format semantics error from span
+	pub(crate) fn err_from_span(&self, span: Span, message: String) -> PestError {
+		let source = span.as_str();
+		let mut error = PestError::new_from_span(CustomError { message }, span);
 		if let Some(offset) = self.line {
-			//TODO: make PR on pest to add `fn with_line(self, offset: usize) -> Error<R>`
-			// or refactor this by implement & add trait fn with_line(offset) for Span and Pair
-			if let InputLocation::Span((start, end)) = error.location {
-				error = ParseError::new_from_span(
-					error.variant,
-					Span::new(
-						&format!(
-							"{offset}{src}",
-							offset = iter::repeat('\n').take(offset).collect::<String>(),
-							src = span_str
-						),
-						start + offset,
-						end + offset,
-					)
-					.expect("Index (offset) not out of bound"),
-				);
-			}
+			error = error.with_offset(offset, source);
 		}
 		if let Some(path) = self.path {
 			error = error.with_path(path);
@@ -46,8 +32,40 @@ impl<'t> Scdlang<'t> {
 	}
 }
 
-impl From<ParseError> for Error {
-	fn from(err: ParseError) -> Self {
+impl Offset for PestError {
+	fn with_offset(self, offset: usize, source: &str) -> Self {
+		match self.location {
+			InputLocation::Span((start, end)) => PestError::new_from_span(
+				self.variant,
+				Span::new(
+					&format!(
+						"{offset}{src}",
+						offset = iter::repeat('\n').take(offset).collect::<String>(),
+						src = source
+					),
+					start + offset,
+					end + offset,
+				)
+				.expect("Index (offset) must NOT out of bound"),
+			),
+			InputLocation::Pos(line) => PestError::new_from_pos(
+				self.variant,
+				Position::new(
+					&format!(
+						"{offset}{src}",
+						offset = iter::repeat('\n').take(offset).collect::<String>(),
+						src = source
+					),
+					line + offset,
+				)
+				.expect("Index (offset) must NOT out of bound"),
+			),
+		}
+	}
+}
+
+impl From<PestError> for Error {
+	fn from(err: PestError) -> Self {
 		Error::Parse(err.into())
 	}
 }
@@ -65,4 +83,9 @@ impl fmt::Display for Error {
 			_ => write!(f, "{:#?}", self), // TODO: make it fluent and verbose 😅
 		}
 	}
+}
+
+//TODO: make PR on pest for defining offset so that param `source` can be omitted
+pub(crate) trait Offset: error::Error {
+	fn with_offset(self, offset: usize, source: &str) -> Self;
 }

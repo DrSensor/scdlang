@@ -1,6 +1,6 @@
 pub(super) mod prelude {
 	pub use crate::{
-		error::{Error as ScdlError, ParseError},
+		error::{Error as ScdlError, PestError},
 		grammar::*,
 		semantics::analyze::TokenPair,
 		Scdlang,

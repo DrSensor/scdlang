@@ -3,8 +3,8 @@ use crate::{
 	error::*,
 	semantics::{analyze::SemanticCheck, *},
 };
-use pest::{self, error::Error as PestError, iterators::Pairs, Position};
-use std::{fmt, iter, *};
+use pest::{self, error::Error as PestError, iterators::Pairs};
+use std::{fmt, *};
 
 /// Wrapper for pest::Parser::parse(...)
 pub fn parse(source: &str) -> Result<Pairs<Rule>, RuleError> {
@@ -13,25 +13,10 @@ pub fn parse(source: &str) -> Result<Pairs<Rule>, RuleError> {
 
 impl<'g> Scdlang<'g> {
 	pub fn parse(&self, source: &'g str) -> Result<Pairs<Rule>, Error> {
-		use pest::error::InputLocation::*;
 		inner(parse(&source).map_err(|e| {
 			let mut error = e;
 			if let Some(offset) = self.line {
-				//TODO: make PR on pest to add `fn with_line(self, offset: usize) -> Error<R>` on enum error::Error
-				if let Pos(line) = error.location {
-					error = PestError::new_from_pos(
-						error.variant,
-						Position::new(
-							&format!(
-								"{offset}{src}",
-								offset = iter::repeat('\n').take(offset).collect::<String>(),
-								src = source
-							),
-							line + offset,
-						)
-						.unwrap(),
-					);
-				}
+				error = error.with_offset(offset, source);
 			}
 			if let Some(path) = self.path {
 				error = error.with_path(path);
