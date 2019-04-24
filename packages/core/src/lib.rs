@@ -23,10 +23,14 @@ pub mod grammar {
 	#[allow(non_snake_case)]
 	#[rustfmt::skip]
 	pub mod Symbol {
-		pub use super::Rule::{
-			TransitionTo as to,
-			TriggerAt as at
-		};
+		pub use super::Rule::TriggerAt as at;
+
+		pub mod arrow {
+			pub use crate::core::Rule::{
+				TransitionTo as right,
+				TransitionFrom as left,
+			};
+		}
 	}
 
 	#[allow(non_snake_case)]

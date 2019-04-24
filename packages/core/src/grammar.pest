@@ -5,11 +5,12 @@ DescriptionFile = { SOI ~ CRLF? ~ (
 )* ~ EOI }
 
 expression = { StateName ~ transition ~ trigger? }
-transition = { TransitionTo ~ StateName }
+transition = { (TransitionTo|TransitionFrom) ~ StateName }
 trigger = { TriggerAt ~ EventName }
 
 // #region symbol/operator
 TransitionTo = @{ "-"+ ~ ">" }
+TransitionFrom = @{ "<" ~ "-"+ }
 TriggerAt = @{ "@" }
 // #endregion
 

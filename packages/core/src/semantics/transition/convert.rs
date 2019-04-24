@@ -37,7 +37,8 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 
 			// determine the current, next, and type of the State
 			let (current_state, next_state) = match ops {
-				Symbol::to => get::state(lhs, rhs, &StateType::Atomic),
+				Symbol::arrow::right => get::state(lhs, rhs, &StateType::Atomic),
+				Symbol::arrow::left => get::state(rhs, lhs, &StateType::Atomic),
 				_ => unreachable!(),
 			};
 

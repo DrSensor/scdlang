@@ -24,10 +24,9 @@ pub(super) mod get {
 		let mut target = "";
 
 		for span in pair.into_inner() {
-			let ident = span.as_str();
 			match span.as_rule() {
-				Name::state => target = ident,
-				Symbol::to => ops = Some(span.as_rule()),
+				Name::state => target = span.as_str(),
+				Symbol::arrow::right | Symbol::arrow::left => ops = Some(span.as_rule()),
 				_ => unreachable!(),
 			}
 		}
@@ -39,9 +38,8 @@ pub(super) mod get {
 		let mut event = "";
 
 		for span in pair.into_inner() {
-			let ident = span.as_str();
 			match span.as_rule() {
-				Name::event => event = ident,
+				Name::event => event = span.as_str(),
 				Symbol::at => { /* reserved when Internal Event is implemented */ }
 				_ => unreachable!(),
 			}

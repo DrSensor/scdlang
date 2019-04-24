@@ -30,15 +30,15 @@ mod pair {
 	fn into_transition() -> ParseResult {
 		test::parse::expression(
 			r#"
-            A -> B
+            A <- D
 			A -> D @ C
         "#,
 			|expression| {
 				Ok(match expression.as_str() {
-					"A -> B" => {
+					"A <- D" => {
 						let state: Transition = expression.try_into()?;
-						assert_eq!(state.from.name, "A");
-						assert_eq!(state.to.name, "B");
+						assert_eq!(state.from.name, "D");
+						assert_eq!(state.to.name, "A");
 						assert!(state.at.is_none());
 					}
 					"A -> D @ C" => {
@@ -64,13 +64,13 @@ mod pair {
 			test::parse::expression(
 				r#"
 				A -> B
-				A -> D
+				D <- A
 			"#,
 				|expression| {
 					let options = ManuallyDrop::new(Scdlang::default());
 					Ok(match expression.as_str() {
 						"A -> B" => Transition::analyze_from(expression, &options).ok().map_or((), |_| ()),
-						"A -> D" => {
+						"D <- A" => {
 							let error = Transition::analyze_from(expression, &options).err().expect("Error::Semantic");
 							assert!(error.to_string().contains("A ->"), "multiple transient transition on state A");
 						}
@@ -85,13 +85,13 @@ mod pair {
 			test::parse::expression(
 				r#"
 				A -> B @ C
-				A -> D @ C
+				D <- A @ C
 			"#,
 				|expression| {
 					let options = ManuallyDrop::new(Scdlang::default());
 					Ok(match expression.as_str() {
 						"A -> B @ C" => Transition::analyze_from(expression, &options).ok().map_or((), |_| ()),
-						"A -> D @ C" => {
+						"D <- A @ C" => {
 							let error = Transition::analyze_from(expression, &options).err().expect("Error::Semantic");
 							for message in &["A ->", "@ C"] {
 								assert!(error.to_string().contains(message), "multiple transition on state A");

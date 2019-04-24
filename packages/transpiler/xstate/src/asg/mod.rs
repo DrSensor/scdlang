@@ -126,6 +126,7 @@ mod test {
 		let mut machine = Machine::new();
 		machine.parse(
 			"A -> B @ CarlieCaplin
+			A <- B @ CarlieCaplin
 			A -> D @ EnhancedErlang",
 		)?;
 
@@ -136,6 +137,11 @@ mod test {
 						"on": {
 							"CARLIE_CAPLIN": "b",
 							"ENHANCED_ERLANG": "d"
+						}
+					},
+					"b": {
+						"on": {
+							"CARLIE_CAPLIN": "a"
 						}
 					}
 				}
