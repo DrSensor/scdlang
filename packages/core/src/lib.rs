@@ -5,13 +5,13 @@ pub(crate) mod cache;
 pub mod error;
 pub mod external;
 pub mod semantics;
-// pub mod utils;
+pub mod utils;
 
 pub use crate::core::{parse, Scdlang};
 pub use external::Parser as Transpiler;
 
 pub mod prelude {
-	pub use super::external::*;
+	pub use super::{external::*, utils::iterators::*, utils::naming::*};
 
 	pub use pest::Parser as PestParser;
 	pub use std::convert::*;

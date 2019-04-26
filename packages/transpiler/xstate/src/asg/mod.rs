@@ -49,9 +49,9 @@ impl<'a> Parser<'a> for Machine<'a> {
 		for kind in builder.iter_from(source)? {
 			match kind {
 				Kind::Expression(expr) => {
-					let current_state = camel_case(expr.current_state().name);
-					let next_state = camel_case(expr.next_state().name);
-					let event_name = shouty_snake_case(expr.event().map(|e| e.name).unwrap_or(""));
+					let current_state = expr.current_state().name.map(camel_case);
+					let next_state = expr.next_state().name.map(camel_case);
+					let event_name = expr.event().map(|e| e.name.map(shouty_snake_case)).unwrap_or_default();
 
 					schema
 						.states
@@ -64,7 +64,7 @@ impl<'a> Parser<'a> for Machine<'a> {
 							on: [(event_name.to_string(), json!(next_state))].iter().cloned().collect(),
 						});
 				}
-				_ => unreachable!("not yet implemented"),
+				_ => unimplemented!("TODO: implement the rest on the next update"),
 			}
 		}
 

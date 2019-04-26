@@ -51,7 +51,7 @@ impl<'c> CLI<'c> for Code {
 					_ => unreachable!(),
 				},
 			),
-			_ => unreachable!(),
+			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of("format")),
 		};
 
 		let mut count_parse_err = 0;

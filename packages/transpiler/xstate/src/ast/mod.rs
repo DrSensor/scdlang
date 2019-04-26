@@ -67,6 +67,7 @@ mod test {
 	use serde_json::json;
 
 	#[test]
+	#[ignore]
 	fn transient_transition() -> Result<(), DynError> {
 		let mut machine = Machine::default();
 		machine.parse("A -> B")?;

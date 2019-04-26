@@ -1,4 +1,4 @@
-DescriptionFile = { SOI ~ CRLF? ~ (
+DescriptionFile = _{ SOI ~ CRLF? ~ (
   NEWLINE* ~ (
     expression
   ) ~ NEWLINE*
@@ -6,23 +6,29 @@ DescriptionFile = { SOI ~ CRLF? ~ (
 
 expression = { StateName ~ transition ~ trigger? }
 transition = { (TransitionTo|TransitionFrom) ~ StateName }
-trigger = { TriggerAt ~ EventName }
+trigger    = { TriggerAt ~ EventName }
 
 // #region symbol/operator
-TransitionTo = @{ "-"+ ~ ">" }
+TransitionTo   = @{ "-"+ ~ ">" }
 TransitionFrom = @{ "<" ~ "-"+ }
-TriggerAt = @{ "@" }
+TriggerAt      = @{ "@" }
 // #endregion
 
 // #region name
-StateName = @{ ASCII_ALPHANUMERIC+ }
-EventName = @{ ASCII_ALPHANUMERIC+ }
+StateName = ${ PASCAL_CASE|QUOTED }
+EventName = ${ PASCAL_CASE|QUOTED }
 // #endregion
 
+PASCAL_CASE = @{ ASCII_ALPHA_UPPER ~ ASCII_ALPHANUMERIC* }
+QUOTED      = @{ single_quote|double_quote|backtick }
+  single_quote = _{ "'" ~ (!(NEWLINE|"'") ~ ANY)* ~ "'" }
+  double_quote = _{ "\"" ~ (!(NEWLINE|"\"") ~ ANY)* ~ "\"" }
+  backtick     = _{ "`" ~ (!"`" ~ ANY)* ~ "`" }
+
 WHITESPACE = _{ " " | "\t" }
-COMMENT = _{ line_comment | block_comment }
-line_comment = _{ "//" ~ (!NEWLINE ~ ANY)* }
-block_comment = _{ "/*" ~ (block_comment|(!"*/" ~ ANY))* ~ "*/" }
+COMMENT    = _{ line_comment | block_comment }
+  line_comment  = _{ "//" ~ (!NEWLINE ~ ANY)* }
+  block_comment = _{ "/*" ~ (block_comment|(!"*/" ~ ANY))* ~ "*/" }
 
 // use for handling data from `stdin`
 CRLF = _{

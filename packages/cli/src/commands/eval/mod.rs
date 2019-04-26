@@ -43,7 +43,7 @@ impl<'c> CLI<'c> for Eval {
 		let eprint = PRINTER("haskell", eprint_mode);
 		let (print, mut machine) = match args.value_of("format").unwrap() {
 			"xstate" => (PRINTER("json", print_mode), xstate::Machine::new()),
-			_ => unreachable!(),
+			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of("format")),
 		};
 
 		#[rustfmt::skip]

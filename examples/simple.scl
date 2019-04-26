@@ -7,9 +7,12 @@
 // without whitespace
 AlphaGo->BetaRust
 
+// with quoted name
+'nightly update' -> `channel:beta` @ "every 4 weeks"
+
 // with whitespace
 B -> C @ FalseAlarm
-B -> DeltaD @ On
+B -> "initial D" @ On
 	
 C/*for cheetah*/	->  D//for dimple
     

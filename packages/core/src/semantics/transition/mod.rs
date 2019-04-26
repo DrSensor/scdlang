@@ -37,18 +37,18 @@ mod pair {
 				Ok(match expression.as_str() {
 					"A <- D" => {
 						let state: Transition = expression.try_into()?;
-						assert_eq!(state.from.name, "D");
-						assert_eq!(state.to.name, "A");
+						assert_eq!(&state.from.name, "D");
+						assert_eq!(&state.to.name, "A");
 						assert!(state.at.is_none());
 					}
 					"A -> D @ C" => {
 						let state: Transition = expression.try_into()?;
-						assert_eq!(state.from.name, "A");
-						assert_eq!(state.to.name, "D");
+						assert_eq!(&state.from.name, "A");
+						assert_eq!(&state.to.name, "D");
 						let event = state.at.expect("struct Event");
-						assert_eq!(event.name, "C");
+						assert_eq!(&event.name, "C");
 					}
-					_ => unreachable!(),
+					_ => unreachable!("{}", expression.as_str()),
 				})
 			},
 		)
@@ -74,7 +74,7 @@ mod pair {
 							let error = Transition::analyze_from(expression, &options).err().expect("Error::Semantic");
 							assert!(error.to_string().contains("A ->"), "multiple transient transition on state A");
 						}
-						_ => unreachable!(),
+						_ => unreachable!("{}", expression.as_str()),
 					})
 				},
 			)
@@ -97,7 +97,7 @@ mod pair {
 								assert!(error.to_string().contains(message), "multiple transition on state A");
 							}
 						}
-						_ => unreachable!(),
+						_ => unreachable!("{}", expression.as_str()),
 					})
 				},
 			)
@@ -121,7 +121,7 @@ mod pair {
 								let error = Transition::analyze_from(expression, &options).err().expect("Error::Semantic");
 								assert!(error.to_string().contains("A ->"), "multiple transition on state A");
 							}
-							_ => unreachable!(),
+							_ => unreachable!("{}", expression.as_str()),
 						})
 					},
 				)
@@ -142,7 +142,7 @@ mod pair {
 								let error = Transition::analyze_from(expression, &options).err().expect("Error::Semantic");
 								assert!(error.to_string().contains("A ->"), "multiple transition on state A");
 							}
-							_ => unreachable!(),
+							_ => unreachable!("{}", expression.as_str()),
 						})
 					},
 				)

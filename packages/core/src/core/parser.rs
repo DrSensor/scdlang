@@ -13,7 +13,7 @@ pub fn parse(source: &str) -> Result<Pairs<Rule>, RuleError> {
 
 impl<'g> Scdlang<'g> {
 	pub fn parse(&self, source: &'g str) -> Result<Pairs<Rule>, Error> {
-		inner(parse(&source).map_err(|e| {
+		parse(&source).map_err(|e| {
 			let mut error = e;
 			if let Some(offset) = self.line {
 				error = error.with_offset(offset, source);
@@ -22,13 +22,14 @@ impl<'g> Scdlang<'g> {
 				error = error.with_path(path);
 			}
 			Error::Parse(error.into())
-		})?)
+		})
 	}
 
 	pub fn parse_from(source: &str) -> Result<Pairs<Rule>, Error> {
-		inner(parse(&source).map_err(|e| Error::Parse(e.into()))?)
+		parse(&source).map_err(|e| Error::Parse(e.into()))
 	}
 
+	// WARNING: ideally it should be implemented using function generator but Rust not support it yet
 	pub fn iter_from(&self, source: &'g str) -> Result<Vec<Kind<'_>>, Error> {
 		use convert::TryFrom;
 		let pairs = self.parse(source)?;
@@ -43,10 +44,6 @@ impl<'g> Scdlang<'g> {
 			})
 			.collect()
 	}
-}
-
-fn inner(root_pairs: Pairs<Rule>) -> Result<Pairs<Rule>, Error> {
-	Ok(root_pairs.peek().ok_or(Error::EmptyDeclaration)?.into_inner())
 }
 
 impl fmt::Display for Scdlang<'_> {

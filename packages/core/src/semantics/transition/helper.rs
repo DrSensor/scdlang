@@ -3,6 +3,7 @@ pub(super) mod prelude {
 		error::{Error as ScdlError, PestError},
 		grammar::*,
 		semantics::analyze::TokenPair,
+		utils::naming,
 		Scdlang,
 	};
 	pub use pest::{error::ErrorVariant, iterators::Pair, Span};
@@ -10,41 +11,55 @@ pub(super) mod prelude {
 }
 
 pub(super) mod get {
-	use super::prelude::*;
+	use super::{get, prelude::*};
 	use crate::semantics::*;
-	use ScdlError::*;
 
-	pub fn state<'t>(current: &'t str, next: &'t str, kind: &'t StateType) -> (State<'t>, State<'t>) {
+	pub fn state<'t>(current: naming::Name<'t>, next: naming::Name<'t>, kind: &'t StateType) -> (State<'t>, State<'t>) {
 		(State { name: current, kind }, State { name: next, kind })
 	}
 
-	type Tuple<'target> = (Rule, &'target str);
-	pub fn transition(pair: TokenPair<'_>) -> Result<Tuple, ScdlError> {
-		let mut ops = None;
-		let mut target = "";
+	type Tuple<'target> = (Rule, naming::Name<'target>);
+	pub fn transition(pair: TokenPair) -> Tuple {
+		let mut ops = Rule::EOI;
+		let mut target = naming::Name::Unquoted("");
 
 		for span in pair.into_inner() {
 			match span.as_rule() {
-				Name::state => target = span.as_str(),
-				Symbol::arrow::right | Symbol::arrow::left => ops = Some(span.as_rule()),
-				_ => unreachable!(),
+				Name::state => target = get::name(span),
+				Symbol::arrow::right | Symbol::arrow::left => ops = span.as_rule(),
+				_ => unreachable!("Rule::{:?}", span.as_rule()),
 			}
 		}
 
-		Ok((ops.ok_or(MissingOperator)?, target))
+		(ops, target)
 	}
 
-	pub fn trigger(pair: TokenPair<'_>) -> Result<&str, ScdlError> {
-		let mut event = "";
+	pub fn trigger(pair: TokenPair) -> naming::Name {
+		let mut event = naming::Name::Unquoted("");
 
 		for span in pair.into_inner() {
 			match span.as_rule() {
-				Name::event => event = span.as_str(),
+				Name::event => event = get::name(span),
 				Symbol::at => { /* reserved when Internal Event is implemented */ }
-				_ => unreachable!(),
+				_ => unreachable!("Rule::{:?}", span.as_rule()),
 			}
 		}
 
-		Ok(event)
+		event
+	}
+
+	pub fn name(pair: TokenPair) -> naming::Name {
+		use naming::Name::{self, *};
+		let mut name = Name::Unquoted("");
+
+		for span in pair.into_inner() {
+			match span.as_rule() {
+				Rule::PASCAL_CASE => name = Unquoted(span.as_str()),
+				Rule::QUOTED => name = Quoted(span.as_str().trim_matches(|c| c == '\'' || c == '"' || c == '`')),
+				_ => unreachable!("Rule::{:?}", span.as_rule()),
+			}
+		}
+
+		name
 	}
 }
