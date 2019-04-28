@@ -13,20 +13,11 @@ pub fn parse(source: &str) -> Result<Pairs<Rule>, RuleError> {
 
 impl<'g> Scdlang<'g> {
 	pub fn parse(&self, source: &'g str) -> Result<Pairs<Rule>, Error> {
-		parse(&source).map_err(|e| {
-			let mut error = e;
-			if let Some(offset) = self.line {
-				error = error.with_offset(offset, source);
-			}
-			if let Some(path) = self.path {
-				error = error.with_path(path);
-			}
-			Error::Parse(error.into())
-		})
+		parse(source).map_err(|e| Error::Parse(self.reformat_error(source, e).into()))
 	}
 
 	pub fn parse_from(source: &str) -> Result<Pairs<Rule>, Error> {
-		parse(&source).map_err(|e| Error::Parse(e.into()))
+		parse(source).map_err(|e| Error::Parse(e.into()))
 	}
 
 	// WARNING: ideally it should be implemented using function generator but Rust not support it yet

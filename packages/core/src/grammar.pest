@@ -1,6 +1,6 @@
 DescriptionFile = _{ SOI ~ CRLF? ~ (
   NEWLINE* ~ (
-    expression
+    expression ~ !(expression|StateName)
   ) ~ NEWLINE*
 )* ~ EOI }
 

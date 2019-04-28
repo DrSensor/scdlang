@@ -1,34 +1,21 @@
-use crate::*;
+use super::{Error, PestError};
+use crate::Scdlang;
 use pest::{
 	error::{ErrorVariant::CustomError, InputLocation},
 	Position, Span,
 };
 use std::{error, fmt, iter};
 
-pub type PestError = pest::error::Error<grammar::Rule>;
-
-#[derive(Debug)]
-// WARNING: this enum doesn't support lifetime which will break Parser trait (lifetime refactoring hell)
-pub enum Error {
-	WrongRule(grammar::Rule),
-	Parse(Box<PestError>),
-	EmptyDeclaration,
-	MissingOperator,
-	Deadlock,
+//TODO: make PR on pest for defining offset so that param `source` can be omitted
+pub(crate) trait Offset: error::Error {
+	fn with_offset(self, offset: usize, source: &str) -> Self;
 }
 
 impl<'t> Scdlang<'t> {
 	/// Used to beutifully format semantics error from span
 	pub(crate) fn err_from_span(&self, span: Span, message: String) -> PestError {
 		let source = span.as_str();
-		let mut error = PestError::new_from_span(CustomError { message }, span);
-		if let Some(offset) = self.line {
-			error = error.with_offset(offset, source);
-		}
-		if let Some(path) = self.path {
-			error = error.with_path(path);
-		}
-		error
+		self.reformat_error(source, PestError::new_from_span(CustomError { message }, span))
 	}
 }
 
@@ -83,9 +70,4 @@ impl fmt::Display for Error {
 			_ => write!(f, "{:#?}", self), // TODO: make it fluent and verbose 😅
 		}
 	}
-}
-
-//TODO: make PR on pest for defining offset so that param `source` can be omitted
-pub(crate) trait Offset: error::Error {
-	fn with_offset(self, offset: usize, source: &str) -> Self;
 }

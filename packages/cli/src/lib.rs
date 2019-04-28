@@ -43,7 +43,7 @@ pub mod print {
 			Mode::Default => printer.build(),
 			Mode::UseHeader => printer.grid(true).header(true).build(),
 			Mode::MultiLine => printer.grid(true).build(),
-			Mode::Error => printer.grid(true).header(true).paging_mode(PagingMode::Error).build(),
+			Mode::Error => printer.grid(true).header(true).theme("Sublime Snazzy").paging_mode(PagingMode::Error).build(),
 			Mode::REPL => printer.line_numbers(true).grid(true).build(),
 			Mode::Debug => printer.line_numbers(true).grid(true).header(true).build(),
 		})

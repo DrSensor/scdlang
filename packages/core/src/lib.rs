@@ -74,12 +74,14 @@ pub mod test {
 
 	pub mod parse {
 		use super::*;
-		use crate::{cache, error::Error};
-		use pest::iterators::{Pair, Pairs};
+		use crate::{cache, error::Error, prelude::*};
+		use pest::{
+			error::ErrorVariant,
+			iterators::{Pair, Pairs},
+		};
 		pub type Result = std::result::Result<(), Error>;
-		type Closure<P> = fn(P) -> Result;
 
-		pub fn expression<'a>(text: &'a str, callback: Closure<Pair<'a, Rule>>) -> Result {
+		pub fn expression<'a>(text: &'a str, callback: impl Fn(Pair<'a, Rule>) -> Result) -> Result {
 			let declaration = Scdlang::parse_from(text)?;
 			for expression in declaration {
 				if let Rule::expression = expression.as_rule() {
@@ -89,10 +91,24 @@ pub mod test {
 			cache::clear()?.shrink()
 		}
 
-		pub fn from<'a>(text: &'a str, callback: Closure<Pairs<'a, Rule>>) -> Result {
+		pub fn from<'a>(text: &'a str, callback: impl FnOnce(Pairs<'a, Rule>) -> Result) -> Result {
 			let declaration = Scdlang::parse_from(text)?;
 			callback(declaration)?;
 			cache::clear()?.shrink()
+		}
+
+		pub fn error(text: &str, callback: impl Fn(&str, ErrorVariant<Rule>) -> Result) -> Result {
+			let mut parser = Scdlang::new();
+			parser.auto_clear_cache(false);
+			for line in text.trim().lines() {
+				if let Error::Parse(error) = parser.iter_from(line).expect_err(&format!("No Error for {}", line)) {
+					callback(line.trim(), error.variant)?;
+					cache::clear()?.shrink()?;
+				} else {
+					panic!("No Error for {}", line);
+				}
+			}
+			Ok(())
 		}
 	}
 }
