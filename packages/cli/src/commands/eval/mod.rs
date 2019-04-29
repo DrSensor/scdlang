@@ -50,14 +50,14 @@ impl<'c> CLI<'c> for Eval {
 		let pprint = |string, header: &str| Console {
 			header,
 			printer: &print,
-			fallback: |s| println!("{}\n", s)
+			fallback: Ok(&|s| println!("{}\n", s))
 		}.print(string);
 
 		#[rustfmt::skip]
 		let epprint = |string, header: &str| Console {
 			header: &header.red().to_string(),
 			printer: &eprint,
-			fallback: |s| eprintln!("{}\n", s)
+			fallback: Err(&|s| eprintln!("{}\n", s))
 		}.print(string);
 
 		let mut loc = 0;
