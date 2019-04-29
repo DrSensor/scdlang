@@ -3,7 +3,7 @@
 #     see https://nbsoftsolutions.com/blog/azure-pipelines-for-rust-projects
 
 variables:
-  rustup_toolchain: beta
+  rustup_toolchain: stable
   architecture: x86_64
 
 strategy:

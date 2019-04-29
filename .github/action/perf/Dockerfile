@@ -32,8 +32,6 @@ RUN chmod +x /tmp/* && \
     mv /tmp/jq-linux64 /usr/bin/jq && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-RUN rustup install beta
-
 COPY --from=helper /bin/wrap-args /usr/bin/
 COPY entrypoint.sh /entrypoint.sh
 
