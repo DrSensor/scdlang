@@ -135,7 +135,7 @@ state Beta { do |> beeping }
 ```
 or
 ```scl
-Beta |>| beeping
+Beta >< beeping
 ```
 Read as: "perform *activity **beeping*** when on *state **Beta***"
 
