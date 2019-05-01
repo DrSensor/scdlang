@@ -4,8 +4,6 @@ set -e
 # -------------------- helper -------------------------
 register() {
   read json
-  echo ${json}
-  echo "$(echo ${json} | jq .author.name)"
   git config --global user.name "$(echo ${json} | jq .author.name)"
   git config --global user.email "$(echo ${json} | jq .author.email)"
 }
