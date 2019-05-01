@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+export PATH="$HOME/.cargo/bin:$PATH"
+
 for cmd in "$@"; do
   echo "Running '$cmd'..."
   if sh -c "$cmd"; then
