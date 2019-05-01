@@ -7,7 +7,7 @@ fi
 
 ( echo '['; git log --format='{
   refs: "%D"
-  subject: "%s"
+  subject: %s
   perf: [%N]
   sha: {
     commit: "%H"

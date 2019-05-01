@@ -13,7 +13,7 @@ printlog() {
 
   ( echo '['; git --no-pager log --decorate --first-parent --no-merges --format='{
     refs: "%D"
-    subject: "%s"
+    subject: %s
     perf: [%N]
     sha: {
       commit: "%H"
