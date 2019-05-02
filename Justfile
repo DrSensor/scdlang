@@ -72,8 +72,6 @@ install: install-toolchains
 
 # Install all recommended toolchains
 install-toolchains:
-	rustup install beta
-	rustup override set beta
 	rustup component add rls rustfmt clippy rust-src rust-analysis
 	# pip install hooks4git hjson --user
 # pipenv lock --requirements --dev | pipenv install --dev --requirements -

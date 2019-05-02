@@ -11,8 +11,8 @@ def random(num_of_char):
 
 
 for x in range(int(sys.argv[1])):
-    current_state = f"A{random(1)}"
     next_state = f"B{random(1)}"
     event = f"C{random(1)}"
-    trigger = f"@ {event}" if choice([True, False]) else ""
-    print(f"{current_state} -> {next_state} {trigger}")
+    with_trigger = choice([True, False])
+    current_state = f"A{random(3)}{event if with_trigger else ''}"
+    print(f"{current_state} -> {next_state} {f'@ {event}' if with_trigger else ''}")
