@@ -1,6 +1,6 @@
 workflow "Testing" {
 	on = "push"
-	resolves = ["Unit Test cargo"]
+	resolves = ["Test all rust project"]
 }
 
 workflow "Measure Performance" {

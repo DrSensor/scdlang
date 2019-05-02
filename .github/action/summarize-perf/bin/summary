@@ -34,13 +34,8 @@ printlog() {
 }
 
 # auto detect if it's piped https://stackoverflow.com/a/30811869/5221998
-sanitize() {
-  read log
-  if [ -t 1 ]; then
-    echo $log | jq .
-  else
-    echo $log | jq -c .
-  fi
-}
-
-printlog | sanitize
+if [ -t 1 ]; then
+  printlog | jq .
+else
+  printlog | jq -c .
+fi
