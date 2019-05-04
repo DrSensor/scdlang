@@ -1,5 +1,3 @@
-use crate::utils::naming::Name;
-
 #[derive(Debug)]
 /// SCXML equivalent:
 /// ```scxml
@@ -32,7 +30,7 @@ pub enum TransitionType<'t> {
 /// <state id="name"/>
 /// ```
 pub struct State<'s> {
-	pub name: Name<'s>,
+	pub name: &'s str,
 	pub kind: &'s StateType, // 🤔 should I hide it then implement kind() method?
 }
 
@@ -55,7 +53,7 @@ impl Into<String> for &State<'_> {
 /// ```
 pub struct Event<'s> {
 	// pub kind: &'s EventType, // 🤔 probably should not be a field but more like kind() method because the type can be deduce on the available field
-	pub name: Name<'s>, // TODO: should be None when it only have a Guard or it just an Internal Event
+	pub name: &'s str, // TODO: should be None when it only have a Guard or it just an Internal Event
 }
 
 impl Into<String> for &Event<'_> {

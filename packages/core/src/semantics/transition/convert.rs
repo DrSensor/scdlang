@@ -1,7 +1,4 @@
-use super::helper::{
-	get,
-	prelude::{naming::Name, *},
-};
+use super::helper::{get, prelude::*};
 use crate::semantics::{Event, StateType, Transition, TransitionType};
 use std::convert::TryFrom;
 
@@ -12,16 +9,16 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 		use ScdlError::*;
 		let rule = pair.as_rule();
 
-		let mut lhs = Name::Unquoted("");
+		let mut lhs = "";
 		let mut ops = Rule::EOI;
-		let mut rhs = Name::Unquoted("");
+		let mut rhs = "";
 		let mut event = None;
 
 		if let Rule::expression = rule {
 			// determine the lhs, rhs, and operators
 			for span in pair.into_inner() {
 				match span.as_rule() {
-					Rule::StateName => lhs = get::name(span),
+					Rule::StateName => lhs = span.as_str(),
 					Rule::transition => {
 						// TODO: waiting for https://github.com/rust-lang/rfcs/pull/2649 (Destructuring without `let`)
 						let (operators, target) = get::transition(span);

@@ -8,11 +8,11 @@ impl<'p> StateIterator for Pairs<'p, Rule> {
 	type Map = HashMap<&'p str, Self::Item>;
 
 	fn filter_from(self, state: &str) -> Self::Iter {
-		self.filter(filtrate!(|t: Transition| &t.from.name == state)).collect()
+		self.filter(filtrate!(|t: Transition| t.from.name == state)).collect()
 	}
 
 	fn filter_to(self, state: &str) -> Self::Iter {
-		self.filter(filtrate!(|t: Transition| &t.to.name == state)).collect()
+		self.filter(filtrate!(|t: Transition| t.to.name == state)).collect()
 	}
 
 	fn group_by_from(self, _state: &str) -> Self::Map {

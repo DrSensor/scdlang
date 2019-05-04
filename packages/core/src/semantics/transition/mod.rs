@@ -2,19 +2,22 @@ mod analyze;
 mod convert;
 mod helper;
 
-use crate::semantics::{Event, Expression, State, Transition};
+use crate::{
+	semantics::{Expression, Transition},
+	utils::naming::Name,
+};
 
 impl Expression for Transition<'_> {
-	fn current_state(&self) -> &State {
-		&self.from
+	fn current_state(&self) -> Name {
+		self.from.name.into()
 	}
 
-	fn next_state(&self) -> &State {
-		&self.to
+	fn next_state(&self) -> Name {
+		self.to.name.into()
 	}
 
-	fn event(&self) -> Option<&Event> {
-		self.at.as_ref()
+	fn event(&self) -> Option<Name> {
+		self.at.as_ref().map(|event| event.name.into())
 	}
 }
 
@@ -37,16 +40,16 @@ mod pair {
 				Ok(match expression.as_str() {
 					"A <- D" => {
 						let state: Transition = expression.try_into()?;
-						assert_eq!(&state.from.name, "D");
-						assert_eq!(&state.to.name, "A");
+						assert_eq!(state.from.name, "D");
+						assert_eq!(state.to.name, "A");
 						assert!(state.at.is_none());
 					}
 					"A -> D @ C" => {
 						let state: Transition = expression.try_into()?;
-						assert_eq!(&state.from.name, "A");
-						assert_eq!(&state.to.name, "D");
+						assert_eq!(state.from.name, "A");
+						assert_eq!(state.to.name, "D");
 						let event = state.at.expect("struct Event");
-						assert_eq!(&event.name, "C");
+						assert_eq!(event.name, "C");
 					}
 					_ => unreachable!("{}", expression.as_str()),
 				})

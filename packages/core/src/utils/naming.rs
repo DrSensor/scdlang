@@ -1,18 +1,37 @@
 use std::{fmt, ops};
 
+pub const QUOTES: &[char] = &['\'', '"', '`'];
+
+pub fn sanitize(name: &str) -> String {
+	name.trim_matches(QUOTES).replace("\\", "")
+}
+
 #[derive(Debug, Clone)]
 pub enum Name<'t> {
-	Quoted(&'t str),
+	Quoted(String),
 	Unquoted(&'t str),
 }
 
 use Name::*;
+impl<'t> From<&'t str> for Name<'t> {
+	fn from(name: &'t str) -> Self {
+		let first_char = name.chars().next().unwrap_or_default();
+		let last_char = name.chars().last().unwrap_or_default();
+
+		if first_char == last_char && QUOTES.contains(&last_char) {
+			Quoted(sanitize(name))
+		} else {
+			Unquoted(name)
+		}
+	}
+}
+
 impl Name<'_> {
 	/// Map unquoted name. Quoted name will be returned as it is
 	pub fn map(&self, f: impl FnOnce(&str) -> String) -> String {
 		match self {
 			Unquoted(name) => f(name),
-			Quoted(name) => String::from(*name),
+			Quoted(name) => name.to_owned(),
 		}
 	}
 
@@ -27,7 +46,8 @@ impl Name<'_> {
 	/// Map either quoted or unquoted name
 	pub fn map_all(&self, f: impl Fn(&str) -> String) -> String {
 		match self {
-			Quoted(name) | Unquoted(name) => f(name),
+			Quoted(name) => f(name),
+			Unquoted(name) => f(name),
 		}
 	}
 }
@@ -36,7 +56,8 @@ impl ops::Deref for Name<'_> {
 	type Target = str;
 	fn deref(&self) -> &Self::Target {
 		match self {
-			Unquoted(name) | Quoted(name) => name,
+			Quoted(name) => name,
+			Unquoted(name) => name,
 		}
 	}
 }
@@ -44,7 +65,8 @@ impl ops::Deref for Name<'_> {
 impl PartialEq<str> for Name<'_> {
 	fn eq(&self, other: &str) -> bool {
 		match self {
-			Unquoted(name) | Quoted(name) => name == &other,
+			Quoted(name) => name == other,
+			Unquoted(name) => name == &other,
 		}
 	}
 }

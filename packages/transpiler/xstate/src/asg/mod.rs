@@ -49,9 +49,9 @@ impl<'a> Parser<'a> for Machine<'a> {
 		for kind in builder.iter_from(source)? {
 			match kind {
 				Kind::Expression(expr) => {
-					let current_state = expr.current_state().name.map(camel_case);
-					let next_state = expr.next_state().name.map(camel_case);
-					let event_name = expr.event().map(|e| e.name.map(shouty_snake_case)).unwrap_or_default();
+					let current_state = expr.current_state().map(camel_case);
+					let next_state = expr.next_state().map(camel_case);
+					let event_name = expr.event().map(|e| e.map(shouty_snake_case)).unwrap_or_default();
 
 					schema
 						.states

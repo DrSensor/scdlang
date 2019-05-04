@@ -21,9 +21,9 @@ EventName = ${ PASCAL_CASE|QUOTED }
 
 PASCAL_CASE = @{ ASCII_ALPHA_UPPER ~ ASCII_ALPHANUMERIC* }
 QUOTED      = @{ single_quote|double_quote|backtick }
-  single_quote = _{ "'" ~ (!(NEWLINE|"'") ~ ANY)* ~ "'" }
-  double_quote = _{ "\"" ~ (!(NEWLINE|"\"") ~ ANY)* ~ "\"" }
-  backtick     = _{ "`" ~ (!"`" ~ ANY)* ~ "`" }
+  single_quote = _{ "'" ~ (!(NEWLINE|"'") ~ "\\"? ~ ANY)* ~ "'" }
+  double_quote = _{ "\"" ~ (!(NEWLINE|"\"") ~ "\\"? ~ ANY)* ~ "\"" }
+  backtick     = _{ "`" ~ (!"`" ~ "\\"? ~ ANY)* ~ "`" }
 
 WHITESPACE = _{ " " | "\t" }
 COMMENT    = _{ line_comment | block_comment }

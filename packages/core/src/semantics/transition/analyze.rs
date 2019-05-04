@@ -1,14 +1,14 @@
 use super::helper::prelude::*;
-use crate::{cache, semantics};
+use crate::{cache, semantics, utils::naming::sanitize};
 use semantics::{analyze, Kind, Transition};
 
 impl<'t> analyze::SemanticCheck<'t> for Transition<'t> {
 	fn analyze_error(&self, span: Span<'t>, options: &'t Scdlang) -> Result<(), ScdlError> {
 		let mut t1_cache = cache::transition()?;
 
-		let (current, target) = (self.from.name.to_string(), self.to.name.to_string());
-		let t2_cache = t1_cache.entry(current).or_default();
+		let (current, target) = (sanitize(self.from.name), sanitize(self.to.name));
 
+		let t2_cache = t1_cache.entry(current).or_default();
 		match &self.at {
 			Some(trigger) => {
 				if t2_cache.contains_key(&None) {
