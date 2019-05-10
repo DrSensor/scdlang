@@ -5,7 +5,7 @@ pub use code::*;
 pub use eval::*;
 
 use crate::cli::*;
-use clap::{App, AppSettings::*, ArgMatches};
+use clap::{crate_description, crate_version, App, AppSettings::*, ArgMatches};
 
 pub struct Main;
 impl<'c> CLI<'c> for Main {

@@ -1,4 +1,9 @@
-#![allow(clippy::type_complexity)]
+#[path = "cli.rs"]
+pub mod cli;
+#[path = "commands/mod.rs"]
+pub mod commands;
+#[path = "error.rs"]
+pub mod error;
 
 pub mod prompt {
 	use rustyline::config::{self, *};

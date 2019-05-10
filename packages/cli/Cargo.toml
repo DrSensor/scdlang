@@ -22,6 +22,16 @@ colored = "*"
 version = "*"
 features = ["wrap_help"]
 
+# WARNING: This make compilation time doubled!! Seems cargo has serious issue here 😠
+[build-dependencies]
+clap = "*"
+scdlang-core = { path = "../core" }
+scdlang_xstate = { path = "../transpiler/xstate" }
+atty = "*"
+rustyline = "*"
+prettyprint = "*"
+colored = "*"
+
 [dev-dependencies]
 predicates = "*"
 assert_fs = "*"

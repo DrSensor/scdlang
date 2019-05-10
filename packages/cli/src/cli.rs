@@ -1,7 +1,20 @@
-use crate::error::Error;
+use crate::{commands::*, error::Error};
 use clap::{App, ArgMatches, SubCommand};
 
-pub type Result = core::result::Result<(), Error>;
+#[rustfmt::skip]
+pub fn build<'a, 'b>() -> App<'a, 'b> {
+	Main::command()
+		.subcommand(Eval::command())
+		.subcommand(Code::command())
+}
+
+pub fn run(matches: ArgMatches) -> Result {
+	Main::run_on(&matches)?;
+	Eval::run_on(&matches)?;
+	Code::run_on(&matches)?;
+	Ok(())
+}
+
 pub trait CLI<'c> {
 	const NAME: &'c str;
 	const USAGE: &'c str;
@@ -21,3 +34,5 @@ pub trait CLI<'c> {
 		Ok(())
 	}
 }
+
+pub type Result = core::result::Result<(), Error>;

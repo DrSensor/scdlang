@@ -1,5 +1,5 @@
 blacklisted-names = []
-type-complexity-threshold = 100
+type-complexity-threshold = 120
 too-many-arguments-threshold = 4
 single-char-binding-names-threshold = 3
 too-large-for-stack = 0

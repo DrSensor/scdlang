@@ -1,31 +1,12 @@
-#[macro_use]
-extern crate clap;
+mod lib;
+pub use lib::*;
 
-pub mod cli;
-mod commands;
-pub mod error;
-
-use cli::CLI;
-use commands::*;
 use error::Error;
 
 fn main() {
-	let matches = Main::command()
-		.subcommand(Eval::command())
-		.subcommand(Code::command())
-		.get_matches();
+	let matches = cli::build().get_matches();
 
-	let run = || -> Result<(), Error> {
-		Main::run_on(&matches)?;
-		Eval::run_on(&matches)?;
-		Code::run_on(&matches)?;
-		Ok(())
-	};
-
-	if let Err(err) = run() {
+	if let Err(err) = cli::run(matches) {
 		Error::report(err, Some(-1));
 	}
 }
-
-mod lib;
-pub use lib::*;

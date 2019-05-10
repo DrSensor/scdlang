@@ -1,5 +1,5 @@
 #![allow(clippy::unit_arg)]
-use crate::Error;
+use crate::error::Error;
 use atty::Stream;
 use prettyprint::{PrettyPrint, PrettyPrintError};
 
