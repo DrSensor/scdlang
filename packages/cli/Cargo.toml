@@ -1,7 +1,7 @@
 [package]
 name = "scrap"
-version = "0.1.0"
-description = "A devtools for scdlang"
+version = "0.0.0"
+description = "A CLI for working with Scdlang"
 authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
 edition = "2018"
 

@@ -19,7 +19,7 @@ impl<'c> CLI<'c> for Code {
 
 	#[rustfmt::skip]
 	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
-		cmd.aliases(&["generate", "gen", "declaration", "declr"])
+		cmd.visible_aliases(&["generate", "gen", "declaration", "declr"])
 			.about("Generate from scdlang file declaration to another format")
 			.args(&[
 				Arg::with_name("stream").help("Parse the file line by line")
