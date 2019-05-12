@@ -46,7 +46,7 @@ steps:
     curl -sSf -o rustup-init.exe https://win.rustup.rs
     rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
     echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
-    echo "##vso[task.setvariable variable=PATH;]%cd%"
+    echo "##vso[task.setvariable variable=PWD;]%cd%"
   displayName: Windows install rust
   condition: eq( variables['Agent.OS'], 'Windows_NT' )
 - script: |
