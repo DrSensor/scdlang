@@ -1,4 +1,4 @@
-export MPLBACKEND="Qt5Agg"
+export MPLBACKEND := "Qt5Agg"
 
 # Start development
 start: clear

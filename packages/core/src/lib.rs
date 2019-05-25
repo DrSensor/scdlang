@@ -11,7 +11,7 @@ pub use crate::core::{parse, Scdlang};
 pub use external::Parser as Transpiler;
 
 pub mod prelude {
-	pub use super::{external::*, utils::iterators::*, utils::naming::*};
+	pub use super::{external::*, utils::naming::*};
 
 	pub use pest::Parser as PestParser;
 	pub use std::convert::*;
