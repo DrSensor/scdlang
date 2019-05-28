@@ -1,18 +1,25 @@
+//! Helper to process Scdlang naming system.
+
 use std::{fmt, ops};
 
-pub const QUOTES: &[char] = &['\'', '"', '`'];
+const QUOTES: &[char] = &['\'', '"', '`'];
 
-pub fn sanitize(name: &str) -> String {
+pub(crate) fn sanitize(name: &str) -> String {
 	name.trim_matches(QUOTES).replace("\\", "")
 }
 
 #[derive(Debug, Clone)]
+/// Type for differentiating between native naming convention [`Unquoted`](#Unquoted)
+/// and free naming convention [`Quoted`](#Quoted)
 pub enum Name<'t> {
+	/// e.g "double quote", 'single quote', or `backtick`
 	Quoted(String),
+	/// e.g PascalCase or snakeCase
 	Unquoted(&'t str),
 }
 
 use Name::*;
+/// Implemented to ease type coercion with `&str`
 impl<'t> From<&'t str> for Name<'t> {
 	fn from(name: &'t str) -> Self {
 		let first_char = name.chars().next().unwrap_or_default();
@@ -52,16 +59,18 @@ impl Name<'_> {
 	}
 }
 
+/// Implemented to ease type coercion with `&str`
 impl ops::Deref for Name<'_> {
 	type Target = str;
 	fn deref(&self) -> &Self::Target {
 		match self {
 			Quoted(name) => name,
-			Unquoted(name) => name,
+			Unquoted(name) => *name,
 		}
 	}
 }
 
+/// Implemented to ease type coercion with `&str`
 impl PartialEq<str> for Name<'_> {
 	fn eq(&self, other: &str) -> bool {
 		match self {
@@ -71,6 +80,7 @@ impl PartialEq<str> for Name<'_> {
 	}
 }
 
+/// Implemented to make [`Name`](#Name) printable
 impl fmt::Display for Name<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {

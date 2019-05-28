@@ -2,14 +2,16 @@ mod core;
 
 pub(crate) mod cache;
 
-pub mod error;
+mod error;
 pub mod external;
 pub mod semantics;
 pub mod utils;
 
 pub use crate::core::{parse, Scdlang};
+pub use error::Error;
 pub use external::Parser as Transpiler;
 
+/// A prelude providing convenient access to commonly-used features of scdlang core parser.
 pub mod prelude {
 	pub use super::{external::*, utils::naming::*};
 
@@ -17,6 +19,22 @@ pub mod prelude {
 	pub use std::convert::*;
 }
 
+/** A helper module for aliasing several generated [`Rule`] which alias of [`pest::RuleType`]
+
+# Examples
+```ignore
+use scdlang::{parse, grammar::*};
+
+let pair = parse("A -> B")?;
+match pair.as_rule() {
+	Name::state => print!("state {}", pair.as_str()),
+	Symbol::arrow::right | Symbol::arrow::left => print!(" {} ", pair.as_str()),
+	_ => unreachable!()
+}
+```
+
+[`Rule`]: grammar/enum.Rule.html
+[`pest::RuleType`]: https://docs.rs/pest/latest/pest/trait.RuleType.html */
 pub mod grammar {
 	pub use super::core::Rule;
 

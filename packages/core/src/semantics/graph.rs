@@ -1,3 +1,6 @@
+//! Module that contain semantics graph of Scdlang which modeled as [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph)
+#![allow(dead_code)]
+
 #[derive(Debug)]
 /// SCXML equivalent:
 /// ```scxml
@@ -5,7 +8,7 @@
 ///     <transition target="to.name"/>
 /// </state>
 /// ```
-pub(crate) struct Transition<'t> {
+pub struct Transition<'t> {
 	pub from: State<'t>,
 	pub to: State<'t>,
 	pub at: Option<Event<'t>>,

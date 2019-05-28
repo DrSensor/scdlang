@@ -3,6 +3,30 @@ use pest_derive::Parser;
 
 #[derive(Parser, Default, Clone)] // 🤔 is it wise to derive from Copy&Clone ?
 #[grammar = "grammar.pest"]
+/** __Core__ parser and also [`Builder`].
+
+# Examples
+```ignore
+use scdlang::semantics::Kind;
+
+let mut parser = Scdlang::new();
+parser.with_err_path("test.scl")
+
+for semantic_type in iter_from(source)? {
+	match semantic_type {
+		Kind::Expression(expr) => {/* expr.[methods] */}
+		Kind::Statement(stmnt) => {/* stmnt.[methods] */}
+		Kind::Declaration(declr) => {
+			/*
+			declr.expressions.[methods] // access each expressions
+			declr.statements.[methods] //access each statements
+			*/
+		}
+	}
+}
+```
+
+[`Builder`]: external/trait.Builder.html */
 pub struct Scdlang<'g> {
 	pub(crate) path: Option<&'g str>,
 	pub(crate) line: Option<usize>,
@@ -12,7 +36,8 @@ pub struct Scdlang<'g> {
 }
 
 impl Scdlang<'_> {
-	/// This method is prefered when instantiating than using`::default()`
+	/// This method is prefered for instantiating
+	/// than using [`Default::default()`](https://doc.rust-lang.org/std/default/trait.Default.html#tymethod.default)
 	pub fn new() -> Self {
 		Self {
 			clear_cache: true,
@@ -21,8 +46,10 @@ impl Scdlang<'_> {
 		}
 	}
 
-	/// Manually drop this object which can return Err(Deadlock), useful when in multi-thread process
-	/// Call this if you want to avoid panic! by Drop when out of scope cause
+	/** > Call this when [`Drop`](https://doc.rust-lang.org/std/ops/trait.Drop.html#tymethod.drop) cause panic!.
+
+	Manually drop this object which can return Err(Deadlock),
+	useful when in _multi-thread process_. */
 	pub fn finish(mut self) -> Result<Self, Error> {
 		self.clear_cache = false;
 		clear_cache()?;

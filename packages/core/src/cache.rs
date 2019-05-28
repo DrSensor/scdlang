@@ -1,4 +1,4 @@
-// Collection of cache variables which help detecting semantics error
+//! Collection of cache variables which help detecting semantics error.
 // TODO: 🤔 use hot reload https://crates.rs/crates/warmy when import statement is introduced
 use crate::error::Error;
 use lazy_static::lazy_static;
@@ -9,8 +9,7 @@ use std::{
 	sync::{Mutex, MutexGuard},
 };
 
-const NUM_OF_CACHES: usize = 1;
-type MapTransition = HashMap<CurrentState, HashMap<Trigger, NextState>>;
+const NUM_OF_CACHES: usize = 1; /*update 👈 when adding another type of caches*/
 
 // TODO: replace with https://github.com/rust-lang-nursery/lazy-static.rs/issues/111 when resolved
 // 🤔 or is there any better way?
@@ -18,15 +17,15 @@ type MapTransition = HashMap<CurrentState, HashMap<Trigger, NextState>>;
 // type LazyMut<T> = Mutex<Option<T>>;
 lazy_static! {
 	static ref TRANSITION: Mutex<MapTransition> = Mutex::new(HashMap::new());
+	/*reserved for another caches*/
 }
 
+/// Access cached transition safely
 pub fn transition<'a>() -> Result<MutexGuard<'a, MapTransition>, Error> {
 	TRANSITION.lock().map_err(|_| Error::Deadlock)
 }
 
 /// Clear cache data but preserve the allocated memory for reuse.
-/// Call `shrink` to flush out the allocated memory.
-/// For example: ```cache::clear()?.shrink()?;```
 pub fn clear<'c>() -> Result<Shrink<'c, impl Eq + Hash, impl Any>, Error> {
 	let mut cache_list = [
 		TRANSITION.lock().map_err(|_| Error::Deadlock)?,
@@ -47,6 +46,7 @@ impl<K: Eq + Hash, V: Any> Shrink<'_, K, V> {
 
 // TODO: 🤔 consider using this approach http://idubrov.name/rust/2018/06/01/tricking-the-hashmap.html
 type CacheList<'c, K, V> = [MutexGuard<'c, HashMap<K, V>>; NUM_OF_CACHES];
+type MapTransition = HashMap<CurrentState, HashMap<Trigger, NextState>>;
 
 type CurrentState = String;
 type NextState = String;

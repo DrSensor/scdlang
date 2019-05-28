@@ -1,3 +1,4 @@
+#![allow(deprecated)]
 use super::helper::{get, prelude::*};
 use crate::semantics::{Event, StateType, Transition, TransitionType};
 use std::convert::TryFrom;
