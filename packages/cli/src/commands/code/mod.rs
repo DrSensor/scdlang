@@ -37,6 +37,7 @@ impl<'c> CLI<'c> for Code {
 			])
 	}
 
+	#[allow(deprecated)]
 	fn invoke(args: &ArgMatches) -> Result {
 		let filepath = args.value_of("FILE").unwrap();
 		let arg_is_stream = args.is_present("stream");
@@ -81,7 +82,7 @@ impl<'c> CLI<'c> for Code {
 
 		match args.value_of("DIST") {
 			Some(dist) => fs::write(dist, format!("{}", machine)).map_err(Error::IO)?,
-			//if run on non-interactive shell
+			//👇if run on non-interactive shell
 			None if atty::isnt(Stream::Stdout) => {
 				if count_parse_err > 0 {
 					println!("Partial Result\n---\n{}\n---", machine)
@@ -89,7 +90,7 @@ impl<'c> CLI<'c> for Code {
 					println!("{}", machine)
 				}
 			}
-			//if run on interactive shell
+			//👇if run on interactive shell
 			None => (if args.is_present("stream") {
 				print.string_with_header(
 					machine.to_string(),

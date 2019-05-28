@@ -1,7 +1,7 @@
 #![allow(clippy::unit_arg)]
 mod schema;
 
-pub use schema::*;
+use schema::*;
 
 use scdlang_core::{prelude::*, semantics::Kind, Scdlang};
 use serde::{Deserialize, Serialize};
@@ -10,6 +10,17 @@ use std::{error, fmt, mem::ManuallyDrop};
 use voca_rs::case::{camel_case, shouty_snake_case};
 
 #[derive(Default, Serialize, Deserialize)]
+/** Transpiler Scdlang → XState.
+
+# Examples
+```no_run
+let xstate = Machine::new();
+
+xstate.configure().with_err_path("test.scl");
+parser.parse("A -> B")?;
+
+println!("{}", parser.to_string());
+``` */
 pub struct Machine<'a> {
 	#[serde(skip)]
 	builder: Scdlang<'a>,
@@ -73,6 +84,8 @@ impl<'a> Parser<'a> for Machine<'a> {
 }
 
 impl Machine<'_> {
+	/// Create new StateMachine.
+	/// Use this over `Machine::default()`❗
 	pub fn new() -> Self {
 		let mut builder = Scdlang::new();
 		builder.auto_clear_cache(false);
