@@ -88,6 +88,17 @@ steps:
   inputs:
     artifactName: cli
 
+- task: Docker@2
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  displayName: Build and Push
+  inputs:
+    command: buildAndPush
+    containerRegistry: scdlang
+    repository: scdlang/scrap
+    tags: |
+      latest
+      $(Build.SourceBranch)
+
 - task: GitHubRelease@0
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
