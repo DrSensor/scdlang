@@ -45,8 +45,10 @@ TODO: brew or via shellscript just like installing rustup
 #### Windows
 TODO: chocolatey or via msi installer just like installing rustup
 
-#### Docker
-TODO: waiting to be approved as a beta tester for Github Package Manager 🤤
+#### [Docker](https://hub.docker.com/r/scdlang/scrap)
+```console
+docker pull scdlang/scrap
+```
 
 #### via Cargo
 TODO: TBD
