@@ -38,10 +38,15 @@ pr:
 
 trigger:
   tags:
-    include:
-      - v*
+    include: ['*.*.*']
 
 steps:
+- bash: |
+    TAG="$(Build.SourceBranch)"
+    TAG=${TAG#refs/tags/}
+    echo $TAG
+    echo "##vso[task.setvariable variable=build.tag]$TAG"
+  displayName: "Create tag variable"
 - script: |
     curl -sSf -o rustup-init.exe https://win.rustup.rs
     rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
@@ -88,6 +93,16 @@ steps:
   inputs:
     artifactName: cli
 
+- task: Docker@2
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  inputs:
+    command: buildAndPush
+    containerRegistry: scdlang
+    repository: scdlang/scrap
+    tags: |
+      latest
+      $(build.tag)
+
 - task: GitHubRelease@0
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
@@ -95,7 +110,7 @@ steps:
     title: $(Build.SourceVersionMessage)
     repositoryName: $(Build.Repository.Name)
     action: edit
-    tag: $(Build.SourceBranch)
+    tag: $(build.tag)
     assets: $(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz
     assetUploadMode: replace
     isDraft: true
