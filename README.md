@@ -57,7 +57,8 @@ TODO: TBD
 <!-- TODO: add proper CONTRIBUTING.md alongs with ARCHITECTURE.md and github template for issues & pull_request -->
 Please do 🥺
 
-Any contributions are welcome as long as it follow [Code of Conduct](CODE_OF_CONDUCT.md)
+Any contributions are welcome as long as it follow [Code of Conduct](CODE_OF_CONDUCT.md).
+<sup>If anyone have questions or something to discuss, feel free to DM or mention me in any platform that have my profile picture 👹.</sup>
 
 ## License
 
