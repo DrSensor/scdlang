@@ -8,7 +8,12 @@ edition = "2018"
 [[bin]]
 name = "scrap"
 test = false
+doc = false
 doctest = false
+
+[lib]
+doctest = false
+doc = false
 
 [dependencies]
 scdlang-core = { path = "../core" }

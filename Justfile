@@ -14,11 +14,15 @@ check: clear
 	RUST_BACKTRACE={{mode}} just {{command}}
 
 # Run `just +command` whenever some files is changed
-@watch +command:
-	watchexec --restart --clear just {{command}}
+@watch command +args:
+	watchexec --restart --clear 'just {{command}} {{args}}'
 
 # Run all kind of tests
 test: unit integration
+
+# Generate and open the documentation
+docs +args='':
+	cargo doc --no-deps {{args}}
 
 # Autoformat all code
 format:
@@ -39,13 +43,22 @@ clean: _clean-analyze
 	cargo clean
 	pipenv clean
 
-# Run all release build
-release:
-	cargo build --release
+# Prepare for release
+release version:
+	#!/usr/bin/env bash
+	./scripts/version.py {{version}}
+	git add --ignore-removal Cargo.lock "packages/**/Cargo.toml"
+	TAG=$(git describe --abbrev=0 | ./scripts/version.py {{version}})
+	git commit -S --edit --message "Release v${TAG}" \
+	&& git tag --annotate $TAG --message "$(git log -1 --pretty=%B)" --sign
+	if [ $? -ne 0 ]; then
+		git reset Cargo.lock "packages/**/Cargo.toml"
+		./scripts/version.py {{version}}-
+	fi
 
 # Run all debug/development build
-build:
-	cargo build
+build args='':
+	cargo build {{args}}
 
 # Run all unit test
 unit:
@@ -60,7 +73,8 @@ integration:
 	./scripts/summary.sh {{git-flags}} | ./scripts/perfsum.py
 
 # Profile debug/development build
-analyze +args: release _clean-analyze
+analyze +args: _clean-analyze
+	just build release
 	heaptrack ./target/release/scrap {{args}}
 	heaptrack --analyze heaptrack.*.zst &
 	./scripts/perfquick.sh './target/release/scrap {{args}}' | jq .

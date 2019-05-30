@@ -15,6 +15,8 @@ black = "*"
 matplotlib = "*"
 requests = "*"
 toolz = "*"
+tomlkit = "*"
+pampy = "*"
 
 [requires]
 python_version = "3.7"
