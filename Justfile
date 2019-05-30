@@ -43,17 +43,18 @@ clean: _clean-analyze
 	cargo clean
 	pipenv clean
 
+version_subjects := "Cargo.lock Dockerfile 'packages/**/Cargo.toml'"
 # Prepare for release
 release version:
 	#!/usr/bin/env bash
-	./scripts/version.py {{version}}
-	git add --ignore-removal Cargo.lock "packages/**/Cargo.toml"
-	TAG=$(git describe --abbrev=0 | ./scripts/version.py {{version}})
+	./scripts/version.py {{version}} && cargo check
+	git add --ignore-removal {{version_subjects}}
+	TAG=`(git describe --abbrev=0 || echo 0.0.0) 2>/dev/null | ./scripts/version.py {{version}}`
 	git commit -S --edit --message "Release v${TAG}" \
 	&& git tag --annotate $TAG --message "$(git log -1 --pretty=%B)" --sign
 	if [ $? -ne 0 ]; then
-		git reset Cargo.lock "packages/**/Cargo.toml"
-		./scripts/version.py {{version}}-
+		git reset {{version_subjects}}
+		./scripts/version.py {{version}}- && cargo check
 	fi
 
 # Run all debug/development build
