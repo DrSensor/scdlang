@@ -1,6 +1,6 @@
 FROM alpine
 
-LABEL version="0.0.0" \
+LABEL version="0.1.0" \
       repository="https://github.com/drsensor/scdlang" \
       homepage="https://drsensor.github.io/scdlang" \
       maintainer="Fahmi Akbar Wildana <sensorfied@gmail.com>"

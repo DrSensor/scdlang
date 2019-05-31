@@ -1,6 +1,9 @@
 # Scdlang
 <sup>**S**tate**c**harts **D**escription **Lang**uage</sup><br>
 
+[![current version](https://badge.fury.io/gh/drsensor%2Fscdlang.svg)](https://github.com/drsensor/scdlang/releases/latest)
+[![Docker image size](https://img.shields.io/microbadger/image-size/scdlang/scrap/latest.svg)](https://hub.docker.com/r/scdlang/scrap)
+![License](https://img.shields.io/github/license/drsensor/scdlang.svg)
 [![gitstore](https://enjoy.gitstore.app/repositories/badge-DrSensor/scdlang.svg)](https://enjoy.gitstore.app/repositories/DrSensor/scdlang)
 
 > 🚧 Still **Work in Progress** 🏗️
@@ -54,11 +57,11 @@ docker pull scdlang/scrap
 TODO: TBD
 
 ## Contributing
+![open "help wanted" issues](https://img.shields.io/github/issues/drsensor/scdlang/help%20wanted.svg)
+![open "good first issue" issues](https://img.shields.io/github/issues/drsensor/scdlang/good%20first%20issue.svg)
 <!-- TODO: add proper CONTRIBUTING.md alongs with ARCHITECTURE.md and github template for issues & pull_request -->
-Please do 🥺
-
-Any contributions are welcome as long as it follow [Code of Conduct](CODE_OF_CONDUCT.md).
-<sup>If anyone have questions or something to discuss, feel free to DM or mention me in any platform that have my profile picture 👹.</sup>
+Any contributions are welcome as long as it follow [Code of Conduct](CODE_OF_CONDUCT.md).<br>
+<sup><sup>If anyone have questions or something to discuss, feel free to DM or mention me in any platform that have my profile picture 👹.</sup></sup>
 
 ## License
 
