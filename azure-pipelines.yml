@@ -1,0 +1,117 @@
+# TODO:
+# 1. Cross compilation targeting different architectures using `cross`
+#     see https://nbsoftsolutions.com/blog/azure-pipelines-for-rust-projects
+
+variables:
+  rustup_toolchain: stable
+  architecture: x86_64
+
+strategy:
+  matrix:
+    linux:
+      target: $(architecture)-unknown-linux-gnu
+      imageName: ubuntu-16.04
+    alpine:
+      target: $(architecture)-unknown-linux-musl
+      imageName: ubuntu-16.04
+    mac:
+      target: $(architecture)-apple-darwin
+      imageName: macos-10.13
+    windows:
+      target: $(architecture)-pc-windows-msvc
+      imageName: windows-2019
+    # TODO: enable this when https://github.com/rust-lang/rust/issues/53454 resolved
+    # mingw:
+    #   target: $(architecture)-pc-windows-gnu
+    #   imageName: windows-2019
+
+pool:
+  vmImage: $(imageName)
+
+pr:
+  branches:
+    include:
+      - master
+  paths:
+    include:
+      - packages/*
+
+trigger:
+  tags:
+    include: ['*.*.*']
+
+steps:
+- bash: |
+    TAG="$(Build.SourceBranch)"
+    TAG=${TAG#refs/tags/}
+    echo $TAG
+    echo "##vso[task.setvariable variable=build.tag]$TAG"
+  displayName: "Create tag variable"
+- script: |
+    curl -sSf -o rustup-init.exe https://win.rustup.rs
+    rustup-init.exe -y --default-toolchain %RUSTUP_TOOLCHAIN%
+    echo "##vso[task.setvariable variable=PATH;]%PATH%;%USERPROFILE%\.cargo\bin"
+  displayName: Windows install rust
+  condition: eq( variables['Agent.OS'], 'Windows_NT' )
+- script: |
+    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
+    echo "##vso[task.setvariable variable=PATH;]$PATH:$HOME/.cargo/bin"
+  displayName: Install rust
+  condition: ne( variables['Agent.OS'], 'Windows_NT' )
+
+- script: rustup target add $(TARGET)
+  displayName: Install target toolchain
+
+# TODO: Remove this when backtrace-sys don't cause trouble or this project can be compiled on stable channel
+- script: sudo apt-get install musl-tools
+  displayName: Install musl-gcc
+  condition: contains( variables['target'], 'musl' )
+
+- script: cargo build --release --target $(TARGET)
+  displayName: Build release
+
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: $(Build.SourcesDirectory)/target/$(TARGET)/release
+    contents: |
+      scrap
+      scrap.bash
+      scrap.fish
+      scrap.elv
+      _scrap
+      _scrap.ps1
+      scrap.exe
+    targetFolder: $(Build.BinariesDirectory)
+
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: $(Build.BinariesDirectory)
+    archiveType: tar
+    tarCompression: gz
+    archiveFile: $(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz
+- task: PublishBuildArtifacts@1
+  inputs:
+    artifactName: cli
+
+- task: Docker@2
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  inputs:
+    command: buildAndPush
+    containerRegistry: scdlang
+    repository: scdlang/scrap
+    tags: |
+      latest
+      $(build.tag)
+
+- task: GitHubRelease@0
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  inputs:
+    gitHubConnection: drsensor
+    title: $(Build.SourceVersionMessage)
+    repositoryName: $(Build.Repository.Name)
+    action: edit
+    tag: $(build.tag)
+    assets: $(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz
+    assetUploadMode: replace
+    isDraft: true
+    addChangeLog: true

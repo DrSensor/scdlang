@@ -1,6 +1,20 @@
+# initial implementation
+packages/parser-scdlang/*
+
+# perf data
+*.zst
+
+# Dependencies Lock
+*.lock
+!/Cargo.lock
+!/Pipfile.lock
+
+!/.github/action/**
 !packages/*
 
-*.lock
+# Python
+.mypy_cache/
+
 # Logs
 logs
 *.log

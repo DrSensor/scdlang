@@ -1,0 +1,18 @@
+    
+	
+
+    /// simple exmaple to test if it work
+	/// this example contain empty & blank line, whitespace, tab, oneline & block comment
+
+// without whitespace
+AlphaGo->BetaRust
+
+// with quoted name
+'nightl\'y update' -> `channel:beta` @ "every 4 weeks"
+
+// with whitespace
+B -> C @ FalseAlarm
+B -> "initial D" @ On
+	
+C/*for cheetah*/	->  D//for dimple
+    

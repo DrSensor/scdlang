@@ -1,0 +1,8 @@
+[workspace]
+
+# WARN: Don't ever use glob pattern 💢
+members = [
+	"packages/cli",
+	"packages/core",
+	"packages/transpiler/*",
+]

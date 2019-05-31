@@ -1,0 +1,25 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+pyqt5 = "*"
+flake8 = "*"
+flake8-mypy = "*"
+black = "*"
+#TODO: enable 👇 (and delete scripts/*.sh) after actions published to github marketplace
+# gitman = "*" 
+
+[packages]
+matplotlib = "*"
+requests = "*"
+toolz = "*"
+tomlkit = "*"
+pampy = "*"
+
+[requires]
+python_version = "3.7"
+
+[pipenv]
+allow_prereleases = true

@@ -1,8 +1,13 @@
 root = true
 
-[*.{ts, js}]
+[{**.{sh,ts,js},**/bin/*}]
 indent_style = space
 indent_size = 2
+insert_final_newline = true
+
+[*.py]
+indent_style = space
+indent_size = 4
 insert_final_newline = true
 
 [*.rs]
@@ -10,12 +15,17 @@ indent_style = tab
 indent_size = 4
 insert_final_newline = true
 
-[*.scl]
+[*.{scl}]
 indent_style = space
 indent_size = 4
 insert_final_newline = false
 
-[*.{rc,json,toml,config.js}]
+[{Dockerfile,*{.pest,yml,yaml}}]
+indent_style = space
+indent_size = 2
+insert_final_newline = false
+
+[{*.{rc,json,toml,workflow,config.js},Justfile}]
 indent_style = tab
 indent_size = 2
 insert_final_newline = false

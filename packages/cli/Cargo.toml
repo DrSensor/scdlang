@@ -1,0 +1,44 @@
+[package]
+name = "scrap"
+version = "0.0.0"
+description = "A CLI for working with Scdlang"
+authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
+edition = "2018"
+
+[[bin]]
+name = "scrap"
+test = false
+doc = false
+doctest = false
+
+[lib]
+doctest = false
+doc = false
+
+[dependencies]
+scdlang-core = { path = "../core" }
+scdlang_xstate = { path = "../transpiler/xstate" }
+atty = "*"
+rustyline = "*"
+prettyprint = "*"
+colored = "*"
+
+[dependencies.clap]
+version = "*"
+features = ["wrap_help"]
+
+# WARNING: This make compilation time doubled!! Seems cargo has serious issue here 😠
+[build-dependencies]
+clap = "*"
+scdlang-core = { path = "../core" }
+scdlang_xstate = { path = "../transpiler/xstate" }
+atty = "*"
+rustyline = "*"
+prettyprint = "*"
+colored = "*"
+
+[dev-dependencies]
+predicates = "*"
+assert_fs = "*"
+assert_cmd = "*"
+rexpect = "*"

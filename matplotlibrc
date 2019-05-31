@@ -1,0 +1,2 @@
+backend: Agg
+figure.constrained_layout.use: True
