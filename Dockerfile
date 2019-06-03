@@ -1,4 +1,4 @@
-FROM alpine
+FROM scratch
 
 LABEL version="0.1.0" \
       repository="https://github.com/drsensor/scdlang" \
