@@ -163,8 +163,8 @@ Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *co
 
 ##### use $expression
 ```scl
-context VarX as x
-context VarY as y
+let VarX as x
+let VarY as y
 
 A -> B @ C[x > y]
 ```
@@ -177,15 +177,15 @@ A -> B @ C[D|!E]
 ```
 or
 ```scl
-context VarX as x
-context VarY as y
+let VarX as x
+let VarY as y
 
 A -> B @ C[x > y & y > 0]
 ```
 
 ##### use "in state" guards
 ```scl
-context VarX as x
+let VarX as x
 
 state A {
   E -> G @ F
