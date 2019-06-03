@@ -1,6 +1,4 @@
 ARG BASE_IMG
-ARG START_CMD=scrap
-
 FROM ${BASE_IMG}
 
 LABEL version="0.1.1" \
@@ -11,5 +9,4 @@ COPY LICENSE README.md CODE_OF_CONDUCT.md /
 
 COPY target/x86_64-unknown-linux-musl/release/scrap /usr/bin/
 
-ENV command=${START_CMD}
-ENTRYPOINT ${command}
+ENTRYPOINT [ "scrap" ]
