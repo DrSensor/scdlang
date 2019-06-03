@@ -114,4 +114,4 @@ steps:
     assets: $(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz
     assetUploadMode: replace
     isDraft: true
-    addChangeLog: true
+    addChangeLog: false
