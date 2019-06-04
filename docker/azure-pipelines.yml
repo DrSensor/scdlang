@@ -8,19 +8,6 @@ steps:
     containerRegistry: scdlang
 
 - task: Docker@2
-  displayName: Docker Build with Base Image scratch
-  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-  inputs:
-    command: build
-    Dockerfile: docker/Dockerfile
-    repository: scdlang/scrap
-    arguments: >-
-      --build-arg base_image=scratch
-    tags: |
-      latest
-      $(build.tag)
-
-- task: Docker@2
   displayName: Docker Build with Base Image alpine
   condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
@@ -32,6 +19,19 @@ steps:
     tags: |
       alpine
       $(build.tag)-alpine
+
+- task: Docker@2
+  displayName: Docker Build with Base Image scratch
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  inputs:
+    command: build
+    Dockerfile: docker/Dockerfile
+    repository: scdlang/scrap
+    arguments: >-
+      --build-arg base_image=scratch
+    tags: |
+      latest
+      $(build.tag)
 
 - task: Docker@2
   displayName: Docker Push
