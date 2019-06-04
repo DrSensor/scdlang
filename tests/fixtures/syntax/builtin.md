@@ -46,7 +46,7 @@ state A { @entry |> Send(C) }
 <details><summary>self transition loop</summary>
 
 ```scl
-=> B @ C |> Send(C)
+->> B @ C |> Send(C)
 B -> C @ G
 ```
 Read as: "Loop transition to *state **B*** as long as *event **G*** is not triggered"

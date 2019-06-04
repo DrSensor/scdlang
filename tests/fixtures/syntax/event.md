@@ -221,8 +221,8 @@ Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *co
 
 ```scl
 @ [D] {
-  => J |> g
-  A -> B @ C |> f
+  A -> J @ D |> g
+  A ->> B @ C[isEmergency] |> f
 }
 ```
 Read as: "only if *condition **D*** is true:
