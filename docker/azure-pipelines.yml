@@ -1,13 +1,19 @@
 steps:
 
 - task: Docker@2
+  displayName: Docker Login
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  inputs:
+    command: login
+    containerRegistry: scdlang
+
+- task: Docker@2
   displayName: Docker Build with Base Image alpine
   condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
     command: build
     Dockerfile: docker/Dockerfile
     buildContext: '.'
-    containerRegistry: scdlang
     repository: scdlang/scrap
     arguments: >-
       --build-arg base_image=alpine
@@ -22,7 +28,6 @@ steps:
     command: build
     Dockerfile: docker/Dockerfile
     buildContext: '.'
-    containerRegistry: scdlang
     repository: scdlang/scrap
     arguments: >-
       --build-arg base_image=scratch
@@ -35,5 +40,9 @@ steps:
   condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
     command: push
-    containerRegistry: scdlang
     repository: scdlang/scrap
+    tags: |
+      latest
+      $(build.tag)
+      alpine
+      $(build.tag)-alpine
