@@ -93,47 +93,7 @@ steps:
   inputs:
     artifactName: cli
 
-
-- task: Docker@2
-  displayName: Docker Build with Base Image scratch
-  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-  inputs:
-    command: build
-    containerRegistry: scdlang
-    repository: scdlang/scrap
-    tags: |
-      latest
-      $(build.tag)
-    arguments: >-
-      --build-arg BASE_IMG=scratch
-      --build-arg START_CMD=scrap
-
-- task: Docker@2
-  displayName: Docker Build with Base Image alpine
-  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-  inputs:
-    command: build
-    containerRegistry: scdlang
-    repository: scdlang/scrap
-    tags: |
-      alpine
-      $(build.tag)-alpine
-    arguments: >-
-      --build-arg BASE_IMG=alpine
-      --build-arg START_CMD=sh
-
-- task: Docker@2
-  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-  inputs:
-    command: push
-    containerRegistry: scdlang
-    repository: scdlang/scrap
-    tags: |
-      latest
-      $(build.tag)
-      alpine
-      $(build.tag)-alpine
-
+- template: docker/azure-pipelines.yml
 
 - task: GitHubRelease@0
   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))

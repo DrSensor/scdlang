@@ -1,5 +1,5 @@
-ARG BASE_IMG
-FROM ${BASE_IMG}
+ARG base_image
+FROM ${base_image}
 
 LABEL version="0.1.1" \
       repository="https://github.com/drsensor/scdlang" \
