@@ -1,6 +1,13 @@
 # Scdlang
 <sup>**S**tate**c**harts **D**escription **Lang**uage</sup><br>
 
+<blockquote>
+
+powered by [🌟](https://help.github.com/en/articles/about-stars)
+
+Don't let _him_ be a stargazer alone!
+</blockquote>
+
 [![current version](https://badge.fury.io/gh/drsensor%2Fscdlang.svg)](https://github.com/drsensor/scdlang/releases/latest)
 [![Docker image size](https://img.shields.io/microbadger/image-size/scdlang/scrap/latest.svg)](https://hub.docker.com/r/scdlang/scrap)
 [![License](https://img.shields.io/github/license/drsensor/scdlang.svg)](./LICENSE)
