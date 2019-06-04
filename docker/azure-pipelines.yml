@@ -13,6 +13,7 @@ steps:
   inputs:
     command: build
     Dockerfile: docker/Dockerfile
+    buildContext: '.'
     repository: scdlang/scrap
     arguments: >-
       --build-arg base_image=alpine
@@ -26,6 +27,7 @@ steps:
   inputs:
     command: build
     Dockerfile: docker/Dockerfile
+    buildContext: '.'
     repository: scdlang/scrap
     arguments: >-
       --build-arg base_image=scratch
