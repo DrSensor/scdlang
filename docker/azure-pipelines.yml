@@ -1,18 +1,15 @@
-variables:
-  docker_build_condition: $[ and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/')) ]
-
 steps:
 
 - task: Docker@2
   displayName: Docker Login
-  condition: variables['docker_build_condition']
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
     command: login
     containerRegistry: scdlang
 
 - task: Docker@2
   displayName: Docker Build with Base Image scratch
-  condition: variables['docker_build_condition']
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
     command: build
     Dockerfile: docker/Dockerfile
@@ -25,7 +22,7 @@ steps:
 
 - task: Docker@2
   displayName: Docker Build with Base Image alpine
-  condition: variables['docker_build_condition']
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
     command: build
     Dockerfile: docker/Dockerfile
@@ -38,7 +35,7 @@ steps:
 
 - task: Docker@2
   displayName: Docker Push
-  condition: variables['docker_build_condition']
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   inputs:
     command: push
     repository: scdlang/scrap
