@@ -12,11 +12,11 @@ black = "*"
 # gitman = "*" 
 
 [packages]
-matplotlib = "*"
 requests = "*"
 toolz = "*"
 tomlkit = "*"
 pampy = "*"
+altair = "*"
 
 [requires]
 python_version = "3.7"
