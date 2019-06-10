@@ -20,6 +20,8 @@ git fetch -q origin refs/notes/*:refs/notes/*
 python --version
 pipenv --version
 
+# TODO: support multiple args
+
 # TODO: investigate why it's not working but it works on action/perf
 # ${PERF_SETUP:-$(pipenv install --system)}
 

@@ -15,7 +15,9 @@ RUN apt-get update && \
         jq \
         curl \
         ca-certificates \
+        nodejs \
     && \
+    npm install -g vega-cli \
     pip --no-cache-dir install hjson && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
