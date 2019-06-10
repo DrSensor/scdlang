@@ -50,7 +50,7 @@ or
 ```scl
 ->> B
 ```
-Read as: "*state **B*** transition to *state **B***"
+Read as: "*state **B*** transition to *state **B***" ✔
 
 ```scl
 A -> B
@@ -65,7 +65,7 @@ or
 ```scl
 A ->> B
 ```
-Read as: "*state **A*** transition to *state **B***" then loop transition to itself
+Read as: "*state **A*** transition to *state **B***" then loop transition to itself ✔
 
 #### compound/composite/nested
 - keyword: *compund*|*composite*
