@@ -41,7 +41,7 @@ Read as: "*state **A**, **C**, and **D*** transition to *state **B***"
 ```scl
 B <- A,C,D
 ```
-Read as: "*state **B*** transition from either *state **A**, **C**, or **D***"
+Read as: "*state **B*** transition from either *state **A**, **C**, or **D***" ✔
 
 ```scl
 B -> B
@@ -50,7 +50,7 @@ or
 ```scl
 ->> B
 ```
-Read as: "*state **B*** transition to *state **B***"
+Read as: "*state **B*** transition to *state **B***" ✔
 
 ```scl
 A -> B
@@ -65,7 +65,7 @@ or
 ```scl
 A ->> B
 ```
-Read as: "*state **A*** transition to *state **B***" then loop transition to itself
+Read as: "*state **A*** transition to *state **B***" then loop transition to itself ✔
 
 #### compound/composite/nested
 - keyword: *compund*|*composite*

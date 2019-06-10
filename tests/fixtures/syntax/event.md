@@ -21,12 +21,12 @@ Read as: "*state **A*** transition to *state **B*** at *event **C***" ✔
 ```scl
 A <-> B @ C
 ```
-Read as: "*state **A*** transition to/from *state **B*** at *event **C***"
+Read as: "*state **A*** transition to/from *state **B*** at *event **C***" ✔
 
 ```scl
 A -> B @ C,D,E
 ```
-Read as: "*state **A*** transition to *state **B*** at *event **C**, **D**, or **E***"
+Read as: "*state **A*** transition to *state **B*** at *event **C**, **D**, or **E***" ✔
 
 ##### 2nd form
 ```scl
