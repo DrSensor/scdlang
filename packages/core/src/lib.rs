@@ -47,6 +47,21 @@ pub mod grammar {
 			pub use crate::core::Rule::{
 				TransitionTo as right,
 				TransitionFrom as left,
+				TransitionDuplex as both,
+			};
+		}
+
+		pub mod double_arrow {
+			pub use crate::core::Rule::{
+				LoopTo as right,
+				LoopFrom as left,
+			};
+		}
+
+		pub mod tail_arrow {
+			pub use crate::core::Rule::{
+				TransitionToThenLoop as right,
+				TransitionFromThenLoop as left,
 			};
 		}
 	}

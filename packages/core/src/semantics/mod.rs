@@ -30,6 +30,6 @@ pub(super) mod analyze {
 			Ok(sc)
 		}
 
-		fn into_kind(self) -> super::Kind<'c>;
+		fn into_kinds(self) -> Vec<super::Kind<'c>>;
 	}
 }

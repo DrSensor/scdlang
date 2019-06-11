@@ -3,7 +3,7 @@ mod convert;
 mod helper;
 
 use crate::{
-	semantics::{Expression, Transition},
+	semantics::{Expression, Kind, Transition},
 	utils::naming::Name,
 };
 
@@ -18,6 +18,12 @@ impl Expression for Transition<'_> {
 
 	fn event(&self) -> Option<Name> {
 		self.at.as_ref().map(|event| event.name.into())
+	}
+}
+
+impl<'t> From<Transition<'t>> for Kind<'t> {
+	fn from(transition: Transition<'t>) -> Self {
+		Kind::Expression(Box::new(transition))
 	}
 }
 

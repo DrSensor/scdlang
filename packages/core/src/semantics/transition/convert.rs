@@ -36,9 +36,27 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 			}
 
 			// determine the current, next, and type of the State
-			let (current_state, next_state) = match ops {
-				Symbol::arrow::right => get::state(lhs, rhs, &StateType::Atomic),
-				Symbol::arrow::left => get::state(rhs, lhs, &StateType::Atomic),
+			let (transition_type, (current_state, next_state)) = match ops {
+				Symbol::double_arrow::right => (
+					TransitionType::Loop { transient: false },
+					get::state(if lhs.is_empty() { rhs } else { lhs }, rhs, &StateType::Atomic),
+				),
+				Symbol::tail_arrow::right => (
+					TransitionType::Loop { transient: true },
+					get::state(lhs, rhs, &StateType::Atomic),
+				),
+				Symbol::arrow::right | Symbol::arrow::both => {
+					(TransitionType::Normal, get::state(lhs, rhs, &StateType::Atomic))
+				}
+				Symbol::arrow::left => (TransitionType::Normal, get::state(rhs, lhs, &StateType::Atomic)),
+				Symbol::tail_arrow::left => (
+					TransitionType::Loop { transient: true },
+					get::state(rhs, lhs, &StateType::Atomic),
+				),
+				Symbol::double_arrow::left => (
+					TransitionType::Loop { transient: false },
+					get::state(rhs, lhs, &StateType::Atomic),
+				),
 				_ => unreachable!("Rule::{:?}", &ops),
 			};
 
@@ -47,7 +65,7 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 				from: current_state,
 				to: next_state,
 				at: event,
-				kind: TransitionType::External,
+				kind: transition_type,
 			})
 		} else {
 			Err(WrongRule(rule))

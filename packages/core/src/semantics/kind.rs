@@ -38,12 +38,12 @@ state A {}
 🤔 I wonder if curly braces that can expand into multiple transition is included */
 pub trait Declaration: Debug {
 	/// e.g: `@entry |> doSomething`
-	fn statements(&self) -> Option<&dyn Statement>;
+	fn statements(&self) -> Option<Vec<&dyn Statement>>;
 
 	/// e.g: `history state`
 	fn properties(&self) -> Option<&dyn Any>;
 
-	fn expressions(&self) -> Option<&dyn Expression>;
+	fn expressions(&self) -> Option<Vec<&dyn Expression>>;
 }
 
 /** [UNIMPLEMENTED] Everything that don't change state (no transition)
