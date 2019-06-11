@@ -28,6 +28,34 @@ A -> B @ C,D,E
 ```
 Read as: "*state **A*** transition to *state **B*** at *event **C**, **D**, or **E***" ✔
 
+```scl
+A -> A @ C
+B -> B @ C
+```
+or
+```scl
+A ->> B @ C
+```
+or
+```scl
+B <<- A @ C
+```
+Read as: "*state **A*** loop into *state **B*** at *event **C** ✔
+
+```scl
+A -> A
+B -> B @ C
+```
+or
+```scl
+A >-> B @ C
+```
+or
+```scl
+B <-< A @ C
+```
+Read as: "*state **A*** transition to *state **B*** then loop at *event **C** ✔
+
 ##### 2nd form
 ```scl
 A -> B @ E
