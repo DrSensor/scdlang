@@ -1,27 +1,29 @@
 use super::helper::prelude::*;
 use crate::{cache, semantics, utils::naming::sanitize};
-use semantics::{analyze, Kind, Transition, TransitionType};
+use semantics::{analyze, Kind, Transition};
 
 impl<'t> analyze::SemanticCheck<'t> for Transition<'t> {
 	fn analyze_error(&self, span: Span<'t>, options: &'t Scdlang) -> Result<(), ScdlError> {
-		let mut t1_cache = cache::transition()?;
+		let mut cache_transition = cache::transition()?;
 
-		let (current, target) = (sanitize(self.from.name), sanitize(self.to.name));
+		for transition in self.clone().into_iter() {
+			let (current, target) = (sanitize(transition.from.name), sanitize(transition.to.name));
 
-		let t2_cache = t1_cache.entry(current).or_default();
-		match &self.at {
-			Some(trigger) => {
-				if t2_cache.contains_key(&None) {
-					return Err(options.err_from_span(span, self.warn_conflict(&t2_cache)).into());
-				} else if let Some(prev_target) = t2_cache.insert(Some(trigger.into()), target) {
-					return Err(options.err_from_span(span, self.warn_duplicate(&prev_target)).into());
+			let t_cache = cache_transition.entry(current).or_default();
+			match &transition.at {
+				Some(trigger) => {
+					if t_cache.contains_key(&None) {
+						return Err(options.err_from_span(span, transition.warn_conflict(&t_cache)).into());
+					} else if let Some(prev_target) = t_cache.insert(Some(trigger.into()), target) {
+						return Err(options.err_from_span(span, transition.warn_duplicate(&prev_target)).into());
+					}
 				}
-			}
-			None => {
-				if t2_cache.keys().any(Option::is_some) {
-					return Err(options.err_from_span(span, self.warn_conflict(&t2_cache)).into());
-				} else if let Some(prev_target) = t2_cache.insert(None, target) {
-					return Err(options.err_from_span(span, self.warn_duplicate(&prev_target)).into());
+				None => {
+					if t_cache.keys().any(Option::is_some) {
+						return Err(options.err_from_span(span, transition.warn_conflict(&t_cache)).into());
+					} else if let Some(prev_target) = t_cache.insert(None, target) {
+						return Err(options.err_from_span(span, transition.warn_duplicate(&prev_target)).into());
+					}
 				}
 			}
 		}
@@ -29,45 +31,10 @@ impl<'t> analyze::SemanticCheck<'t> for Transition<'t> {
 		Ok(())
 	}
 
-	fn into_kinds(mut self) -> Vec<Kind<'t>> {
+	fn into_kinds(self) -> Vec<Kind<'t>> {
 		let mut kinds = Vec::new();
-		match self.kind {
-			TransitionType::Normal => kinds.push(self.into()),
-			TransitionType::Duplex => {
-				kinds.push(
-					Transition {
-						from: self.to.clone(), // arrow::left
-						to: self.from.clone(),
-						at: self.at.clone(),
-						kind: TransitionType::Normal,
-					}
-					.into(),
-				);
-				self.kind = TransitionType::Normal;
-				kinds.push(self.into()); // arrow::right
-			}
-			TransitionType::Loop { transient } => {
-				/* A ->> B @ C */
-				if self.from.name != self.to.name {
-					kinds.push(
-						Transition /* B -> B @ C */ {
-							from: self.to.clone(), // self transition
-							to: self.to.clone(),
-							at: self.at.clone(),
-							kind: TransitionType::Loop { transient },
-						}
-						.into(),
-					);
-					if transient {
-						self.at = None; // only if /* A >-> B @ C */
-					}
-					self.kind = TransitionType::Normal;
-					kinds.push(self.into());
-				} else {
-					kinds.push(self.into()); /* ->> B @ C */
-				}
-			}
-			TransitionType::Inside { .. } => unreachable!("TODO: when support StateType::Compound"),
+		for transition in self.into_iter() {
+			kinds.push(transition.into());
 		}
 		kinds
 	}

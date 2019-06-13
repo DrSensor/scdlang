@@ -1,7 +1,7 @@
 //! Module that contain semantics graph of Scdlang which modeled as [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph)
 #![allow(dead_code)]
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// SCXML equivalent:
 /// ```scxml
 /// <state id="from.name">
@@ -15,7 +15,7 @@ pub struct Transition<'t> {
 	pub kind: TransitionType<'t>, // 🤔 maybe I should hide it then implement kind() method
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// ```scl
 /// state A {
 /// 	B -> C // Internal(A)

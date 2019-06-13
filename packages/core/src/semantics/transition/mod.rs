@@ -1,6 +1,7 @@
 mod analyze;
 mod convert;
 mod helper;
+mod iter;
 
 use crate::{
 	semantics::{Expression, Kind, Transition},
