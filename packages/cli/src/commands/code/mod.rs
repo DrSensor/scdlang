@@ -23,8 +23,7 @@ impl<'c> CLI<'c> for Code {
 			.about("Generate from scdlang file declaration to another format")
 			.args(&[
 				Arg::with_name("stream").help("Parse the file line by line")
-					.long("stream")
-					.required_if("parser", "ast"),
+					.long("stream"),
 				Arg::with_name("format").help("Select output format")
 					.long("format").short("f")
 					.possible_values(&["xstate"])
@@ -32,7 +31,7 @@ impl<'c> CLI<'c> for Code {
 				Arg::with_name("parser").help("Select parser engine")
 					.hidden(true) // TODO: don't hide it when AST parser is complete (or at least has same feature as ASG)
 					.long("parser")
-					.possible_values(&["ast", "asg"])
+					.possible_values(&["machine",/*TODO: support "typescript"*/])
 					.default_value("asg"),
 			])
 	}
@@ -47,8 +46,8 @@ impl<'c> CLI<'c> for Code {
 			"xstate" => (
 				PRINTER("json", print_mode),
 				match args.value_of("parser").unwrap() {
-					"ast" => Box::new(xstate::ast::Machine::default()),
-					"asg" => Box::new(xstate::Machine::new()),
+					"machine" => Box::new(xstate::Machine::new()),
+					"typescript" => unreachable!("TODO"),
 					_ => unreachable!(),
 				},
 			),

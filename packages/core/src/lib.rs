@@ -60,8 +60,8 @@ pub mod grammar {
 
 		pub mod tail_arrow {
 			pub use crate::core::Rule::{
-				TransitionToThenLoop as right,
-				TransitionFromThenLoop as left,
+				TransientLoopTo as right,
+				TransientLoopFrom as left,
 			};
 		}
 	}

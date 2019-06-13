@@ -7,8 +7,8 @@ DescriptionFile = _{ SOI ~ CRLF? ~ (
 expression = { StateName? /*👈 optional only for LoopTo symbol*/ ~ transition ~ trigger? }
   transition = { (
       TransitionDuplex
-      | TransitionToThenLoop | LoopTo | TransitionTo
-      | TransitionFromThenLoop | LoopFrom | TransitionFrom
+      | TransientLoopTo | LoopTo | TransitionTo
+      | TransientLoopFrom | LoopFrom | TransitionFrom
     ) ~ StateName }
   trigger    = { TriggerAt ~ EventName }
 
@@ -18,8 +18,8 @@ TransitionFrom         = @{ "<" ~ "-"+ }
 TransitionDuplex       = @{ "<" ~ "-"+ ~ ">" }
 LoopTo                 = @{ "-"+ ~ ">>" }
 LoopFrom               = @{ "<<" ~ "-"+ }
-TransitionToThenLoop   = @{ ">" ~ "-"+ ~ ">" }
-TransitionFromThenLoop = @{ "<" ~ "-"+ ~ "<" }
+TransientLoopTo        = @{ ">" ~ "-"+ ~ ">" }
+TransientLoopFrom      = @{ "<" ~ "-"+ ~ "<" }
 TriggerAt              = @{ "@" }
 // #endregion
 
