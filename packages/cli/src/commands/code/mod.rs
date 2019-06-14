@@ -3,6 +3,7 @@ use atty::Stream;
 use clap::{App, Arg, ArgMatches};
 use colored::*;
 use scdlang_core::Transpiler;
+use scdlang_smcat as smcat;
 use scdlang_xstate as xstate;
 use std::{
 	fs::{self, File},
@@ -26,13 +27,13 @@ impl<'c> CLI<'c> for Code {
 					.long("stream"),
 				Arg::with_name("format").help("Select output format")
 					.long("format").short("f")
-					.possible_values(&["xstate"])
+					.possible_values(&["xstate", "smcat"])
 					.default_value("xstate"),
-				Arg::with_name("parser").help("Select parser engine")
-					.hidden(true) // TODO: don't hide it when AST parser is complete (or at least has same feature as ASG)
-					.long("parser")
-					.possible_values(&["machine",/*TODO: support "typescript"*/])
-					.default_value("asg"),
+				Arg::with_name("into").help("Select parser output")
+					.hidden(true) // TODO: don't hide it when support another output (e.g typescript)
+					.long("into")
+					.possible_values(&["json",/*TODO: support "typescript"*/])
+					.default_value("json"),
 			])
 	}
 
@@ -45,12 +46,13 @@ impl<'c> CLI<'c> for Code {
 		let (print, mut machine): Printer<dyn Transpiler> = match args.value_of("format").unwrap() {
 			"xstate" => (
 				PRINTER("json", print_mode),
-				match args.value_of("parser").unwrap() {
-					"machine" => Box::new(xstate::Machine::new()),
+				match args.value_of("into").unwrap() {
+					"json" => Box::new(xstate::Machine::new()),
 					"typescript" => unreachable!("TODO"),
 					_ => unreachable!(),
 				},
 			),
+			"smcat" => (PRINTER("json", print_mode), Box::new(smcat::Machine::new())),
 			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of("format")),
 		};
 

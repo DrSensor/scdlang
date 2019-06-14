@@ -5,13 +5,16 @@ use crate::{
 	error::Error,
 	print::*,
 	prompt,
+	typedef::tuple::Printer,
 };
 use atty::Stream;
 use clap::{App, Arg, ArgMatches};
 use colored::*;
 use console::*;
 use rustyline::Editor;
-use scdlang_xstate::{self as xstate, Transpiler};
+use scdlang_core::Transpiler;
+use scdlang_smcat as smcat;
+use scdlang_xstate as xstate;
 
 pub struct Eval;
 impl<'c> CLI<'c> for Eval {
@@ -27,7 +30,7 @@ impl<'c> CLI<'c> for Eval {
 			.about("Evaluate scdlang expression in interactive manner")
 			.args(&[Arg::with_name("format").help("Select output format")
 					.long("format").short("f")
-					.possible_values(&["xstate"])
+					.possible_values(&["xstate", "smcat"])
 					.default_value("xstate")])
 	}
 
@@ -41,8 +44,9 @@ impl<'c> CLI<'c> for Eval {
 		};
 
 		let eprint = PRINTER("haskell", eprint_mode);
-		let (print, mut machine) = match args.value_of("format").unwrap() {
-			"xstate" => (PRINTER("json", print_mode), xstate::Machine::new()),
+		let (print, mut machine): Printer<dyn Transpiler> = match args.value_of("format").unwrap() {
+			"xstate" => (PRINTER("json", print_mode), Box::new(xstate::Machine::new())),
+			"smcat" => (PRINTER("json", print_mode), Box::new(smcat::Machine::new())),
 			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of("format")),
 		};
 

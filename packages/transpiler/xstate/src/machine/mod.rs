@@ -1,15 +1,14 @@
 #![allow(clippy::unit_arg)]
 mod schema;
-
 use schema::*;
 
 use scdlang_core::{prelude::*, semantics::Kind, Scdlang};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_json::json;
 use std::{error, fmt, mem::ManuallyDrop};
 use voca_rs::case::{camel_case, shouty_snake_case};
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Serialize)]
 /** Transpiler Scdlang → XState.
 
 # Examples
