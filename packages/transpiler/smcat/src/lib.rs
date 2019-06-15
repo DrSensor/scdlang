@@ -4,7 +4,6 @@ use schema::*;
 
 use scdlang_core::{prelude::*, semantics::Kind, Scdlang};
 use serde::Serialize;
-use serde_json::json;
 use std::{error, fmt, mem::ManuallyDrop};
 
 #[derive(Default, Serialize)]
@@ -39,12 +38,44 @@ impl<'a> Parser<'a> for Machine<'a> {
 		Ok(self.schema = ast.schema.to_owned()) // FIXME: expensive clone
 	}
 
-	fn insert_parse(&mut self, source: &str) -> Result<(), DynError> {
+	fn insert_parse(&mut self, _source: &str) -> Result<(), DynError> {
 		unimplemented!("TODO: Parse then insert into [smcat] Machine.schema")
 	}
 
 	fn try_parse(source: &str, builder: Scdlang<'a>) -> Result<Self, DynError> {
-		unimplemented!("TODO: Parse into [smcat] Machine.schema")
+		let mut schema = Coordinate::default();
+
+		for kind in builder.iter_from(source)? {
+			match kind {
+				Kind::Expression(expr) => {
+					schema.states.append(&mut vec![
+						regular_state(expr.current_state().into()),
+						regular_state(expr.next_state().into()),
+					]);
+					let transition = Transition {
+						from: expr.current_state().into(),
+						to: expr.next_state().into(),
+						event: expr.event().map(|e| e.into()),
+						label: expr.event().map(|e| e.into()),
+						..Default::default()
+					};
+					match &mut schema.transitions {
+						Some(transitions) => transitions.push(transition),
+						None => schema.transitions = Some(vec![transition]),
+					};
+				}
+				_ => unimplemented!("TODO: implement the rest on the next update"),
+			}
+		}
+
+		Ok(Machine { schema, builder })
+	}
+}
+
+fn regular_state(name: String) -> State {
+	State {
+		name,
+		..Default::default()
 	}
 }
 

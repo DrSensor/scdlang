@@ -33,6 +33,12 @@ impl<'t> From<&'t str> for Name<'t> {
 	}
 }
 
+impl From<Name<'_>> for String {
+	fn from(name: Name) -> Self {
+		String::from(&name as &str)
+	}
+}
+
 impl Name<'_> {
 	/// Map unquoted name. Quoted name will be returned as it is
 	pub fn map(&self, f: impl FnOnce(&str) -> String) -> String {
@@ -67,6 +73,12 @@ impl ops::Deref for Name<'_> {
 			Quoted(name) => name,
 			Unquoted(name) => *name,
 		}
+	}
+}
+
+impl Default for Name<'_> {
+	fn default() -> Self {
+		Name::Quoted("".to_string())
 	}
 }
 

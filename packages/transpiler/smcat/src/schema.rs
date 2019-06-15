@@ -1,12 +1,14 @@
 //! Generated from JSON schema of [smcat-ast]
 //! using https://quicktype.io with some fixes
 //! [smcat-ast]: https://github.com/sverweij/state-machine-cat/blob/develop/src/parse/smcat-ast.schema.json
-
+#![allow(dead_code)]
 use serde::Serialize;
+use serde_with::skip_serializing_none;
 
 // TODO: is it necessary to watch smcat-ast.schema.json then generate this automatically on each release 🤔
 
-#[derive(Debug, Clone, Serialize)]
+#[skip_serializing_none]
+#[derive(Debug, Default, Clone, Serialize)]
 pub struct State {
 	#[serde(rename = "actions")]
 	pub actions: Option<Vec<ActionType>>,
@@ -39,6 +41,7 @@ pub struct State {
 	pub type_explicitly_set: Option<bool>,
 }
 
+#[skip_serializing_none]
 #[derive(Debug, Default, Clone, Serialize)]
 pub struct Coordinate {
 	#[serde(rename = "states")]
@@ -57,7 +60,8 @@ pub struct ActionType {
 	pub action_type_type: ActionTypeType,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[skip_serializing_none]
+#[derive(Debug, Default, Clone, Serialize)]
 pub struct Transition {
 	#[serde(rename = "action")]
 	pub action: Option<String>,
@@ -94,6 +98,12 @@ pub enum ActionTypeType {
 
 	#[serde(rename = "exit")]
 	Exit,
+}
+
+impl Default for StateType {
+	fn default() -> Self {
+		StateType::Regular
+	}
 }
 
 #[derive(Debug, Clone, Serialize)]

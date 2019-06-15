@@ -8,6 +8,7 @@ edition = "2018"
 scdlang-core = { path = "../../core" }
 serde_json = "*"
 serde = { version = "*", features = ["derive"] }
+serde_with = { version = "*", features = ["json"] }
 
 [dev-dependencies]
 assert-json-diff = "*"
