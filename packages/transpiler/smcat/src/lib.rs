@@ -38,8 +38,15 @@ impl<'a> Parser<'a> for Machine<'a> {
 		Ok(self.schema = ast.schema.to_owned()) // FIXME: expensive clone
 	}
 
-	fn insert_parse(&mut self, _source: &str) -> Result<(), DynError> {
-		unimplemented!("TODO: Parse then insert into [smcat] Machine.schema")
+	fn insert_parse(&mut self, source: &str) -> Result<(), DynError> {
+		let mut ast = ManuallyDrop::new(Self::try_parse(source, self.builder.to_owned())?);
+		self.schema.states.append(&mut ast.schema.states);
+		match (&mut self.schema.transitions, &mut ast.schema.transitions) {
+			(Some(origin), Some(parsed)) => origin.extend_from_slice(parsed),
+			(None, _) => self.schema.transitions = ast.schema.transitions.to_owned(),
+			_ => {}
+		}
+		Ok(())
 	}
 
 	fn try_parse(source: &str, builder: Scdlang<'a>) -> Result<Self, DynError> {

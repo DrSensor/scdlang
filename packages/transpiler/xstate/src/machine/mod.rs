@@ -42,15 +42,14 @@ impl<'a> Parser<'a> for Machine<'a> {
 
 	fn insert_parse(&mut self, source: &str) -> Result<(), DynError> {
 		let ast = ManuallyDrop::new(Self::try_parse(source, self.builder.to_owned())?);
-		Ok(
-			for (current_state, transition) in ast.schema.states.to_owned(/*FIXME: expensive clone*/) {
-				self.schema
-					.states
-					.entry(current_state)
-					.and_modify(|t| t.on.extend(transition.on.clone()))
-					.or_insert(transition);
-			},
-		)
+		for (current_state, transition) in ast.schema.states.to_owned(/*FIXME: expensive clone*/) {
+			self.schema
+				.states
+				.entry(current_state)
+				.and_modify(|t| t.on.extend(transition.on.clone()))
+				.or_insert(transition);
+		}
+		Ok(())
 	}
 
 	fn try_parse(source: &str, builder: Scdlang<'a>) -> Result<Self, DynError> {
