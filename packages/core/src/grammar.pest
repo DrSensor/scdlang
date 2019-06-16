@@ -6,7 +6,7 @@ DescriptionFile = _{ SOI ~ CRLF? ~ (
 
 expression = { StateName? /*👈 optional only for LoopTo symbol*/ ~ transition ~ trigger? }
   transition = { (
-      TransitionDuplex
+      TransitionToggle
       | TransientLoopTo | LoopTo | TransitionTo
       | TransientLoopFrom | LoopFrom | TransitionFrom
     ) ~ StateName }
@@ -15,7 +15,7 @@ expression = { StateName? /*👈 optional only for LoopTo symbol*/ ~ transition 
 // #region symbol/operator
 TransitionTo           = @{ "-"+ ~ ">" }
 TransitionFrom         = @{ "<" ~ "-"+ }
-TransitionDuplex       = @{ "<" ~ "-"+ ~ ">" }
+TransitionToggle       = @{ "<" ~ "-"+ ~ ">" }
 LoopTo                 = @{ "-"+ ~ ">>" }
 LoopFrom               = @{ "<<" ~ "-"+ }
 TransientLoopTo        = @{ ">" ~ "-"+ ~ ">" }

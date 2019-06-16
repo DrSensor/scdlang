@@ -45,9 +45,8 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 					TransitionType::Loop { transient: true },
 					get::state(lhs, rhs, &StateType::Atomic),
 				),
-				Symbol::arrow::right | Symbol::arrow::both => {
-					(TransitionType::Normal, get::state(lhs, rhs, &StateType::Atomic))
-				}
+				Symbol::arrow::right => (TransitionType::Normal, get::state(lhs, rhs, &StateType::Atomic)),
+				Symbol::arrow::both => (TransitionType::Toggle, get::state(lhs, rhs, &StateType::Atomic)),
 				Symbol::arrow::left => (TransitionType::Normal, get::state(rhs, lhs, &StateType::Atomic)),
 				Symbol::tail_arrow::left => (
 					TransitionType::Loop { transient: true },

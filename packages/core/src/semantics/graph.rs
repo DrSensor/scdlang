@@ -31,7 +31,7 @@ pub enum TransitionType<'t> {
 		kind: &'t TransitionType<'t>,
 	},
 	Normal, // 🤔 should I implement Default trait?
-	Duplex,
+	Toggle,
 	Loop {
 		transient: bool,
 	},

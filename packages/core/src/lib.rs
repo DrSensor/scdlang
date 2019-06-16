@@ -47,7 +47,7 @@ pub mod grammar {
 			pub use crate::core::Rule::{
 				TransitionTo as right,
 				TransitionFrom as left,
-				TransitionDuplex as both,
+				TransitionToggle as both,
 			};
 		}
 
