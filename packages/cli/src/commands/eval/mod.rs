@@ -5,7 +5,6 @@ use crate::{
 	error::Error,
 	print::*,
 	prompt,
-	typedef::tuple::Printer,
 };
 use atty::Stream;
 use clap::{App, Arg, ArgMatches};
@@ -28,27 +27,35 @@ impl<'c> CLI<'c> for Eval {
 	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
 		cmd.visible_alias("repl")
 			.about("Evaluate scdlang expression in interactive manner")
-			.args(&[Arg::with_name("format").help("Select output format")
+			.args(&[
+				Arg::with_name("format").help("Select output format")
 					.long("format").short("f")
 					.possible_values(&["xstate", "smcat"])
-					.default_value("xstate")])
+					.default_value("xstate"),
+				Arg::with_name("into").help("Select parser output")
+					.hidden(true) // TODO: don't hide it when support another output (e.g typescript)
+					.long("into")
+					.possible_values(&["json",/*TODO: support "typescript"*/])
+					.default_value("json"),
+			])
 	}
 
 	fn invoke(args: &ArgMatches) -> Result {
 		let mut repl: REPL = Editor::with_config(prompt::CONFIG());
+
+		let mut machine: Box<dyn Transpiler> = match args.value_of("format").unwrap() {
+			"xstate" => Box::new(xstate::Machine::new()),
+			"smcat" => Box::new(smcat::Machine::new()),
+			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of("format")),
+		};
 
 		let (print_mode, eprint_mode) = if atty::is(Stream::Stdin) || !args.is_present("interactive") {
 			(Mode::REPL, Mode::MultiLine)
 		} else {
 			(Mode::Debug, Mode::Error)
 		};
-
-		let eprint = PRINTER("haskell", eprint_mode);
-		let (print, mut machine): Printer<dyn Transpiler> = match args.value_of("format").unwrap() {
-			"xstate" => (PRINTER("json", print_mode), Box::new(xstate::Machine::new())),
-			"smcat" => (PRINTER("json", print_mode), Box::new(smcat::Machine::new())),
-			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of("format")),
-		};
+		let print = PRINTER(args.value_of("into").unwrap_or("markdown")).change(print_mode);
+		let eprint = PRINTER("haskell").change(eprint_mode);
 
 		#[rustfmt::skip]
 		let pprint = |string, header: &str| Console {

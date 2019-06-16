@@ -31,33 +31,51 @@ pub mod print {
 		Error,
 		MultiLine,
 		UseHeader,
-		Default,
+		Plain,
 	}
 
-	// TODO: PR are welcome 😆
-	pub const PRINTER: fn(&str, Mode) -> PrettyPrint = |lang, mode| {
+	pub trait PrinterChange {
+		fn change(&self, mode: Mode) -> Self;
+		fn change_language(&self, lang: &str) -> Self;
+		fn change_theme(&self, lang: &str) -> Self;
+	}
+
+	impl PrinterChange for PrettyPrint {
+		fn change(&self, mode: Mode) -> Self {
+			(match mode {
+				Mode::Plain => self.configure().grid(false).header(false).line_numbers(false).build(),
+				Mode::UseHeader => self.configure().grid(true).header(true).build(),
+				Mode::MultiLine => self.configure().grid(true).build(),
+				Mode::REPL => self.configure().line_numbers(true).grid(true).build(),
+				Mode::Debug => self.configure().line_numbers(true).grid(true).header(true).build(),
+				Mode::Error => self
+					.configure()
+					.grid(true)
+					.header(true)
+					.theme("Sublime Snazzy")
+					.paging_mode(PagingMode::Error)
+					.build(),
+			})
+			.unwrap() // because it only throw error if field not been initialized
+		}
+		fn change_language(&self, lang: &str) -> Self {
+			self.configure().language(lang).build().unwrap()
+		}
+		fn change_theme(&self, theme: &str) -> Self {
+			self.configure().theme(theme).build().unwrap()
+		}
+	}
+
+	pub const PRINTER: fn(&str) -> PrettyPrint = |lang| {
 		let mut printer = PrettyPrinter::default();
-		printer // Default 👇
+		printer // Default Mode::Plain 👇
 			.header(false)
 			.grid(false)
 			.line_numbers(false)
 			.paging_mode(PagingMode::Never) // to support Alpine linux
 			.theme("TwoDark")
-			.language(lang);
-		(match mode /*👆*/ {
-			Mode::Default => printer.build(),
-			Mode::UseHeader => printer.grid(true).header(true).build(),
-			Mode::MultiLine => printer.grid(true).build(),
-			Mode::Error => printer.grid(true).header(true).theme("Sublime Snazzy").paging_mode(PagingMode::Error).build(),
-			Mode::REPL => printer.line_numbers(true).grid(true).build(),
-			Mode::Debug => printer.line_numbers(true).grid(true).header(true).build(),
-		})
-		.unwrap() // because it only throw error if field not been initialized
+			.language(lang)
+			.build()
+			.unwrap() // because it only throw error if field not been initialized
 	};
-}
-
-pub mod typedef {
-	pub mod tuple {
-		pub type Printer<Parser> = (prettyprint::PrettyPrint, Box<Parser>);
-	}
 }

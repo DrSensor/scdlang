@@ -1,4 +1,4 @@
-use crate::{cli::*, error::Error, print::*, typedef::tuple::Printer};
+use crate::{cli::*, error::Error, print::*};
 use atty::Stream;
 use clap::{App, Arg, ArgMatches};
 use colored::*;
@@ -37,22 +37,17 @@ impl<'c> CLI<'c> for Code {
 			])
 	}
 
-	#[allow(deprecated)]
 	fn invoke(args: &ArgMatches) -> Result {
 		let filepath = args.value_of("FILE").unwrap();
-		let arg_is_stream = args.is_present("stream");
-		// TODO: remove ☝️ when cargo-fmt don't expand 👇
-		let print_mode = if arg_is_stream { Mode::UseHeader } else { Mode::Default };
-		let (print, mut machine): Printer<dyn Transpiler> = match args.value_of("format").unwrap() {
-			"xstate" => (
-				PRINTER("json", print_mode),
-				match args.value_of("into").unwrap() {
-					"json" => Box::new(xstate::Machine::new()),
-					"typescript" => unreachable!("TODO"),
-					_ => unreachable!(),
-				},
-			),
-			"smcat" => (PRINTER("json", print_mode), Box::new(smcat::Machine::new())),
+		let mut print = PRINTER(args.value_of("into").unwrap_or("markdown"));
+
+		let mut machine: Box<dyn Transpiler> = match args.value_of("format").unwrap() {
+			"xstate" => Box::new(match args.value_of("into").unwrap() {
+				"json" => xstate::Machine::new(),
+				"typescript" => unreachable!("TODO: on the next update"),
+				_ => unreachable!(),
+			}),
+			"smcat" => Box::new(smcat::Machine::new()),
 			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of("format")),
 		};
 
@@ -76,6 +71,8 @@ impl<'c> CLI<'c> for Code {
 			if !errors.is_empty() {
 				Error::report(Error::Parse(errors.trim_matches('\n').to_string()), None);
 			}
+
+			print = print.change(Mode::UseHeader);
 		} else {
 			let file = fs::read_to_string(filepath).map_err(Error::IO)?;
 			machine.parse(&file).map_err(|e| Error::Parse(e.to_string()))?;

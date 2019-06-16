@@ -13,7 +13,7 @@ pub enum Error {
 
 impl Error {
 	pub fn report(err: Error, default_exit_code: Option<i32>) {
-		let print = PRINTER("haskell", Mode::Error);
+		let print = PRINTER("haskell").change(Mode::Error);
 		let error = |message: &str| {
 			if atty::is(Stream::Stderr) {
 				format!("{} {}", prompt::ERROR.red().bold(), message.red())
