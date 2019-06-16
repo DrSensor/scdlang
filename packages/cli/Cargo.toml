@@ -33,6 +33,7 @@ features = ["wrap_help"]
 clap = "*"
 scdlang-core = { path = "../core" }
 scdlang_xstate = { path = "../transpiler/xstate" }
+scdlang_smcat = { path = "../transpiler/smcat" }
 atty = "*"
 rustyline = "*"
 prettyprint = "*"
