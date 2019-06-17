@@ -26,6 +26,12 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 						rhs = target;
 						ops = operators;
 					}
+					Rule::self_transition => {
+						let (operators, target) = get::transition(span);
+						rhs = target;
+						lhs = rhs;
+						ops = operators;
+					}
 					Rule::trigger => {
 						event = Some(Event {
 							name: get::trigger(span),
@@ -39,8 +45,7 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 			let (transition_type, (current_state, next_state)) = match ops {
 				Symbol::double_arrow::right => (
 					TransitionType::Loop { transient: false },
-					get::state(/*if lhs.is_empty() { rhs } else { lhs }*/ // // FIXME: Support `->> Self @ Loop`
-						lhs, rhs, &StateType::Atomic),
+					get::state(lhs, rhs, &StateType::Atomic),
 				),
 				Symbol::tail_arrow::right => (
 					TransitionType::Loop { transient: true },
