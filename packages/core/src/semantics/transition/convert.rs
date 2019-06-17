@@ -39,7 +39,8 @@ impl<'t> TryFrom<TokenPair<'t>> for Transition<'t> {
 			let (transition_type, (current_state, next_state)) = match ops {
 				Symbol::double_arrow::right => (
 					TransitionType::Loop { transient: false },
-					get::state(if lhs.is_empty() { rhs } else { lhs }, rhs, &StateType::Atomic),
+					get::state(/*if lhs.is_empty() { rhs } else { lhs }*/ // // FIXME: Support `->> Self @ Loop`
+						lhs, rhs, &StateType::Atomic),
 				),
 				Symbol::tail_arrow::right => (
 					TransitionType::Loop { transient: true },

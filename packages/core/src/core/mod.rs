@@ -27,8 +27,6 @@ mod test {
 			// From https://github.com/tonsky/FiraCode 😋
 			test::wrong_expressions(&[
 				// #region transition_to
-				r#"A->>B"#,
-				r#"A>->B"#,
 				r#"A>-B"#,
 				r#"A>>-B"#,
 				r#"A~>B"#,

@@ -4,7 +4,9 @@ DescriptionFile = _{ SOI ~ CRLF? ~ (
   ) ~ NEWLINE*
 )* ~ EOI }
 
-expression = { StateName? /*👈 optional only for LoopTo symbol*/ ~ transition ~ trigger? }
+// FIXME: because 👇 cause `test error::variant::syntax_error ... fail`
+// expression = { StateName? /*👈 optional only for LoopTo symbol*/ ~ transition ~ trigger? } // FIXME: Support `->> Self @ Loop`
+expression = { StateName ~ transition ~ trigger? }
   transition = { (
       TransitionToggle
       | TransientLoopTo | LoopTo | TransitionTo

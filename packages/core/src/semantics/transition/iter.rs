@@ -17,17 +17,17 @@ impl<'i> IntoIterator for Transition<'i> {
 			}
 			TransitionType::Loop { transient } => {
 				/* A ->> B @ C */
-				if self.from.name != self.to.name {
-					let (mut self_loop, mut normal) = (self.clone(), self);
-					self_loop.from = self_loop.to.clone();
-					normal.kind = TransitionType::Normal;
-					normal.at = if transient { None } else { normal.at };
-					[self_loop, normal].to_vec()
-				}
-				/* ->> B @ C */
-				else {
-					[self].to_vec() // reason: see Symbol::double_arrow::right => (..) in convert.rs
-				}
+				// if self.from.name != self.to.name { // FIXME: Support `->> Self @ Loop`
+				let (mut self_loop, mut normal) = (self.clone(), self);
+				self_loop.from = self_loop.to.clone();
+				normal.kind = TransitionType::Normal;
+				normal.at = if transient { None } else { normal.at };
+				[self_loop, normal].to_vec()
+				// }
+				// /* ->> B @ C */
+				// else {
+				// 	[self].to_vec() // reason: see Symbol::double_arrow::right => (..) in convert.rs
+				// }
 			}
 			TransitionType::Inside { .. } => unreachable!("TODO: when support StateType::Compound"),
 		})
