@@ -11,6 +11,7 @@ Don't let _him_ be a stargazer alone!
 [![current version](https://badge.fury.io/gh/drsensor%2Fscdlang.svg)](https://github.com/drsensor/scdlang/releases/latest)
 [![Docker image size](https://img.shields.io/microbadger/image-size/scdlang/scrap/latest.svg)](https://hub.docker.com/r/scdlang/scrap)
 [![License](https://img.shields.io/github/license/drsensor/scdlang.svg)](./LICENSE)
+[![Chats](https://img.shields.io/badge/community-grey.svg?logo=matrix)](https://matrix.to/#/+statecharts:matrix.org)
 
 > 🚧 Still **Work in Progress** 🏗️
 
