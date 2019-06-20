@@ -15,6 +15,7 @@ pub fn run(matches: ArgMatches) -> Result {
 	Ok(())
 }
 
+// TODO: refactor this interface so that there is no need to duplicate [dependecies] into [build-dependencies]
 pub trait CLI<'c> {
 	const NAME: &'c str;
 	const USAGE: &'c str;

@@ -2,13 +2,23 @@ use crate::{cli::*, error::Error, print::*};
 use atty::Stream;
 use clap::{App, Arg, ArgMatches};
 use colored::*;
+use regex::Regex;
 use scdlang_core::Transpiler;
 use scdlang_smcat as smcat;
 use scdlang_xstate as xstate;
 use std::{
 	fs::{self, File},
-	io::{BufRead, BufReader},
+	io::{BufRead, BufReader, Write},
+	process::{Command, Stdio},
+	str,
 };
+use which::which;
+
+mod format {
+	pub const DEFAULT: [&str; 1] = ["json" /*typescript*/];
+	pub const SMCAT: [&str; 6] = ["smcat", "dot", "xmi", "svg", "html", "scxml"];
+	pub const GRAPH_EASY: [&str; 2] = ["ascii", "boxart"];
+}
 
 pub struct Code;
 impl<'c> CLI<'c> for Code {
@@ -29,20 +39,32 @@ impl<'c> CLI<'c> for Code {
 					.long("format").short("f")
 					.possible_values(&["xstate", "smcat"])
 					.default_value("xstate"),
-				Arg::with_name("into").help("Select parser output")
-					.hidden(true) // TODO: don't hide it when support another output (e.g typescript)
-					.long("into")
-					.possible_values(&["json",/*TODO: support "typescript"*/])
-					.default_value("json"),
+				Arg::with_name("as").help("Select parser output")
+					.hidden(which("smcat").is_err()) // TODO: don't hide it when support another output (e.g typescript)
+					.long("as").requires("format")
+					.possible_values(&{
+						let mut possible_formats = format::DEFAULT.to_vec();
+						if which("smcat").is_ok() {
+							possible_formats.append(&mut format::SMCAT.to_vec());
+							if which("graph-easy").is_ok() {
+								possible_formats.append(&mut format::GRAPH_EASY.to_vec());
+							}
+						}
+						possible_formats
+					})
+					.default_value_ifs(&[
+						("format", Some("xstate"), "json"),
+						("format", Some("smcat"), if which("smcat").is_ok() { "smcat" } else { "json" })
+					]),
 			])
 	}
 
 	fn invoke(args: &ArgMatches) -> Result {
 		let filepath = args.value_of("FILE").unwrap();
-		let mut print = PRINTER(args.value_of("into").unwrap_or("markdown"));
+		let mut print = PRINTER(args.value_of("as").unwrap_or("markdown"));
 
 		let mut machine: Box<dyn Transpiler> = match args.value_of("format").unwrap() {
-			"xstate" => Box::new(match args.value_of("into").unwrap() {
+			"xstate" => Box::new(match args.value_of("as").unwrap() {
 				"json" => xstate::Machine::new(),
 				"typescript" => unreachable!("TODO: on the next update"),
 				_ => unreachable!(),
@@ -78,8 +100,47 @@ impl<'c> CLI<'c> for Code {
 			machine.parse(&file).map_err(|e| Error::Parse(e.to_string()))?;
 		}
 
+		let mut machine = machine.to_string();
+		if which("smcat").is_ok() && args.value_of("format").unwrap_or_default() == "smcat" {
+			let format = &args.value_of("as").unwrap();
+			let mut smcat = Command::new("smcat")
+				.args(&[
+					"--input-type",
+					"json",
+					"--output-type",
+					if format::GRAPH_EASY.iter().any(|f| f == format) {
+						"dot"
+					} else {
+						format
+					},
+				])
+				.stdin(Stdio::piped())
+				.stdout(Stdio::piped())
+				.spawn()
+				.map_err(Error::IO)?;
+			write!(smcat.stdin.as_mut().unwrap(), "{}", machine).map_err(Error::IO)?;
+			machine = str::from_utf8(&smcat.wait_with_output().map_err(Error::IO)?.stdout)
+				.unwrap()
+				.to_string();
+
+			if which("graph-easy").is_ok() && format::GRAPH_EASY.iter().any(|f| f == format) {
+				let re = Regex::new(r#"( style=["']?\w+["']?)|( penwidth=["']?\d+.\d["']?)"#).unwrap();
+				let mut smcat = Command::new("graph-easy")
+					.args(&["--as", args.value_of("as").unwrap()])
+					.stdin(Stdio::piped())
+					.stdout(Stdio::piped())
+					.spawn()
+					.map_err(Error::IO)?;
+				machine = re.replace_all(&machine, "").to_string();
+				write!(smcat.stdin.as_mut().unwrap(), "{}", machine).map_err(Error::IO)?;
+				machine = str::from_utf8(&smcat.wait_with_output().map_err(Error::IO)?.stdout)
+					.unwrap()
+					.to_string();
+			}
+		}
+
 		match args.value_of("DIST") {
-			Some(dist) => fs::write(dist, format!("{}", machine)).map_err(Error::IO)?,
+			Some(dist) => fs::write(dist, machine).map_err(Error::IO)?,
 			//👇if run on non-interactive shell
 			None if atty::isnt(Stream::Stdout) => {
 				if count_parse_err > 0 {
@@ -91,7 +152,7 @@ impl<'c> CLI<'c> for Code {
 			//👇if run on interactive shell
 			None => (if args.is_present("stream") {
 				print.string_with_header(
-					machine.to_string(),
+					machine,
 					format!(
 						"({fmt}) {title}",
 						fmt = args.value_of("format").unwrap(),
@@ -99,7 +160,7 @@ impl<'c> CLI<'c> for Code {
 					),
 				)
 			} else {
-				print.string(machine.to_string())
+				print.string(machine)
 			})
 			.map_err(|e| Error::Whatever(e.into()))?,
 		}

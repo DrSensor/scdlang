@@ -23,6 +23,8 @@ atty = "*"
 rustyline = "*"
 prettyprint = "*"
 colored = "*"
+which = "*"
+regex = "*"
 
 [dependencies.clap]
 version = "*"
@@ -38,6 +40,8 @@ atty = "*"
 rustyline = "*"
 prettyprint = "*"
 colored = "*"
+which = "*"
+regex = "*"
 
 [dev-dependencies]
 predicates = "*"
