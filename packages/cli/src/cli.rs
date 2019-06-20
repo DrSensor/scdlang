@@ -8,7 +8,7 @@ pub fn build<'a, 'b>() -> App<'a, 'b> {
 		.subcommand(Code::command())
 }
 
-pub fn run(matches: ArgMatches) -> Result {
+pub fn run(matches: ArgMatches) -> Result<()> {
 	Main::run_on(&matches)?;
 	Eval::run_on(&matches)?;
 	Code::run_on(&matches)?;
@@ -27,8 +27,8 @@ pub trait CLI<'c> {
 		Self::additional_usage(cmd).args_from_usage(Self::USAGE)
 	}
 
-	fn invoke(args: &ArgMatches) -> Result;
-	fn run_on(matches: &ArgMatches) -> Result {
+	fn invoke(args: &ArgMatches) -> Result<()>;
+	fn run_on(matches: &ArgMatches) -> Result<()> {
 		if let Some(args) = matches.subcommand_matches(Self::NAME) {
 			Self::invoke(args)?;
 		}
@@ -36,4 +36,4 @@ pub trait CLI<'c> {
 	}
 }
 
-pub type Result = core::result::Result<(), Error>;
+pub type Result<U> = core::result::Result<U, Error>;

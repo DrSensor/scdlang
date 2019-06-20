@@ -79,3 +79,85 @@ pub mod print {
 			.unwrap() // because it only throw error if field not been initialized
 	};
 }
+
+pub mod prelude {
+	use std::{iter::FromIterator, ops::Deref};
+	pub trait Merge<T: PartialEq + Clone>: FromIterator<T> + Deref<Target = [T]> {
+		fn merge_value(&mut self, item: T);
+		fn merge_from_slice(&mut self, items: &[T]) {
+			for item in items {
+				self.merge_value(item.to_owned())
+			}
+		}
+		fn merge(&mut self, items: Self) {
+			self.merge_from_slice(&items)
+		}
+	}
+
+	impl<T> Merge<T> for Vec<T>
+	where
+		T: PartialEq + Clone,
+	{
+		fn merge_value(&mut self, item: T) {
+			if !self.iter().any(|v| *v == item) {
+				self.push(item);
+			}
+		}
+	}
+}
+
+pub mod format {
+	pub const XSTATE: [&str; 1] = ["json" /*, typescript*/];
+	pub const SMCAT: &str = "json";
+
+	pub mod ext {
+		pub const SMCAT: [&str; 7] = ["svg", "dot", "smcat", "json", "html", "scxml", "xmi"];
+		pub const GRAPH_EASY: [&str; 13] = [
+			"ascii", "boxart", "bmp", "gif", "hpgl", "jpg", "pcl", "pdf", "png", "ps", "ps2", "tga", "tif",
+		];
+	}
+}
+
+pub mod exec {
+	use super::format;
+	use regex::Regex;
+	use std::{
+		io::{self, Write},
+		process::{Child, Command, Stdio},
+		str::from_utf8,
+	};
+
+	pub fn smcat(fmt: &str, input: String) -> io::Result<String> {
+		let mut command = spawn(
+			"smcat",
+			&[
+				"--input-type",
+				"json",
+				"--output-type",
+				if format::ext::GRAPH_EASY.iter().any(|f| f == &fmt) {
+					"dot"
+				} else {
+					fmt
+				},
+			],
+		)?;
+		write!(command.stdin.as_mut().unwrap(), "{}", input)?;
+		Ok(from_utf8(&command.wait_with_output()?.stdout).unwrap().to_string())
+	}
+
+	pub fn graph_easy(fmt: &str, input: String) -> io::Result<String> {
+		let mut command = spawn("graph-easy", &["--as", fmt])?;
+		let re = Regex::new(r#"( style=["']?\w+["']?)|( penwidth=["']?\d+.\d["']?)"#).unwrap();
+
+		write!(command.stdin.as_mut().unwrap(), "{}", re.replace_all(&input, ""))?;
+		Ok(from_utf8(&command.wait_with_output()?.stdout).unwrap().to_string())
+	}
+
+	fn spawn(cmd: &str, args: &[&str]) -> io::Result<Child> {
+		Command::new(cmd)
+			.args(args)
+			.stdin(Stdio::piped())
+			.stdout(Stdio::piped())
+			.spawn()
+	}
+}

@@ -1,24 +1,16 @@
-use crate::{cli::*, error::Error, print::*};
+use crate::{cli::*, error::Error, exec, format, prelude::*, print::*};
 use atty::Stream;
 use clap::{App, Arg, ArgMatches};
 use colored::*;
-use regex::Regex;
 use scdlang_core::Transpiler;
 use scdlang_smcat as smcat;
 use scdlang_xstate as xstate;
 use std::{
 	fs::{self, File},
-	io::{BufRead, BufReader, Write},
-	process::{Command, Stdio},
+	io::{BufRead, BufReader},
 	str,
 };
 use which::which;
-
-mod format {
-	pub const DEFAULT: [&str; 1] = ["json" /*typescript*/];
-	pub const SMCAT: [&str; 6] = ["smcat", "dot", "xmi", "svg", "html", "scxml"];
-	pub const GRAPH_EASY: [&str; 2] = ["ascii", "boxart"];
-}
 
 pub struct Code;
 impl<'c> CLI<'c> for Code {
@@ -43,11 +35,13 @@ impl<'c> CLI<'c> for Code {
 					.hidden(which("smcat").is_err()) // TODO: don't hide it when support another output (e.g typescript)
 					.long("as").requires("format")
 					.possible_values(&{
-						let mut possible_formats = format::DEFAULT.to_vec();
+						let mut possible_formats = Vec::new();
+						possible_formats.merge_from_slice(&format::XSTATE);
+						possible_formats.merge_value(format::SMCAT);
 						if which("smcat").is_ok() {
-							possible_formats.append(&mut format::SMCAT.to_vec());
+							possible_formats.merge_from_slice(&format::ext::SMCAT);
 							if which("graph-easy").is_ok() {
-								possible_formats.append(&mut format::GRAPH_EASY.to_vec());
+								possible_formats.merge_from_slice(&format::ext::GRAPH_EASY);
 							}
 						}
 						possible_formats
@@ -59,7 +53,7 @@ impl<'c> CLI<'c> for Code {
 			])
 	}
 
-	fn invoke(args: &ArgMatches) -> Result {
+	fn invoke(args: &ArgMatches) -> Result<()> {
 		let filepath = args.value_of("FILE").unwrap();
 		let mut print = PRINTER(args.value_of("as").unwrap_or("markdown"));
 
@@ -103,39 +97,10 @@ impl<'c> CLI<'c> for Code {
 		let mut machine = machine.to_string();
 		if which("smcat").is_ok() && args.value_of("format").unwrap_or_default() == "smcat" {
 			let format = &args.value_of("as").unwrap();
-			let mut smcat = Command::new("smcat")
-				.args(&[
-					"--input-type",
-					"json",
-					"--output-type",
-					if format::GRAPH_EASY.iter().any(|f| f == format) {
-						"dot"
-					} else {
-						format
-					},
-				])
-				.stdin(Stdio::piped())
-				.stdout(Stdio::piped())
-				.spawn()
-				.map_err(Error::IO)?;
-			write!(smcat.stdin.as_mut().unwrap(), "{}", machine).map_err(Error::IO)?;
-			machine = str::from_utf8(&smcat.wait_with_output().map_err(Error::IO)?.stdout)
-				.unwrap()
-				.to_string();
+			machine = exec::smcat(format, machine).map_err(Error::IO)?;
 
-			if which("graph-easy").is_ok() && format::GRAPH_EASY.iter().any(|f| f == format) {
-				let re = Regex::new(r#"( style=["']?\w+["']?)|( penwidth=["']?\d+.\d["']?)"#).unwrap();
-				let mut smcat = Command::new("graph-easy")
-					.args(&["--as", args.value_of("as").unwrap()])
-					.stdin(Stdio::piped())
-					.stdout(Stdio::piped())
-					.spawn()
-					.map_err(Error::IO)?;
-				machine = re.replace_all(&machine, "").to_string();
-				write!(smcat.stdin.as_mut().unwrap(), "{}", machine).map_err(Error::IO)?;
-				machine = str::from_utf8(&smcat.wait_with_output().map_err(Error::IO)?.stdout)
-					.unwrap()
-					.to_string();
+			if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|f| f == format) {
+				machine = exec::graph_easy(format, machine).map_err(Error::IO)?;
 			}
 		}
 
