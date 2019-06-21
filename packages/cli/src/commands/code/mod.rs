@@ -1,6 +1,6 @@
-use crate::{cli::*, error::*, exec, format, prelude::*, print::*};
+use crate::{arg::output, cli::*, error::*, exec, format, print::*};
 use atty::Stream;
-use clap::{App, Arg, ArgMatches};
+use clap::{App, ArgMatches};
 use colored::*;
 use scdlang_core::Transpiler;
 use scdlang_smcat as smcat;
@@ -18,53 +18,27 @@ impl<'c> CLI<'c> for Code {
 	const USAGE: &'c str = "
 	<FILE> 'File to print / concatenate'
 	[DIST] 'Output the result to this directory / file'
+	--stream 'Parse the file line by line'
 	";
 
-	#[rustfmt::skip]
 	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
 		cmd.visible_aliases(&["generate", "gen", "declaration", "declr"])
 			.about("Generate from scdlang file declaration to another format")
-			.args(&[
-				Arg::with_name("stream").help("Parse the file line by line")
-					.long("stream"),
-				Arg::with_name("format").help("Select output format")
-					.long("format").short("f")
-					.possible_values(&["xstate", "smcat"])
-					.default_value("xstate"),
-				Arg::with_name("as").help("Select parser output")
-					.hidden(which("smcat").is_err()) // TODO: don't hide it when support another output (e.g typescript)
-					.long("as").requires("format")
-					.possible_values(&{
-						let mut possible_formats = Vec::new();
-						possible_formats.merge_from_slice(&format::XSTATE);
-						possible_formats.merge_value(format::SMCAT);
-						if which("smcat").is_ok() {
-							possible_formats.merge_from_slice(&format::ext::SMCAT);
-							if which("graph-easy").is_ok() {
-								possible_formats.merge_from_slice(&format::ext::GRAPH_EASY);
-							}
-						}
-						possible_formats
-					})
-					.default_value_ifs(&[
-						("format", Some("xstate"), "json"),
-						("format", Some("smcat"), if which("smcat").is_ok() { "smcat" } else { "json" })
-					]),
-			])
+			.args(&[output::target(), output::format()])
 	}
 
 	fn invoke(args: &ArgMatches) -> Result<()> {
 		let filepath = args.value_of("FILE").unwrap_or_default();
-		let mut print = PRINTER(args.value_of("as").unwrap_or("txt"));
+		let mut print = PRINTER(args.value_of(output::FORMAT).unwrap_or("txt"));
 
-		let mut machine: Box<dyn Transpiler> = match args.value_of("format").unwrap_or_default() {
-			"xstate" => Box::new(match args.value_of("as").unwrap_or_default() {
+		let mut machine: Box<dyn Transpiler> = match args.value_of(output::TARGET).unwrap_or_default() {
+			"xstate" => Box::new(match args.value_of(output::FORMAT).unwrap_or_default() {
 				"json" => xstate::Machine::new(),
 				"typescript" => unreachable!("TODO: on the next update"),
-				_ => unreachable!("{} --as {:?}", Self::NAME, args.value_of("as")),
+				_ => unreachable!("{} --as {:?}", Self::NAME, args.value_of(output::FORMAT)),
 			}),
 			"smcat" => Box::new(smcat::Machine::new()),
-			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of("format")),
+			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of(output::TARGET)),
 		};
 
 		let mut count_parse_err = 0;
@@ -95,8 +69,8 @@ impl<'c> CLI<'c> for Code {
 		}
 
 		let mut machine = machine.to_string();
-		if which("smcat").is_ok() && args.value_of("format").unwrap_or_default() == "smcat" {
-			let format = &args.value_of("as").unwrap_or_default();
+		if which("smcat").is_ok() && args.value_of(output::TARGET).unwrap_or_default() == "smcat" {
+			let format = &args.value_of(output::FORMAT).unwrap_or_default();
 			machine = exec::smcat(format, machine)?;
 
 			if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|f| f == format) {
@@ -120,8 +94,9 @@ impl<'c> CLI<'c> for Code {
 					print.string_with_header(
 						machine,
 						format!(
-							"({fmt}) {title}",
-							fmt = args.value_of("format").unwrap(),
+							"({fmt}.{ext}) {title}",
+							fmt = args.value_of(output::TARGET).unwrap_or_default(),
+							ext = args.value_of(output::FORMAT).unwrap_or_default(),
 							title = (if count_parse_err > 0 { "Partial Result" } else { filepath }).magenta()
 						),
 					)?
@@ -132,7 +107,7 @@ impl<'c> CLI<'c> for Code {
 		}
 
 		if count_parse_err > 0 {
-			Err(Error::CountError {
+			Err(Error::Count {
 				topic: "parsing",
 				count: count_parse_err,
 			}

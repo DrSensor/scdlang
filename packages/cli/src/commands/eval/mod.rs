@@ -1,14 +1,14 @@
 mod console;
 
 use crate::{
+	arg::output,
 	cli::{Result, CLI},
 	exec, format,
-	prelude::*,
 	print::*,
 	prompt,
 };
 use atty::Stream;
-use clap::{App, Arg, ArgMatches};
+use clap::{App, ArgMatches};
 use colored::*;
 use console::*;
 use rustyline::Editor;
@@ -25,44 +25,19 @@ impl<'c> CLI<'c> for Eval {
 	--strict 'Exit immediately if an error occurred'
 	";
 
-	#[rustfmt::skip]
 	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
 		cmd.visible_alias("repl")
 			.about("Evaluate scdlang expression in interactive manner")
-			.args(&[
-				Arg::with_name("format").help("Select output format")
-					.long("format").short("f")
-					.possible_values(&["xstate", "smcat"])
-					.default_value("xstate"),
-				Arg::with_name("as").help("Select parser output")
-					.hidden(which("smcat").is_err()) // TODO: don't hide it when support another output (e.g typescript)
-					.long("as").requires("format")
-					.possible_values(&{
-						let mut possible_formats = Vec::new();
-						possible_formats.merge_from_slice(&format::XSTATE);
-						possible_formats.merge_value(format::SMCAT);
-						if which("smcat").is_ok() {
-							possible_formats.merge_from_slice(&format::ext::SMCAT);
-							if which("graph-easy").is_ok() {
-								possible_formats.merge_from_slice(&format::ext::GRAPH_EASY);
-							}
-						}
-						possible_formats
-					})
-					.default_value_ifs(&[
-						("format", Some("xstate"), "json"),
-						("format", Some("smcat"), if which("smcat").is_ok() { "smcat" } else { "json" })
-					]),
-			])
+			.args(&[output::target(), output::format()])
 	}
 
 	fn invoke(args: &ArgMatches) -> Result<()> {
 		let mut repl: REPL = Editor::with_config(prompt::CONFIG());
 
-		let mut machine: Box<dyn Transpiler> = match args.value_of("format").unwrap_or_default() {
+		let mut machine: Box<dyn Transpiler> = match args.value_of(output::TARGET).unwrap_or_default() {
 			"xstate" => Box::new(xstate::Machine::new()),
 			"smcat" => Box::new(smcat::Machine::new()),
-			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of("format")),
+			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of(output::TARGET)),
 		};
 
 		let (print_mode, eprint_mode) = if atty::is(Stream::Stdin) || !args.is_present("interactive") {
@@ -70,7 +45,7 @@ impl<'c> CLI<'c> for Eval {
 		} else {
 			(Mode::Debug, Mode::Error)
 		};
-		let print = PRINTER(args.value_of("as").unwrap_or("txt")).change(print_mode);
+		let print = PRINTER(args.value_of(output::FORMAT).unwrap_or("txt")).change(print_mode);
 		let eprint = PRINTER("haskell").change(eprint_mode);
 
 		#[rustfmt::skip]
@@ -88,8 +63,8 @@ impl<'c> CLI<'c> for Eval {
 		}.print(string);
 
 		let hook = |input: String| -> Result<String> {
-			if which("smcat").is_ok() && args.value_of("format").unwrap_or_default() == "smcat" {
-				let format = &args.value_of("as").unwrap_or_default();
+			if which("smcat").is_ok() && args.value_of(output::TARGET).unwrap_or_default() == "smcat" {
+				let format = &args.value_of(output::FORMAT).unwrap_or_default();
 				let mut result = exec::smcat(format, input)?;
 
 				if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|f| f == format) {

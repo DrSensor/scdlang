@@ -8,7 +8,7 @@ use std::*;
 
 #[derive(Debug)]
 pub enum Error<'s> {
-	CountError { count: usize, topic: &'s str },
+	Count { count: usize, topic: &'s str },
 	StreamParse(&'s str),
 }
 
@@ -64,7 +64,7 @@ impl Report for Error<'_> {
 		let print = PRINTER("haskell").change(Mode::Error);
 		match self {
 			Error::StreamParse(err) => print.prompt(&err.to_string(), "can't parse"),
-			Error::CountError { .. } => prompting(&self.to_string()),
+			Error::Count { .. } => prompting(&self.to_string()),
 		};
 		if let Some(exit_code) = default_exit_code {
 			process::exit(exit_code)
@@ -77,7 +77,7 @@ impl fmt::Display for Error<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		match self {
 			Error::StreamParse(err) => write!(f, "{}", err),
-			Error::CountError { count, topic } => write!(f, "Found {} error on {}", count, topic), // TODO: make it fluent and verbose 😅
+			Error::Count { count, topic } => write!(f, "Found {} error on {}", count, topic),
 		}
 	}
 }

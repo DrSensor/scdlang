@@ -1,3 +1,5 @@
+#[path = "arg.rs"]
+pub mod arg;
 #[path = "cli.rs"]
 pub mod cli;
 #[path = "commands/mod.rs"]
@@ -75,7 +77,7 @@ pub mod print {
 			.paging_mode(PagingMode::Never) // to support Alpine linux
 			.theme("TwoDark")
 			.language(match lang {
-				"smcat" => "dot",
+				"smcat" => "perl",
 				"scxml" | "xmi" => "xml",
 				"ascii" | "boxart" => "txt",
 				_ => lang,
@@ -85,7 +87,7 @@ pub mod print {
 	};
 }
 
-pub mod prelude {
+pub mod iter {
 	use std::{iter::FromIterator, ops::Deref};
 	pub trait Merge<T: PartialEq + Clone>: FromIterator<T> + Deref<Target = [T]> {
 		fn merge_value(&mut self, item: T);
