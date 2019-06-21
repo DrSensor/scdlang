@@ -74,7 +74,12 @@ pub mod print {
 			.line_numbers(false)
 			.paging_mode(PagingMode::Never) // to support Alpine linux
 			.theme("TwoDark")
-			.language(lang)
+			.language(match lang {
+				"smcat" => "dot",
+				"scxml" | "xmi" => "xml",
+				"ascii" | "boxart" => "txt",
+				_ => lang,
+			})
 			.build()
 			.unwrap() // because it only throw error if field not been initialized
 	};
@@ -112,9 +117,7 @@ pub mod format {
 
 	pub mod ext {
 		pub const SMCAT: [&str; 7] = ["svg", "dot", "smcat", "json", "html", "scxml", "xmi"];
-		pub const GRAPH_EASY: [&str; 13] = [
-			"ascii", "boxart", "bmp", "gif", "hpgl", "jpg", "pcl", "pdf", "png", "ps", "ps2", "tga", "tif",
-		];
+		pub const GRAPH_EASY: [&str; 10] = ["ascii", "boxart", "bmp", "gif", "jpg", "pdf", "png", "ps", "ps2", "tif"];
 	}
 }
 

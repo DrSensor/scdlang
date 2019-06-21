@@ -2,7 +2,6 @@ mod console;
 
 use crate::{
 	cli::{Result, CLI},
-	error::Error,
 	exec, format,
 	prelude::*,
 	print::*,
@@ -60,7 +59,7 @@ impl<'c> CLI<'c> for Eval {
 	fn invoke(args: &ArgMatches) -> Result<()> {
 		let mut repl: REPL = Editor::with_config(prompt::CONFIG());
 
-		let mut machine: Box<dyn Transpiler> = match args.value_of("format").unwrap() {
+		let mut machine: Box<dyn Transpiler> = match args.value_of("format").unwrap_or_default() {
 			"xstate" => Box::new(xstate::Machine::new()),
 			"smcat" => Box::new(smcat::Machine::new()),
 			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of("format")),
@@ -71,7 +70,7 @@ impl<'c> CLI<'c> for Eval {
 		} else {
 			(Mode::Debug, Mode::Error)
 		};
-		let print = PRINTER(args.value_of("as").unwrap_or("markdown")).change(print_mode);
+		let print = PRINTER(args.value_of("as").unwrap_or("txt")).change(print_mode);
 		let eprint = PRINTER("haskell").change(eprint_mode);
 
 		#[rustfmt::skip]
@@ -90,11 +89,11 @@ impl<'c> CLI<'c> for Eval {
 
 		let hook = |input: String| -> Result<String> {
 			if which("smcat").is_ok() && args.value_of("format").unwrap_or_default() == "smcat" {
-				let format = &args.value_of("as").unwrap();
-				let mut result = exec::smcat(format, input).map_err(Error::IO)?;
+				let format = &args.value_of("as").unwrap_or_default();
+				let mut result = exec::smcat(format, input)?;
 
 				if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|f| f == format) {
-					result = exec::graph_easy(format, result).map_err(Error::IO)?;
+					result = exec::graph_easy(format, result)?;
 				}
 				Ok(result)
 			} else {
@@ -113,9 +112,10 @@ impl<'c> CLI<'c> for Eval {
 						}
 					}
 					Err(err) => {
-						epprint(err.to_string(), expression)?;
 						if args.is_present("strict") {
-							return Err(Error::Parse(expression.to_string()));
+							return Err(err);
+						} else {
+							epprint(err.to_string(), expression)?;
 						}
 					}
 				}
