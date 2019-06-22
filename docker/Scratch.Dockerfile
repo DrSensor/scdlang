@@ -9,4 +9,4 @@ COPY README.md LICENSE CODE_OF_CONDUCT.md /
 COPY target/x86_64-unknown-linux-musl/release/scrap /usr/bin/
 
 ENTRYPOINT [ "scrap" ]
-CMD [ "repl", "--interactive" ]
+# CMD [ "repl", "--interactive", ] # TODO: uncomment when prompt to select --format is implemented

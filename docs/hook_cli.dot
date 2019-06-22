@@ -1,0 +1,27 @@
+// A graph that explain how `scrap` integrated with others CLI to produce various output
+digraph {
+  rankdir=LR
+  compound=true
+  dir = none
+  nodesep="1"
+  initial [shape = point]
+  node [shape=box]
+
+  initial -> smcat [label=<<u>json</u>>]
+  smcat -> dot [label=<<u>dot</u>>]
+  smcat -> {"" [shape=point]} [dir=none, label="[ no graphviz ]"]
+  "" -> "graph-easy" [label=<<u>dot</u>>]
+
+  image [shape=record, label="bmp|gif|jpg|png|tif"]
+  document [shape=record, label="ps|ps2"]
+  terminal [shape=record, label="ascii|boxart"]
+  lang1 [shape=record, label="smcat|json|scxml|xmi"]
+  lang2 [shape=record, label="eps|fig|dot_json|pic|tk|vml|vrml"]
+  compressed [shape=record, label="gd|gd2|svgz|vmlz|wbmp"]
+  all [shape=record, label="svg|dot"]
+
+  smcat -> all,lang1 [label=<<i>-f smcat --as</i>>]
+  dot,"graph-easy" -> all,image,document [label=<<i>-f graph --as</i>>]
+  "graph-easy" -> terminal,pdf [label=<<i>-f graph --as</i>>]
+  dot -> compressed,lang2 [label=<<i>-f graph --as</i>>]
+}
