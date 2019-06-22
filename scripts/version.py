@@ -37,13 +37,14 @@ def change_version(version):
 def docker_release():
     re_sep = r"(?:=|\s+)"
     re_version_label = r"(version%s[\"']?(%s)[\"']?)" % (re_sep, re_version)
-    with open("Dockerfile", "r+") as file:
-        dockerfile = file.read()
-        (version, v) = re.findall(re_version_label, dockerfile, re.IGNORECASE)[0]
-        new_version = re.sub(re_version, change_version(v), version)
-        file.seek(0)  # workaround for read & overwrite file
-        file.write(dockerfile.replace(version, new_version))
-        file.truncate()
+    for docker_file in glob("docker/*.Dockerfile"):
+        with open(docker_file, "r+") as file:
+            dockerfile = file.read()
+            (version, v) = re.findall(re_version_label, dockerfile, re.IGNORECASE)[0]
+            new_version = re.sub(re_version, change_version(v), version)
+            file.seek(0)  # workaround for read & overwrite file
+            file.write(dockerfile.replace(version, new_version))
+            file.truncate()
 
 
 def cargo_release(project):
