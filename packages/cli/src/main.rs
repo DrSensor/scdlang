@@ -1,5 +1,5 @@
 mod lib;
-pub use lib::*;
+use lib::*;
 
 use error::Report;
 

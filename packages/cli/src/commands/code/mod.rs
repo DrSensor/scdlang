@@ -1,4 +1,11 @@
-use crate::{arg::output, cli::*, error::*, exec, format, print::*};
+use crate::{
+	arg::output,
+	cli::*,
+	error::*,
+	format,
+	print::*,
+	spawn::{self, *},
+};
 use atty::Stream;
 use clap::{App, ArgMatches};
 use colored::*;
@@ -71,10 +78,10 @@ impl<'c> CLI<'c> for Code {
 		let mut machine = machine.to_string();
 		if which("smcat").is_ok() && args.value_of(output::TARGET).unwrap_or_default() == "smcat" {
 			let format = &args.value_of(output::FORMAT).unwrap_or_default();
-			machine = exec::smcat(format, machine)?;
+			machine = spawn::smcat(format)?.output_from(machine)?;
 
 			if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|f| f == format) {
-				machine = exec::graph_easy(format, machine)?;
+				machine = spawn::graph_easy(format)?.output_from(format::into_legacy_dot(&machine))?;
 			}
 		}
 

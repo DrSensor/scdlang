@@ -33,6 +33,8 @@ pub mod print {
 		Error,
 		MultiLine,
 		UseHeader,
+
+		#[allow(dead_code)]
 		Plain,
 	}
 
@@ -121,19 +123,27 @@ pub mod format {
 		pub const SMCAT: [&str; 7] = ["svg", "dot", "smcat", "json", "html", "scxml", "xmi"];
 		pub const GRAPH_EASY: [&str; 10] = ["ascii", "boxart", "bmp", "gif", "jpg", "pdf", "png", "ps", "ps2", "tif"];
 	}
+
+	pub fn into_legacy_dot(input: &str) -> String {
+		use regex::Regex;
+		let re = Regex::new(r#"( style=["']?\w+["']?)|( penwidth=["']?\d+.\d["']?)"#).expect("valid regex");
+		re.replace_all(input, "").to_string()
+	}
 }
 
-pub mod exec {
+pub mod spawn {
 	use super::format;
-	use regex::Regex;
 	use std::{
-		io::{self, Write},
+		io::{self, Read, Write},
 		process::{Child, Command, Stdio},
-		str::from_utf8,
 	};
 
-	pub fn smcat(fmt: &str, input: String) -> io::Result<String> {
-		let mut command = spawn(
+	pub trait ShortProcess {
+		fn output_from(self, input: String) -> io::Result<String>;
+	}
+
+	pub fn smcat(fmt: &str) -> io::Result<impl ShortProcess> {
+		Ok(Process(spawn(
 			"smcat",
 			&[
 				"--input-type",
@@ -145,19 +155,44 @@ pub mod exec {
 					fmt
 				},
 			],
-		)?;
-		write!(command.stdin.as_mut().unwrap(), "{}", input)?;
-		Ok(from_utf8(&command.wait_with_output()?.stdout).unwrap().to_string())
+		)?))
 	}
 
-	pub fn graph_easy(fmt: &str, input: String) -> io::Result<String> {
-		let mut command = spawn("graph-easy", &["--as", fmt])?;
-		let re = Regex::new(r#"( style=["']?\w+["']?)|( penwidth=["']?\d+.\d["']?)"#).unwrap();
-
-		write!(command.stdin.as_mut().unwrap(), "{}", re.replace_all(&input, ""))?;
-		Ok(from_utf8(&command.wait_with_output()?.stdout).unwrap().to_string())
+	pub fn graph_easy(fmt: &str) -> io::Result<impl ShortProcess> {
+		Ok(Process(spawn("graph-easy", &["--as", fmt])?))
 	}
 
+	impl ShortProcess for Process {
+		fn output_from(mut self, input: String) -> io::Result<String> {
+			let mut output = String::new();
+
+			write!(self.0.stdin.as_mut().expect("process not exit"), "{}", input)?;
+			self.0.wait()?;
+			self.0.stdout.as_mut().expect("process to exit").read_to_string(&mut output)?;
+
+			Ok(output)
+		}
+	}
+
+	pub trait ActiveProcess {
+		fn output_from(&mut self, input: String) -> io::Result<String>;
+	}
+
+	// INSERT ActiveProcess cli that always keepalive here (if any)
+
+	impl ActiveProcess for Process {
+		fn output_from(&mut self, input: String) -> io::Result<String> {
+			let mut output = String::new();
+
+			write!(self.0.stdin.as_mut().expect("process not exit"), "{}", input)?;
+			self.0.wait()?;
+			self.0.stdout.as_mut().expect("process to exit").read_to_string(&mut output)?;
+
+			Ok(output)
+		}
+	}
+
+	struct Process(Child);
 	fn spawn(cmd: &str, args: &[&str]) -> io::Result<Child> {
 		Command::new(cmd)
 			.args(args)

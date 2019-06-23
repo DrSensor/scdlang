@@ -3,9 +3,10 @@ mod console;
 use crate::{
 	arg::output,
 	cli::{Result, CLI},
-	exec, format,
+	format,
 	print::*,
 	prompt,
+	spawn::{self, *},
 };
 use atty::Stream;
 use clap::{App, ArgMatches};
@@ -32,6 +33,7 @@ impl<'c> CLI<'c> for Eval {
 	}
 
 	fn invoke(args: &ArgMatches) -> Result<()> {
+		let output_format = &args.value_of(output::FORMAT).unwrap_or_default();
 		let mut repl: REPL = Editor::with_config(prompt::CONFIG());
 
 		let mut machine: Box<dyn Transpiler> = match args.value_of(output::TARGET).unwrap_or_default() {
@@ -64,11 +66,11 @@ impl<'c> CLI<'c> for Eval {
 
 		let hook = |input: String| -> Result<String> {
 			if which("smcat").is_ok() && args.value_of(output::TARGET).unwrap_or_default() == "smcat" {
-				let format = &args.value_of(output::FORMAT).unwrap_or_default();
-				let mut result = exec::smcat(format, input)?;
+				let mut result = spawn::smcat(output_format)?.output_from(input)?;
 
-				if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|f| f == format) {
-					result = exec::graph_easy(format, result)?;
+				if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|ext| ext == output_format) {
+					result = format::into_legacy_dot(&result);
+					result = spawn::graph_easy(output_format)?.output_from(result)?;
 				}
 				Ok(result)
 			} else {
