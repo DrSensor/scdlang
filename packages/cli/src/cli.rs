@@ -1,4 +1,4 @@
-use crate::commands::*;
+use crate::{arg, commands::*};
 use clap::{App, ArgMatches, SubCommand};
 use std::error;
 
@@ -31,6 +31,7 @@ pub trait CLI<'c> {
 	fn invoke(args: &ArgMatches) -> Result<()>;
 	fn run_on(matches: &ArgMatches) -> Result<()> {
 		if let Some(args) = matches.subcommand_matches(Self::NAME) {
+			arg::output::validate(args)?;
 			Self::invoke(args)?;
 		}
 		Ok(())

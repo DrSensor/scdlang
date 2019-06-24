@@ -33,12 +33,13 @@ impl<'c> CLI<'c> for Eval {
 	}
 
 	fn invoke(args: &ArgMatches) -> Result<()> {
-		let output_format = &args.value_of(output::FORMAT).unwrap_or_default();
+		let output_format = args.value_of(output::FORMAT).unwrap_or_default();
+		let target = args.value_of(output::TARGET).unwrap_or_default();
 		let mut repl: REPL = Editor::with_config(prompt::CONFIG());
 
-		let mut machine: Box<dyn Transpiler> = match args.value_of(output::TARGET).unwrap_or_default() {
+		let mut machine: Box<dyn Transpiler> = match target {
 			"xstate" => Box::new(xstate::Machine::new()),
-			"smcat" => Box::new(smcat::Machine::new()),
+			"smcat" | "graph" => Box::new(smcat::Machine::new()),
 			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of(output::TARGET)),
 		};
 
@@ -65,10 +66,10 @@ impl<'c> CLI<'c> for Eval {
 		}.print(string);
 
 		let hook = |input: String| -> Result<String> {
-			if which("smcat").is_ok() && args.value_of(output::TARGET).unwrap_or_default() == "smcat" {
+			if which("smcat").is_ok() && ["smcat", "graph"].iter().any(|t| *t == target) {
 				let mut result = spawn::smcat(output_format)?.output_from(input)?;
 
-				if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|ext| ext == output_format) {
+				if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|ext| *ext == output_format) {
 					result = format::into_legacy_dot(&result);
 					result = spawn::graph_easy(output_format)?.output_from(result)?;
 				}

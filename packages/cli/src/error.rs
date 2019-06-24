@@ -8,8 +8,16 @@ use std::*;
 
 #[derive(Debug)]
 pub enum Error<'s> {
-	Count { count: usize, topic: &'s str },
+	Count {
+		count: usize,
+		topic: &'s str,
+	},
 	StreamParse(&'s str),
+	WrongFormat {
+		target: String,
+		format: String,
+		possible_formats: &'s [&'s str],
+	},
 }
 
 pub trait Report: fmt::Debug + fmt::Display + Sized {
@@ -22,22 +30,21 @@ pub trait Report: fmt::Debug + fmt::Display + Sized {
 impl Report for Box<dyn error::Error> {
 	fn report_and_exit(&self, default_exit_code: Option<i32>, arguments: Option<ArgMatches>) {
 		let print = PRINTER("haskell").change(Mode::Error);
-		let matches: ArgMatches = arguments.unwrap_or_default();
+		let args: ArgMatches = arguments.unwrap_or_default();
 
 		if let Some(err) = self.downcast_ref::<io::Error>() {
 			use io::ErrorKind::*;
 			match err.kind() {
-				NotFound | PermissionDenied | AlreadyExists => {
-					let mut error_messages = err.to_string();
-					if let (_, Some(args)) = matches.subcommand() {
-						error_messages = format!(
-							"{} for {}",
-							remove_os_error(err.to_string()).replace(" or directory", ""),
-							args.value_of("FILE").unwrap_or("<FILE>")
-						)
-					}
-					prompting(&error_messages)
-				}
+				NotFound | PermissionDenied | AlreadyExists => prompting(&format!(
+					"{} for {}",
+					remove_os_error(err.to_string()).replace(" or directory", ""),
+					args.value_of("FILE").unwrap_or("<FILE>").yellow(),
+				)),
+				_ if err.raw_os_error() == Some(21) => prompting(&format!(
+					"{} {}",
+					args.value_of("FILE").unwrap_or("<FILE>").yellow(),
+					remove_os_error(err.to_string()).to_lowercase(),
+				)),
 				_ => prompting(&err.to_string()),
 			};
 			if let Some(exit_code) = default_exit_code {
@@ -64,7 +71,7 @@ impl Report for Error<'_> {
 		let print = PRINTER("haskell").change(Mode::Error);
 		match self {
 			Error::StreamParse(err) => print.prompt(&err.to_string(), "can't parse"),
-			Error::Count { .. } => prompting(&self.to_string()),
+			_ => prompting(&self.to_string()),
 		};
 		if let Some(exit_code) = default_exit_code {
 			process::exit(exit_code)
@@ -75,9 +82,21 @@ impl Report for Error<'_> {
 impl error::Error for Error<'_> {}
 impl fmt::Display for Error<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		use Error::*;
 		match self {
-			Error::StreamParse(err) => write!(f, "{}", err),
-			Error::Count { count, topic } => write!(f, "Found {} error on {}", count, topic),
+			StreamParse(err) => write!(f, "{}", err),
+			Count { count, topic } => write!(f, "Found {} error on {}", count, topic),
+			WrongFormat {
+				target,
+				format,
+				possible_formats,
+			} => write!(
+				f,
+				"Argument {target} doesn't support {format}\nTry: {values}",
+				target = format!("--format {}", target).red().bold(),
+				format = format!("--as {}", format).red().bold(),
+				values = format!("--format {} --as <{}>", target, possible_formats.join("|")).green(),
+			),
 		}
 	}
 }
@@ -86,7 +105,7 @@ impl fmt::Display for Error<'_> {
 
 fn error(message: &str) -> String {
 	if atty::is(Stream::Stderr) {
-		format!("{} {}", prompt::ERROR.red().bold(), message.red())
+		format!("{} {}", prompt::ERROR.red().bold(), message.magenta())
 	} else {
 		format!("{} {}", prompt::ERROR, message)
 	}

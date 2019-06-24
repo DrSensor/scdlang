@@ -185,9 +185,12 @@ pub mod spawn {
 			let mut output = String::new();
 
 			write!(self.0.stdin.as_mut().expect("process not exit"), "{}", input)?;
-			self.0.wait()?;
-			self.0.stdout.as_mut().expect("process to exit").read_to_string(&mut output)?;
-
+			loop {
+				if let Some(stdout) = self.0.stdout.as_mut() {
+					stdout.read_to_string(&mut output)?;
+					break;
+				}
+			}
 			Ok(output)
 		}
 	}
