@@ -1,34 +1,53 @@
 use super::helper::prelude::*;
 use crate::{cache, semantics, utils::naming::sanitize};
-use semantics::{analyze, Kind, Transition};
+use semantics::{analyze, Check, Kind, Transition};
 
 impl<'t> analyze::SemanticCheck<'t> for Transition<'t> {
 	fn analyze_error(&self, span: Span<'t>, options: &'t Scdlang) -> Result<(), ScdlError> {
-		let mut cache_transition = cache::transition()?;
+		if let Check::Auto | Check::Manual = options.semantic_error {
+			let mut cache_transition = cache::transition()?;
 
-		for transition in self.clone().into_iter() {
-			let (current, target) = (sanitize(transition.from.name), sanitize(transition.to.name));
+			let make_error = |message, kind: Kind| match options.semantic_error {
+				Check::Auto => options.err_from_span(span, message).into(),
+				// FIXME: Check::Manual => ScdlError::Semantic { kind, message },
+				_ => unreachable!(),
+			};
 
-			let t_cache = cache_transition.entry(current).or_default();
-			match &transition.at {
-				Some(trigger) => {
-					if t_cache.contains_key(&None) {
-						return Err(options.err_from_span(span, transition.warn_conflict(&t_cache)).into());
-					} else if let Some(prev_target) = t_cache.insert(Some(trigger.into()), target) {
-						return Err(options.err_from_span(span, transition.warn_duplicate(&prev_target)).into());
+			for transition in self.clone().into_iter() {
+				let (current, target) = (sanitize(transition.from.name), sanitize(transition.to.name));
+				let t_cache = cache_transition.entry(current).or_default();
+
+				match &transition.at {
+					Some(trigger) => {
+						let err_msg = if t_cache.contains_key(&None) {
+							Some(transition.warn_conflict(&t_cache))
+						} else if let Some(prev_target) = t_cache.insert(Some(trigger.into()), target) {
+							Some(transition.warn_duplicate(&prev_target))
+						} else {
+							None
+						};
+						if let Some(message) = err_msg {
+							return Err(make_error(message, transition.into()));
+						}
 					}
-				}
-				None => {
-					if t_cache.keys().any(Option::is_some) {
-						return Err(options.err_from_span(span, transition.warn_conflict(&t_cache)).into());
-					} else if let Some(prev_target) = t_cache.insert(None, target) {
-						return Err(options.err_from_span(span, transition.warn_duplicate(&prev_target)).into());
+					None => {
+						let err_msg = if t_cache.keys().any(Option::is_some) {
+							Some(transition.warn_conflict(&t_cache))
+						} else if let Some(prev_target) = t_cache.insert(None, target) {
+							Some(transition.warn_duplicate(&prev_target))
+						} else {
+							None
+						};
+						if let Some(message) = err_msg {
+							return Err(make_error(message, transition.into()));
+						}
 					}
-				}
+				};
 			}
+			Ok(())
+		} else {
+			Ok(())
 		}
-
-		Ok(())
 	}
 
 	fn into_kinds(self) -> Vec<Kind<'t>> {

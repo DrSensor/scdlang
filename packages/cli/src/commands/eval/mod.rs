@@ -107,7 +107,11 @@ impl<'c> CLI<'c> for Eval {
 		}
 
 		while let Ok(line) = repl.readline(&format!("{} ", prompt::REPL.bold())) {
-			parse(&line)?;
+			match line.as_str() {
+				"exit" => break,
+				// FIXME: "print" => pprint(hook(machine.to_string())?, "")?,
+				_ => parse(&line)?,
+			};
 		}
 
 		if !args.is_present("interactive") {

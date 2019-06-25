@@ -31,15 +31,14 @@ impl<'g> Scdlang<'g> {
 
 	/// Parse from `source` then iterate.
 	/// This is the preferred methods for implementing transpiler, codegen, or compiler.
-	pub fn iter_from(&self, source: &'g str) -> Result<Vec<Kind<'_>>, Error> {
-		use convert::TryFrom;
+	pub fn iter_from(&self, source: &'g str) -> Result<Vec<Kind>, Error> {
 		let pairs = self.parse(source)?;
 		pairs
 			.filter(|pair| if let Rule::EOI = pair.as_rule() { false } else { true })
 			.map(|pair| {
 				Ok(match pair.as_rule() {
-					Rule::expression if self.semantic_error => Transition::analyze_from(pair, &self)?.into_kinds(),
-					Rule::expression => Transition::try_from(pair)?.into_kinds(),
+					// Rule::expression => Transition::from(pair).into_kinds(),
+					Rule::expression => Transition::analyze_from(pair, &self)?.into_kinds(),
 					_ => unreachable!("Rule::{:?}", pair.as_rule()),
 				})
 			})

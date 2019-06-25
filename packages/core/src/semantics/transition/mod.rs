@@ -32,7 +32,6 @@ impl<'t> From<Transition<'t>> for Kind<'t> {
 mod pair {
 	#![allow(clippy::unit_arg)]
 	use crate::{error::Error, semantics::Transition, test, Scdlang};
-	use std::convert::TryInto;
 
 	pub type ParseResult = Result<(), Error>;
 
@@ -46,13 +45,13 @@ mod pair {
 			|expression| {
 				Ok(match expression.as_str() {
 					"A <- D" => {
-						let state: Transition = expression.try_into()?;
+						let state: Transition = expression.into();
 						assert_eq!(state.from.name, "D");
 						assert_eq!(state.to.name, "A");
 						assert!(state.at.is_none());
 					}
 					"A -> D @ C" => {
-						let state: Transition = expression.try_into()?;
+						let state: Transition = expression.into();
 						assert_eq!(state.from.name, "A");
 						assert_eq!(state.to.name, "D");
 						let event = state.at.expect("struct Event");
