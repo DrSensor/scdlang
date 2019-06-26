@@ -1,7 +1,7 @@
 mod format;
 mod util;
 
-use crate::{grammar::*, semantics::Kind};
+use crate::{grammar::*, semantics::Check};
 use pest;
 
 pub type PestError = pest::error::Error<Rule>;
@@ -11,20 +11,12 @@ pub type PestError = pest::error::Error<Rule>;
 /// Parse-related error type.
 // WARNING: 👇 adding lifetime annotation can cause lifetime refactoring hell 💢 (it will break Parser trait)
 pub enum Error {
-	/*FIXME:*/ #[deprecated = "because it's rarely happen"]
-	WrongRule(Rule),
-
 	/// Happen when there is syntax or semantics error
 	Parse(Box<PestError>),
 
-	/// Happen only when [`Builder.with_err_semantic(Check:Manual)`](../../trait.Builder.html)
-	// FIXME: Semantic { kind: Kind, message: String },
-
-	#[deprecated = "because it's rarely happen"]
-	EmptyDeclaration,
-
-	#[deprecated = "because it's rarely happen"]
-	MissingOperator,
+	// FIXME: fix link not found 👇
+	/// Happen when calling [Expression::semantic_check](../../trait.Expression.html) but [`Builder.with_err_semantic(Check::{Auto, None})`](../../trait.Builder.html)
+	SemanticCheck(Check),
 
 	/// Can happen when accessing caches unsafely
 	Deadlock,

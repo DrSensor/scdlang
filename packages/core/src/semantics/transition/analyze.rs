@@ -1,53 +1,46 @@
 use super::helper::prelude::*;
-use crate::{cache, semantics, utils::naming::sanitize};
-use semantics::{analyze, Check, Kind, Transition};
+use crate::{cache, semantics, utils::naming::sanitize, Error};
+use semantics::{analyze::*, Kind, Transition};
 
-impl<'t> analyze::SemanticCheck<'t> for Transition<'t> {
-	fn analyze_error(&self, span: Span<'t>, options: &'t Scdlang) -> Result<(), ScdlError> {
-		if let Check::Auto | Check::Manual = options.semantic_error {
-			let mut cache_transition = cache::transition()?;
+impl SemanticCheck for Transition<'_> {
+	fn check_error(&self) -> Result<Option<String>, Error> {
+		let mut cache_transition = cache::transition()?;
 
-			let make_error = |message, kind: Kind| match options.semantic_error {
-				Check::Auto => options.err_from_span(span, message).into(),
-				// FIXME: Check::Manual => ScdlError::Semantic { kind, message },
-				_ => unreachable!(),
-			};
+		let (current, target) = (sanitize(self.from.name), sanitize(self.to.name));
+		let t_cache = cache_transition.entry(current).or_default();
 
-			for transition in self.clone().into_iter() {
-				let (current, target) = (sanitize(transition.from.name), sanitize(transition.to.name));
-				let t_cache = cache_transition.entry(current).or_default();
-
-				match &transition.at {
-					Some(trigger) => {
-						let err_msg = if t_cache.contains_key(&None) {
-							Some(transition.warn_conflict(&t_cache))
-						} else if let Some(prev_target) = t_cache.insert(Some(trigger.into()), target) {
-							Some(transition.warn_duplicate(&prev_target))
-						} else {
-							None
-						};
-						if let Some(message) = err_msg {
-							return Err(make_error(message, transition.into()));
-						}
-					}
-					None => {
-						let err_msg = if t_cache.keys().any(Option::is_some) {
-							Some(transition.warn_conflict(&t_cache))
-						} else if let Some(prev_target) = t_cache.insert(None, target) {
-							Some(transition.warn_duplicate(&prev_target))
-						} else {
-							None
-						};
-						if let Some(message) = err_msg {
-							return Err(make_error(message, transition.into()));
-						}
-					}
-				};
+		Ok(match &self.at {
+			Some(trigger) => {
+				if t_cache.contains_key(&None) {
+					Some(self.warn_conflict(&t_cache))
+				} else if let Some(prev_target) = t_cache.insert(Some(trigger.into()), target) {
+					Some(self.warn_duplicate(&prev_target))
+				} else {
+					None
+				}
 			}
-			Ok(())
-		} else {
-			Ok(())
+			None => {
+				if t_cache.keys().any(Option::is_some) {
+					Some(self.warn_conflict(&t_cache))
+				} else if let Some(prev_target) = t_cache.insert(None, target) {
+					Some(self.warn_duplicate(&prev_target))
+				} else {
+					None
+				}
+			}
+		})
+	}
+}
+
+impl<'t> SemanticAnalyze<'t> for Transition<'t> {
+	fn analyze_error(&self, span: Span<'t>, options: &'t Scdlang) -> Result<(), Error> {
+		let make_error = |message| options.err_from_span(span, message).into();
+		for transition in self.clone().into_iter() {
+			if let Some(message) = transition.check_error()? {
+				return Err(make_error(message));
+			}
 		}
+		Ok(())
 	}
 
 	fn into_kinds(self) -> Vec<Kind<'t>> {

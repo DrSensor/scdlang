@@ -4,8 +4,9 @@ mod helper;
 mod iter;
 
 use crate::{
-	semantics::{Expression, Kind, Transition},
+	semantics::{analyze::SemanticCheck, Expression, Found, Kind, Transition},
 	utils::naming::Name,
+	Error,
 };
 
 impl Expression for Transition<'_> {
@@ -19,6 +20,13 @@ impl Expression for Transition<'_> {
 
 	fn event(&self) -> Option<Name> {
 		self.at.as_ref().map(|event| event.name.into())
+	}
+
+	fn semantic_check(&self) -> Result<Found, Error> {
+		Ok(match self.check_error()? {
+			Some(message) => Found::Error(message),
+			None => Found::None,
+		})
 	}
 }
 
@@ -65,7 +73,7 @@ mod pair {
 
 	mod semantics_error {
 		use super::*;
-		use crate::semantics::analyze::SemanticCheck;
+		use crate::semantics::analyze::SemanticAnalyze;
 		use std::mem::ManuallyDrop;
 
 		#[test]

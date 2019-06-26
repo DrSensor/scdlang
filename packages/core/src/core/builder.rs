@@ -1,4 +1,4 @@
-use crate::{cache, error::Error, external::Builder, semantics};
+use crate::{cache, error::Error, external::Builder};
 use pest_derive::Parser;
 
 #[derive(Parser, Default, Clone)] // 🤔 is it wise to derive from Copy&Clone ?
@@ -31,8 +31,8 @@ pub struct Scdlang<'g> {
 	pub(crate) path: Option<&'g str>,
 	pub(crate) line: Option<usize>,
 
-	pub(super) clear_cache: bool,                //-|in case for program that need to disable…|
-	pub(crate) semantic_error: semantics::Check, //-|…then enable semantic error at runtime|
+	pub(super) clear_cache: bool, //-|in case for program that need to disable…|
+	pub semantic_error: bool,     //-|…then enable semantic error at runtime|
 }
 
 impl<'s> Scdlang<'s> {
@@ -41,7 +41,7 @@ impl<'s> Scdlang<'s> {
 	pub fn new() -> Self {
 		Self {
 			clear_cache: true,
-			semantic_error: semantics::Check::Auto, // TODO: investigate why removing 👈 cause error 🤔
+			semantic_error: true,
 			..Default::default()
 		}
 	}
@@ -68,7 +68,7 @@ impl<'g> Builder<'g> for Scdlang<'g> {
 		self
 	}
 
-	fn with_err_semantic(&mut self, default: semantics::Check) -> &mut dyn Builder<'g> {
+	fn with_err_semantic(&mut self, default: bool) -> &mut dyn Builder<'g> {
 		self.semantic_error = default;
 		self
 	}

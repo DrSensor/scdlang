@@ -39,7 +39,15 @@ impl<'c> CLI<'c> for Eval {
 
 		let mut machine: Box<dyn Transpiler> = match target {
 			"xstate" => Box::new(xstate::Machine::new()),
-			"smcat" | "graph" => Box::new(smcat::Machine::new()),
+			"smcat" | "graph" => {
+				let mut machine = Box::new(smcat::Machine::new());
+				let config = machine.configure();
+				match output_format {
+					"ascii" | "boxart" => config.with_err_semantic(true),
+					_ => config.with_err_semantic(false),
+				};
+				machine
+			}
 			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of(output::TARGET)),
 		};
 

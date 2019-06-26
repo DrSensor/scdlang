@@ -126,8 +126,8 @@ pub mod format {
 
 	pub fn into_legacy_dot(input: &str) -> String {
 		use regex::Regex;
-		let re = Regex::new(r#"( style=["']?\w+["']?)|( penwidth=["']?\d+.\d["']?)"#).expect("valid regex");
-		re.replace_all(input, "").to_string()
+		let re = Regex::new(r#"( style=["']\w+["'])|( penwidth=["']?\d+.\d["']?)"#).expect("valid regex");
+		re.replace_all(input, "").replace("note", "box")
 	}
 }
 

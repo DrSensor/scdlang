@@ -61,7 +61,7 @@ parser.parse("Off -> On @ Power")?;
 [`Parser`]: trait.Parser.html
 [`Builder`]: trait.Builder.html
 [`Scdlang`]: ../struct.Scdlang.html */
-use crate::{cache, semantics, Scdlang};
+use crate::{cache, Scdlang};
 use std::{error::Error, fmt};
 
 #[rustfmt::skip]
@@ -103,7 +103,7 @@ pub trait Builder<'t> {
 	fn auto_clear_cache(&mut self, default: bool) -> &mut dyn Builder<'t>;
 
 	/// Enable semantics error. (default: `true`).
-	fn with_err_semantic(&mut self, default: semantics::Check) -> &mut dyn Builder<'t>;
+	fn with_err_semantic(&mut self, default: bool) -> &mut dyn Builder<'t>;
 	/// Set path that going to be printed in the error essages.
 	fn with_err_path(&mut self, path: &'t str) -> &mut dyn Builder<'t>;
 	/// Set the line_of_code offset of the error essages.

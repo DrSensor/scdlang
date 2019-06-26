@@ -37,15 +37,24 @@ impl<'c> CLI<'c> for Code {
 	fn invoke(args: &ArgMatches) -> Result<()> {
 		let filepath = args.value_of("FILE").unwrap_or_default();
 		let target = args.value_of(output::TARGET).unwrap_or_default();
+		let output_format = args.value_of(output::FORMAT).unwrap_or_default();
 		let mut print = PRINTER(args.value_of(output::FORMAT).unwrap_or("txt"));
 
 		let mut machine: Box<dyn Transpiler> = match target {
-			"xstate" => Box::new(match args.value_of(output::FORMAT).unwrap_or_default() {
+			"xstate" => Box::new(match output_format {
 				"json" => xstate::Machine::new(),
 				"typescript" => unreachable!("TODO: on the next update"),
 				_ => unreachable!("{} --as {:?}", Self::NAME, args.value_of(output::FORMAT)),
 			}),
-			"smcat" | "graph" => Box::new(smcat::Machine::new()),
+			"smcat" | "graph" => {
+				let mut machine = Box::new(smcat::Machine::new());
+				let config = machine.configure();
+				match output_format {
+					"ascii" | "boxart" => config.with_err_semantic(true),
+					_ => config.with_err_semantic(false),
+				};
+				machine
+			}
 			_ => unreachable!("{} --format {:?}", Self::NAME, args.value_of(output::TARGET)),
 		};
 
@@ -78,11 +87,10 @@ impl<'c> CLI<'c> for Code {
 
 		let mut machine = machine.to_string();
 		if which("smcat").is_ok() && ["smcat", "graph"].iter().any(|t| *t == target) {
-			let format = args.value_of(output::FORMAT).unwrap_or_default();
-			machine = spawn::smcat(format)?.output_from(machine)?;
+			machine = spawn::smcat(output_format)?.output_from(machine)?;
 
-			if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|f| *f == format) {
-				machine = spawn::graph_easy(format)?.output_from(format::into_legacy_dot(&machine))?;
+			if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|f| *f == output_format) {
+				machine = spawn::graph_easy(output_format)?.output_from(format::into_legacy_dot(&machine))?;
 			}
 		}
 

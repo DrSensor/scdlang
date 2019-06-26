@@ -2,7 +2,11 @@
 mod schema;
 mod utils;
 
-use scdlang_core::{prelude::*, semantics::Kind, Scdlang};
+use scdlang_core::{
+	prelude::*,
+	semantics::{Found, Kind},
+	Scdlang,
+};
 use schema::*;
 use serde::Serialize;
 use std::{error, fmt, mem::ManuallyDrop};
@@ -52,22 +56,36 @@ impl<'a> Parser<'a> for Machine<'a> {
 	}
 
 	fn try_parse(source: &str, builder: Scdlang<'a>) -> Result<Self, DynError> {
+		use StateType::*;
 		let mut schema = Coordinate::default();
 
-		use StateType::*;
 		for kind in builder.iter_from(source)? {
 			match kind {
 				Kind::Expression(expr) => {
-					#[rustfmt::skip]
-					schema.states.merge(&[
-						expr.current_state().into_type(Regular),
-						expr.next_state().into_type(Regular)
-					]);
+					let (color, note) = match builder.semantic_error {
+						false => match expr.semantic_check()? {
+							Found::Error(message) => (Some("red".to_string()), Some(message.split_to_vec('\n'))),
+							_ => (None, None),
+						},
+						true => (None, None),
+					};
+					schema.states.merge(&{
+						let mut states = [expr.current_state().into_type(Regular), expr.next_state().into_type(Regular)];
+						if let (Some(color), Some(notes)) = (&color, &note) {
+							states.iter_mut().for_each(|s| {
+								s.with_color(color);
+								s.with_notes(&notes.join("\n"));
+							});
+						}
+						states
+					});
 					let transition = Transition {
 						from: expr.current_state().into(),
 						to: expr.next_state().into(),
 						event: expr.event().map(|e| e.into()),
 						label: expr.event().map(|e| e.into()),
+						color,
+						note,
 						..Default::default()
 					};
 					match &mut schema.transitions {

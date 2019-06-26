@@ -1,7 +1,7 @@
 use super::{Rule, Scdlang};
 use crate::{
 	error::*,
-	semantics::{analyze::SemanticCheck, *},
+	semantics::{analyze::*, *},
 };
 use either::Either;
 use pest::{self, error::Error as PestError, iterators::Pairs};
@@ -37,8 +37,8 @@ impl<'g> Scdlang<'g> {
 			.filter(|pair| if let Rule::EOI = pair.as_rule() { false } else { true })
 			.map(|pair| {
 				Ok(match pair.as_rule() {
-					// Rule::expression => Transition::from(pair).into_kinds(),
-					Rule::expression => Transition::analyze_from(pair, &self)?.into_kinds(),
+					Rule::expression if self.semantic_error => Transition::analyze_from(pair, &self)?.into_kinds(),
+					Rule::expression => Transition::from(pair).into_kinds(),
 					_ => unreachable!("Rule::{:?}", pair.as_rule()),
 				})
 			})
