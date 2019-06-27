@@ -46,7 +46,7 @@ impl<'a> Parser<'a> for Machine<'a> {
 
 	fn insert_parse(&mut self, source: &str) -> Result<(), DynError> {
 		let mut ast = ManuallyDrop::new(Self::try_parse(source, self.builder.to_owned())?);
-		self.schema.states.append(&mut ast.schema.states);
+		self.schema.states.merge(&ast.schema.states);
 		match (&mut self.schema.transitions, &mut ast.schema.transitions) {
 			(Some(origin), Some(parsed)) => origin.extend_from_slice(parsed),
 			(None, _) => self.schema.transitions = ast.schema.transitions.to_owned(),
@@ -55,6 +55,7 @@ impl<'a> Parser<'a> for Machine<'a> {
 		Ok(())
 	}
 
+	#[allow(clippy::match_bool)]
 	fn try_parse(source: &str, builder: Scdlang<'a>) -> Result<Self, DynError> {
 		use StateType::*;
 		let mut schema = Coordinate::default();
@@ -71,10 +72,9 @@ impl<'a> Parser<'a> for Machine<'a> {
 					};
 					schema.states.merge(&{
 						let mut states = [expr.current_state().into_type(Regular), expr.next_state().into_type(Regular)];
-						if let (Some(color), Some(notes)) = (&color, &note) {
+						if let Some(color) = &color {
 							states.iter_mut().for_each(|s| {
 								s.with_color(color);
-								s.with_notes(&notes.join("\n"));
 							});
 						}
 						states
@@ -245,5 +245,85 @@ mod test {
 			}),
 			json!(machine)
 		)
+	}
+
+	#[test]
+	fn disable_semantic_error() -> Result<(), DynError> {
+		let mut machine = Machine::new();
+		machine.configure().with_err_semantic(false);
+		let fixture = " A -> C
+						A -> B";
+
+		let assert = |machine: &Machine| {
+			assert_json_eq!(
+				json!({
+					"states": [{
+							"name": "A",
+							"type": "regular",
+							"color": "red"
+						}, {
+							"name": "C",
+							"type": "regular"
+						}, {
+							"name": "B",
+							"type": "regular",
+							"color": "red"
+					}],
+					"transitions": [{
+							"from": "A",
+							"to": "C"
+						}, {
+							"from": "A",
+							"to": "B",
+							"color": "red",
+							"note": ["duplicate transient transition: A -> B,C"]
+					}]
+				}),
+				json!(machine)
+			)
+		};
+
+		for expression in fixture.split('\n') {
+			machine.insert_parse(expression)?;
+		}
+		assert(&machine);
+
+		machine.parse(fixture)?;
+		Ok(assert(&machine))
+	}
+
+	#[test]
+	/// Fix #23
+	fn consecutive_insert_parse() -> Result<(), DynError> {
+		let mut machine = Machine::new();
+		machine.insert_parse("A -> B @ C")?;
+		machine.insert_parse("A -> D @ Cs")?;
+
+		Ok(assert_json_eq!(
+			json!({
+				"states": [{
+						"name": "A",
+						"type": "regular"
+					}, {
+						"name": "B",
+						"type": "regular"
+					}, {
+						"name": "D",
+						"type": "regular"
+				}],
+				"transitions": [{
+						"event": "C",
+						"from": "A",
+						"label": "C",
+						"to": "B"
+					}, {
+						"event": "Cs",
+						"from": "A",
+						"label": "Cs",
+						"to": "D"
+				}]
+			}),
+			json!(machine)
+		))
 	}
 }
