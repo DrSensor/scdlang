@@ -82,6 +82,11 @@ pub mod test {
 	use grammar::Rule;
 	use pest::error::Error;
 
+	const BASE_ISSUES: &str = "https://github.com/DrSensor/scdlang";
+	pub fn issue(id: isize) {
+		println!("{}/issues/{}", BASE_ISSUES, id)
+	}
+
 	pub fn expression(expression: &str) -> Result<&str, Error<Rule>> {
 		Ok(crate::parse(expression)?.as_str())
 	}

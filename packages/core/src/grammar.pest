@@ -5,7 +5,7 @@ DescriptionFile = _{ SOI ~ CRLF? ~ (
 )* ~ EOI }
 
 expression =  { (self_transition|(StateName ~ transition)) ~ trigger? }
-  self_transition = { (TransientLoopTo|LoopTo) ~ StateName }
+  self_transition = { LoopTo ~ StateName }
   transition      = { ( TransitionToggle
                       | TransientLoopTo | LoopTo | TransitionTo
                       | TransientLoopFrom | LoopFrom | TransitionFrom

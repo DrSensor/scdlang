@@ -1,5 +1,6 @@
 use crate::semantics;
 use semantics::{Transition, TransitionType};
+use std::iter::FromIterator;
 
 impl<'i> IntoIterator for Transition<'i> {
 	type Item = Transition<'i>;
@@ -22,7 +23,7 @@ impl<'i> IntoIterator for Transition<'i> {
 					self_loop.from = self_loop.to.clone();
 					normal.kind = TransitionType::Normal;
 					normal.at = if transient { None } else { normal.at };
-					[self_loop, normal].to_vec()
+					[normal, self_loop].to_vec()
 				}
 				/* ->> B @ C */
 				else {
@@ -35,11 +36,32 @@ impl<'i> IntoIterator for Transition<'i> {
 }
 
 pub struct TransitionIterator<'i>(Vec<Transition<'i>>);
-
 impl<'i> Iterator for TransitionIterator<'i> {
 	type Item = Transition<'i>;
 
 	fn next(&mut self) -> Option<Self::Item> {
 		self.0.pop()
+	}
+}
+
+impl<'i> FromIterator<Transition<'i>> for [Transition<'i>; 2] {
+	fn from_iter<T>(transition: T) -> Self
+	where
+		T: IntoIterator<Item = Transition<'i>>,
+	{
+		let mut iter = transition.into_iter();
+		[iter.next().unwrap(), iter.next().unwrap()]
+	}
+}
+
+impl<'i> FromIterator<Transition<'i>> for [Transition<'i>]
+where
+	Self: Sized,
+{
+	fn from_iter<T>(_transition: T) -> Self
+	where
+		T: IntoIterator<Item = Transition<'i>>,
+	{
+		unimplemented!("TODO: on the next update")
 	}
 }

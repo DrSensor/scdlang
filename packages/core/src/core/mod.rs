@@ -57,7 +57,7 @@ mod test {
 
 	#[test]
 	fn self_transition() -> Yes {
-		test::correct_expressions(&[r#"->>B"#, r#"->>B @ C"#, r#">-> B"#, r#">-> B @C"#])
+		test::correct_expressions(&[r#"->>B"#, r#"->>B @ C"#, r#"->> B @C"#, r#"->> B @ C"#])
 	}
 
 	mod should_fail_when {
