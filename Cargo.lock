@@ -1178,6 +1178,23 @@ version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "s-crap"
+version = "0.1.0"
+dependencies = [
+ "assert_cmd 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "assert_fs 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "atty 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
+ "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "colored 1.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "predicates 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "prettyprint 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rexpect 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustyline 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "scdlang 0.1.0",
+ "scdlang_xstate 0.1.0",
+]
+
+[[package]]
 name = "safemem"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1222,23 +1239,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "scopeguard"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "scrap"
-version = "0.1.0"
-dependencies = [
- "assert_cmd 0.11.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "assert_fs 0.11.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "atty 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
- "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "colored 1.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "predicates 1.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "prettyprint 0.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "rexpect 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustyline 3.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "scdlang 0.1.0",
- "scdlang_xstate 0.1.0",
-]
 
 [[package]]
 name = "semver"

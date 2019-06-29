@@ -69,7 +69,6 @@ steps:
 
 - script: cargo build --release --target $(TARGET)
   displayName: Build release
-
 - task: CopyFiles@2
   inputs:
     sourceFolder: $(Build.SourcesDirectory)/target/$(TARGET)/release
@@ -82,16 +81,36 @@ steps:
       _scrap.ps1
       scrap.exe
     targetFolder: $(Build.BinariesDirectory)
-
 - task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: $(Build.BinariesDirectory)
     archiveType: tar
     tarCompression: gz
-    archiveFile: $(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz
+    archiveFile: $(Build.ArtifactStagingDirectory)/cli/scrap-$(TARGET).tar.gz
 - task: PublishBuildArtifacts@1
   inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/cli'
     artifactName: cli
+
+- bash: |
+    ln README.md packages/core/README.md
+    ./scripts/package.sh
+  displayName: Package crates
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: $(Build.SourcesDirectory)/target/$(TARGET)/package
+    contents: '*.crate'
+    targetFolder: $(Build.CratesDirectory)
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: $(Build.CratesDirectory)
+    archiveType: tar
+    tarCompression: gz
+    archiveFile: $(Build.ArtifactStagingDirectory)/crate/scrap-$(TARGET).tar.gz
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/crate'
+    artifactName: crates
 
 - task: Docker@2
   condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
@@ -115,3 +134,13 @@ steps:
     assetUploadMode: replace
     isDraft: true
     addChangeLog: true
+
+# TODO: Split this as a separate job after GitHubRelease@0 done
+# But it has a caveat, it need to install rust again :sad: (no build needed)
+- powershell: |
+    cargo login $env:DRSENSOR
+    cargo publish
+  displayName: Publish to crates.io
+  condition: and(and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/')), eq( variables['Agent.OS'], 'Windows_NT' ))
+  env:
+    DRSENSOR: $(crateioConnection)
