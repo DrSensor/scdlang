@@ -1,12 +1,17 @@
 [package]
-name = "scrap"
+name = "s-crap"
 version = "0.1.0"
 description = "A CLI for working with Scdlang"
+license = "UPL-1.0"
+repository = "https://github.com/drsensor/scdlang"
 authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
+keywords = ["statemachine", "language", "cli", "scdlang"]
+categories = ["command-line-utilities"]
 edition = "2018"
 
 [[bin]]
 name = "scrap"
+path = "src/main.rs"
 test = false
 doc = false
 doctest = false

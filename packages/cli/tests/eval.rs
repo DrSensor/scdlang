@@ -5,7 +5,7 @@ mod utils;
 #[allow(unused_imports)] // false alarm on rustc 😅
 use assert_cmd::prelude::*;
 use rexpect::{errors::Error, session::*};
-use scrap::*;
+use s_crap::*;
 use utils::*;
 
 mod should_ok {
