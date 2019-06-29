@@ -1,0 +1,31 @@
+{
+  "exec": "/github/home/.bin/scrap code examples/simple.scl --parser asg",
+  "memory": 33568,
+  "cpu": "94%"
+}
+{
+  "exec": "/github/home/.bin/scrap code examples/simple.scl --stream --parser asg",
+  "memory": 43232,
+  "cpu": "100%"
+}
+{
+  "exec": "/github/home/.bin/scrap code examples/simple.scl --stream --parser ast",
+  "memory": 6912,
+  "cpu": "100%"
+}
+{
+  "exec": "cargo build --all",
+  "time": 14.360221857579997
+}
+{
+  "exec": "cargo build -p scdlang",
+  "time": 0.29666824778
+}
+{
+  "exec": "cargo build -p scdlang_xstate",
+  "time": 0.32429566218000005
+}
+{
+  "exec": "cargo build -p s-crap",
+  "time": 14.08378024788
+}
