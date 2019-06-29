@@ -48,7 +48,7 @@ action "Perf cargo" {
 		"build --all",
 		"build -p scdlang",
 		"build -p scdlang_xstate",
-		"build -p scrap",
+		"build -p s-crap",
 	]
 }
 
@@ -70,7 +70,7 @@ action "Build Release cli as musl" {
 	args = [
 		"rustup target add x86_64-unknown-linux-musl",
 		"apt-get update && apt-get install -y musl-tools",
-		"cargo build --target x86_64-unknown-linux-musl --release -p ${BIN}",
+		"cargo build --target x86_64-unknown-linux-musl --release --bin ${BIN}",
 		"mkdir -p ${HOME}/.bin/",
 		"mv target/x86_64-unknown-linux-musl/release/${BIN} ${HOME}/.bin/${BIN}",
 	]

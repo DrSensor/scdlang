@@ -65,11 +65,11 @@ build args='':
 
 # Run all unit test
 unit:
-	cargo test --lib --all --exclude scrap -- --test-threads=1
+	cargo test --lib --all --exclude s-crap -- --test-threads=1
 
 # Run all integration test
 integration:
-	cargo test --tests -p scrap -- --test-threads=1
+	cargo test --tests -p s-crap -- --test-threads=1
 
 # Show reports of macro-benchmark
 @stats git-flags='':
