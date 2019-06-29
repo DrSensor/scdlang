@@ -94,7 +94,7 @@ steps:
 
 - bash: |
     ln README.md packages/core/README.md
-    ./scripts/package.sh
+    ./scripts/package.sh --allow-dirty
   displayName: Package crates
 - task: CopyFiles@2
   inputs:
