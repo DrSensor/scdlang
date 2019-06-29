@@ -23,24 +23,24 @@ doc = false
 [dependencies]
 scdlang = { path = "../core", version = "0.1.0" }
 scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.0" }
-atty = "*"
-rustyline = "*"
-prettyprint = "*"
-colored = "*"
+atty = "0.2"
+rustyline = "3"
+prettyprint = "0.*"
+colored = "1"
 
 [dependencies.clap]
-version = "*"
+version = "2"
 features = ["wrap_help"]
 
 # WARNING: This make compilation time doubled!! Seems cargo has serious issue here 😠
 [build-dependencies]
-clap = "*"
+clap = "2"
 scdlang = { path = "../core", version = "0.1.0" }
 scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.0" }
-atty = "*"
-rustyline = "*"
-prettyprint = "*"
-colored = "*"
+atty = "0.2"
+rustyline = "3"
+prettyprint = "0.*"
+colored = "1"
 
 [dev-dependencies]
 predicates = "*"

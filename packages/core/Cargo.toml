@@ -11,9 +11,9 @@ categories = ["parsing"]
 edition = "2018"
 
 [dependencies]
-pest = "*"
-pest_derive = "*"
-lazy_static = "*"
+pest = "2"
+pest_derive = "2"
+lazy_static = "1"
 
 [badges]
 maintenance = { status = "actively-developed" }
