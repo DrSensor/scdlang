@@ -59,6 +59,26 @@ steps:
   displayName: Install rust
   condition: ne( variables['Agent.OS'], 'Windows_NT' )
 
+- bash: |
+    ln README.md packages/core/README.md
+    ./scripts/package.sh --allow-dirty
+  displayName: Package crates
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: $(Build.SourcesDirectory)/target/package
+    contents: '**.crate'
+    targetFolder: $(Build.CratesDirectory)
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: $(Build.CratesDirectory)
+    archiveType: tar
+    tarCompression: gz
+    archiveFile: $(Build.ArtifactStagingDirectory)/crate/scdlang-$(TARGET).tar.gz
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/crate'
+    artifactName: crates
+
 - script: rustup target add $(TARGET)
   displayName: Install target toolchain
 
@@ -91,26 +111,6 @@ steps:
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)/cli'
     artifactName: cli
-
-- bash: |
-    ln README.md packages/core/README.md
-    ./scripts/package.sh --allow-dirty
-  displayName: Package crates
-- task: CopyFiles@2
-  inputs:
-    sourceFolder: $(Build.SourcesDirectory)/target/package
-    contents: '**.crate'
-    targetFolder: $(Build.CratesDirectory)
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: $(Build.CratesDirectory)
-    archiveType: tar
-    tarCompression: gz
-    archiveFile: $(Build.ArtifactStagingDirectory)/crate/scdlang-$(TARGET).tar.gz
-- task: PublishBuildArtifacts@1
-  inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)/crate'
-    artifactName: crates
 
 - task: Docker@2
   condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
