@@ -16,8 +16,8 @@ doctest = false
 doc = false
 
 [dependencies]
-scdlang-core = { path = "../core" }
-scdlang_xstate = { path = "../transpiler/xstate" }
+scdlang = { path = "../core", version = "0.1.0" }
+scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.0" }
 atty = "*"
 rustyline = "*"
 prettyprint = "*"
@@ -30,8 +30,8 @@ features = ["wrap_help"]
 # WARNING: This make compilation time doubled!! Seems cargo has serious issue here 😠
 [build-dependencies]
 clap = "*"
-scdlang-core = { path = "../core" }
-scdlang_xstate = { path = "../transpiler/xstate" }
+scdlang = { path = "../core", version = "0.1.0" }
+scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.0" }
 atty = "*"
 rustyline = "*"
 prettyprint = "*"

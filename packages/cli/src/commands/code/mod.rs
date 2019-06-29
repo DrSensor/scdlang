@@ -2,7 +2,7 @@ use crate::{cli::*, error::Error, print::*, typedef::tuple::Printer};
 use atty::Stream;
 use clap::{App, Arg, ArgMatches};
 use colored::*;
-use scdlang_core::Transpiler;
+use scdlang::Transpiler;
 use scdlang_xstate as xstate;
 use std::{
 	fs::{self, File},

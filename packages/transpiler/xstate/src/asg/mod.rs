@@ -3,7 +3,7 @@ mod schema;
 
 use schema::*;
 
-use scdlang_core::{prelude::*, semantics::Kind, Scdlang};
+use scdlang::{prelude::*, semantics::Kind, Scdlang};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::{error, fmt, mem::ManuallyDrop};

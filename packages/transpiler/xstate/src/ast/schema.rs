@@ -5,7 +5,7 @@ WARNING: order in the struct fields is matter❗
 
 use super::utils::*;
 use pest_ast::FromPest;
-use scdlang_core::grammar::Rule;
+use scdlang::grammar::Rule;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;

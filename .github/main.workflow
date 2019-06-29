@@ -46,7 +46,7 @@ action "Perf cargo" {
 	uses = "./.github/action/perf"
 	args = [
 		"build --all",
-		"build -p scdlang-core",
+		"build -p scdlang",
 		"build -p scdlang_xstate",
 		"build -p scrap",
 	]

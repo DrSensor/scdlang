@@ -1,5 +1,5 @@
 use super::*;
-use scdlang_core::grammar::Rule;
+use scdlang::grammar::Rule;
 
 pub mod pairs {
 	use super::*;
@@ -17,7 +17,7 @@ pub mod span {
 	use super::*;
 	use from_pest::FromPest;
 	use pest::{Parser, Span};
-	use scdlang_core::Scdlang;
+	use scdlang::Scdlang;
 	use serde_json::{json, Value};
 	use std::collections::HashMap;
 

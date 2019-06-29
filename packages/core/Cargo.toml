@@ -1,10 +1,19 @@
 [package]
-name = "scdlang-core"
+name = "scdlang"
 version = "0.1.0"
+description = "Core parser of Statecharts Description Languange"
+license = "UPL-1.0"
+repository = "https://github.com/drsensor/scdlang"
 authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
+readme = "../../README.md"
+keywords = ["dsl", "statemachine", "language"]
+categories = ["parsing"]
 edition = "2018"
 
 [dependencies]
 pest = "*"
 pest_derive = "*"
 lazy_static = "*"
+
+[badges]
+maintenance = { status = "actively-developed" }

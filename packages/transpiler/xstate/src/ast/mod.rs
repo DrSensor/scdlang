@@ -2,7 +2,7 @@
 mod schema;
 mod utils;
 
-use scdlang_core::{self as scdlang, prelude::*, Scdlang};
+use scdlang::{self as scdlang, prelude::*, Scdlang};
 pub use schema::*;
 
 use from_pest::FromPest;
