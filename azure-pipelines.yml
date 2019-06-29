@@ -98,15 +98,15 @@ steps:
   displayName: Package crates
 - task: CopyFiles@2
   inputs:
-    sourceFolder: $(Build.SourcesDirectory)/target/$(TARGET)/package
-    contents: '*.crate'
+    sourceFolder: $(Build.SourcesDirectory)/target/package
+    contents: '**.crate'
     targetFolder: $(Build.CratesDirectory)
 - task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: $(Build.CratesDirectory)
     archiveType: tar
     tarCompression: gz
-    archiveFile: $(Build.ArtifactStagingDirectory)/crate/scrap-$(TARGET).tar.gz
+    archiveFile: $(Build.ArtifactStagingDirectory)/crate/scdlang-$(TARGET).tar.gz
 - task: PublishBuildArtifacts@1
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)/crate'
