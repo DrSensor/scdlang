@@ -13,7 +13,7 @@ use clap::{App, ArgMatches};
 use colored::*;
 use console::*;
 use rustyline::Editor;
-use scdlang_core::Transpiler;
+use scdlang::Transpiler;
 use scdlang_smcat as smcat;
 use scdlang_xstate as xstate;
 use which::which;

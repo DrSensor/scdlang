@@ -2,7 +2,7 @@
 mod schema;
 mod utils;
 
-use scdlang_core::{
+use scdlang::{
 	prelude::*,
 	semantics::{Found, Kind},
 	Scdlang,

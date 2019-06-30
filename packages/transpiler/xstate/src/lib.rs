@@ -1,4 +1,4 @@
-pub use scdlang_core::Transpiler;
+pub use scdlang::Transpiler;
 pub mod machine;
 
 #[doc(inline)]

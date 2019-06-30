@@ -3,7 +3,7 @@ use atty::Stream;
 use clap::ArgMatches;
 use colored::*;
 use prettyprint::PrettyPrint;
-use scdlang_core as scdlang;
+use scdlang;
 use std::*;
 
 #[derive(Debug)]

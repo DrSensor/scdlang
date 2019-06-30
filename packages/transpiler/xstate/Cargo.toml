@@ -2,13 +2,15 @@
 name = "scdlang_xstate"
 version = "0.1.1"
 authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
+keywords = ["dsl", "statemachine", "language"]
+categories = ["parser-implementations"]
 edition = "2018"
 
 [dependencies]
-scdlang-core = { path = "../../core" }
-serde_json = "*"
-serde = { version = "*", features = ["derive"] }
-voca_rs = "*"
+scdlang = { path = "../../core", version = "0.1.1" }
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+voca_rs = "1"
 
 [dev-dependencies]
-assert-json-diff = "*"
+assert-json-diff = "1"

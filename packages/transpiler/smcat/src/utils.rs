@@ -1,5 +1,5 @@
 use super::{State, StateType};
-use scdlang_core::utils::naming::Name;
+use scdlang::utils::naming::Name;
 use std::iter::FromIterator;
 
 pub trait SplitToVec<T> {
