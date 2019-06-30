@@ -4,6 +4,8 @@ from glob import glob
 from os import path
 from sys import argv, stdin
 from pampy import match
+from functools import reduce
+import operator as op
 import re
 
 re_version = r"\d+\.\d+\.\d+-?"
@@ -47,23 +49,30 @@ def docker_release():
             file.truncate()
 
 
-def cargo_release(project):
+def cargo_release(project, internal_dependencies=[None]):
     project_path = path.join(project, "Cargo.toml")
     file = TOMLFile(project_path)
     content = file.read()
-    version = content['package']['version']
-    content['package']['version'] = change_version(version)
+    dependencies = content.get('dependencies') or {}
+    build_dependencies = content.get('build-dependencies') or {}
+    new_version = change_version(content['package']['version'])
+
+    content['package']['version'] = new_version
+    for local in internal_dependencies:
+        if dependencies.get(local) is not None:
+            dependencies[local]['version'] = new_version
+        if build_dependencies.get(local) is not None:
+            build_dependencies[local]['version'] = new_version
+
     file.write(content)
 
 
 def cargo_workspace_release():
     workspace = TOMLFile("Cargo.toml").read()['workspace']
-    for project in workspace['members']:
-        if "*" in project:
-            for project_abspath in glob(project):
-                cargo_release(project_abspath)
-        else:
-            cargo_release(project)
+    paths = reduce(op.concat, [glob(p) for p in workspace['members']], [])
+    project_names = [TOMLFile(f"{path}/Cargo.toml").read()['package']['name'] for path in paths]
+    for project in paths:
+        cargo_release(project, project_names)
 
 
 if not stdin.isatty():

@@ -1,7 +1,12 @@
 [package]
 name = "scdlang_smcat"
 version = "0.1.1"
+description = "Scdlang parser for targeting AST of state-machine-cat"
+license = "UPL-1.0"
+repository = "https://github.com/drsensor/scdlang"
 authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
+keywords = ["dsl", "statemachine", "language"]
+categories = ["parser-implementations"]
 edition = "2018"
 
 [dependencies]
