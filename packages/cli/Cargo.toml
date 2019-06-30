@@ -21,15 +21,15 @@ doctest = false
 doc = false
 
 [dependencies]
-scdlang = { path = "../core", version = "0.1.0" }
-scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.0" }
-scdlang_smcat = { path = "../transpiler/smcat" }
+scdlang = { path = "../core", version = "0.1.1" }
+scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.1" }
+scdlang_smcat = { path = "../transpiler/smcat", version = "0.1.1" }
 atty = "0.2"
 rustyline = "3"
 prettyprint = "0.*"
 colored = "1"
-which = "*"
-regex = "*"
+which = "2"
+regex = "1"
 
 [dependencies.clap]
 version = "2"
@@ -38,15 +38,15 @@ features = ["wrap_help"]
 # WARNING: This make compilation time doubled!! Seems cargo has serious issue here 😠
 [build-dependencies]
 clap = "2"
-scdlang = { path = "../core", version = "0.1.0" }
-scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.0" }
-scdlang_smcat = { path = "../transpiler/smcat" }
+scdlang = { path = "../core", version = "0.1.1" }
+scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.1" }
+scdlang_smcat = { path = "../transpiler/smcat", version = "0.1.1" }
 atty = "0.2"
 rustyline = "3"
 prettyprint = "0.*"
 colored = "1"
-which = "*"
-regex = "*"
+which = "2"
+regex = "1"
 
 [dev-dependencies]
 predicates = "1"
