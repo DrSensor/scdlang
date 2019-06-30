@@ -1,4 +1,4 @@
-use crate::utils::naming::Name;
+use crate::{utils::naming::Name, Error};
 use std::{any::Any, fmt::Debug};
 
 #[derive(Debug)]
@@ -13,6 +13,12 @@ pub enum Kind<'g> {
 	Statement(Box<dyn Statement + 'g>),
 }
 
+pub enum Found {
+	Error(String),
+	Warning(String),
+	None,
+}
+
 #[rustfmt::skip]
 /** Everything that can change state
 
@@ -24,6 +30,7 @@ pub trait Expression: Debug {
 	fn current_state(&self) -> Name;
 	fn next_state(&self) -> Name;
 	fn event(&self) -> Option<Name>;
+	fn semantic_check(&self) -> Result<Found, Error>;
 	fn action(&self) -> Option<&Any/*👈TBD*/> {
 		unimplemented!("TBD")
 	}
@@ -38,12 +45,12 @@ state A {}
 🤔 I wonder if curly braces that can expand into multiple transition is included */
 pub trait Declaration: Debug {
 	/// e.g: `@entry |> doSomething`
-	fn statements(&self) -> Option<&dyn Statement>;
+	fn statements(&self) -> Option<Vec<&dyn Statement>>;
 
 	/// e.g: `history state`
 	fn properties(&self) -> Option<&dyn Any>;
 
-	fn expressions(&self) -> Option<&dyn Expression>;
+	fn expressions(&self) -> Option<Vec<&dyn Expression>>;
 }
 
 /** [UNIMPLEMENTED] Everything that don't change state (no transition)

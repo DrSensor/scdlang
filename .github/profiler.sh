@@ -42,8 +42,8 @@ for cmd in "$@"; do
     echo "Successfully ran '$bin'"
     echo
   else
-    echo
     exit_code=$?
+    echo
     echo "Failure running '$bin', exited with $exit_code"
     exit $exit_code
   fi

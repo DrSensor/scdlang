@@ -31,11 +31,11 @@ pub struct Scdlang<'g> {
 	pub(crate) path: Option<&'g str>,
 	pub(crate) line: Option<usize>,
 
-	pub(super) clear_cache: bool,    //-|in case for program that need to disable…|
-	pub(super) semantic_error: bool, //-|…then enable semantic error at runtime|
+	pub(super) clear_cache: bool, //-|in case for program that need to disable…|
+	pub semantic_error: bool,     //-|…then enable semantic error at runtime|
 }
 
-impl Scdlang<'_> {
+impl<'s> Scdlang<'s> {
 	/// This method is prefered for instantiating
 	/// than using [`Default::default()`](https://doc.rust-lang.org/std/default/trait.Default.html#tymethod.default)
 	pub fn new() -> Self {

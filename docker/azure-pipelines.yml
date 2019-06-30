@@ -1,0 +1,49 @@
+steps:
+
+- task: Docker@2
+  displayName: Docker Login
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  inputs:
+    command: login
+    containerRegistry: scdlang
+
+- task: Docker@2
+  displayName: Docker Build with Base Image alpine
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  inputs:
+    command: build
+    Dockerfile: docker/Alpine.Dockerfile
+    buildContext: '.'
+    repository: scdlang/scrap
+    tags: |
+      latest
+      alpine
+      $(build.tag)
+      $(build.tag)-alpine
+
+- task: Docker@2
+  displayName: Docker Build with Base Image scratch
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  inputs:
+    command: build
+    Dockerfile: docker/Scratch.Dockerfile
+    buildContext: '.'
+    repository: scdlang/scrap
+    tags: |
+      raw
+      $(build.tag)-raw
+      $(build.tag)-scratch
+
+- task: Docker@2
+  displayName: Docker Push
+  condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  inputs:
+    command: push
+    repository: scdlang/scrap
+    tags: |
+      raw
+      latest
+      alpine
+      $(build.tag)-raw
+      $(build.tag)-scratch
+      $(build.tag)-alpine

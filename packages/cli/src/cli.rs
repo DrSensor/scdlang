@@ -1,5 +1,6 @@
-use crate::{commands::*, error::Error};
+use crate::{arg, commands::*};
 use clap::{App, ArgMatches, SubCommand};
+use std::error;
 
 #[rustfmt::skip]
 pub fn build<'a, 'b>() -> App<'a, 'b> {
@@ -8,13 +9,14 @@ pub fn build<'a, 'b>() -> App<'a, 'b> {
 		.subcommand(Code::command())
 }
 
-pub fn run(matches: ArgMatches) -> Result {
+pub fn run(matches: &ArgMatches) -> Result<()> {
 	Main::run_on(&matches)?;
 	Eval::run_on(&matches)?;
 	Code::run_on(&matches)?;
 	Ok(())
 }
 
+// TODO: refactor this interface so that there is no need to duplicate [dependecies] into [build-dependencies]
 pub trait CLI<'c> {
 	const NAME: &'c str;
 	const USAGE: &'c str;
@@ -26,13 +28,15 @@ pub trait CLI<'c> {
 		Self::additional_usage(cmd).args_from_usage(Self::USAGE)
 	}
 
-	fn invoke(args: &ArgMatches) -> Result;
-	fn run_on(matches: &ArgMatches) -> Result {
+	fn invoke(args: &ArgMatches) -> Result<()>;
+	fn run_on(matches: &ArgMatches) -> Result<()> {
 		if let Some(args) = matches.subcommand_matches(Self::NAME) {
+			arg::output::validate(args)?;
 			Self::invoke(args)?;
 		}
 		Ok(())
 	}
 }
 
-pub type Result = core::result::Result<(), Error>;
+// pub type Result<U> = core::result::Result<U, Box<dyn error::Error>>;
+pub type Result<U> = core::result::Result<U, Box<dyn error::Error>>;

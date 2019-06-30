@@ -92,32 +92,23 @@ steps:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)/cli'
     artifactName: cli
 
-# - task: Docker@2
-#   condition: and(contains(variables['target'], 'musl'), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-#   inputs:
-#     command: buildAndPush
-#     containerRegistry: scdlang
-#     repository: scdlang/scrap
-#     tags: |
-#       latest
-#       $(build.tag)
+- template: docker/azure-pipelines.yml
 
-# - task: GitHubRelease@0
-#   condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
-#   inputs:
-#     gitHubConnection: drsensor
-#     title: $(Build.SourceVersionMessage)
-#     repositoryName: $(Build.Repository.Name)
-#     action: edit
-#     tag: $(build.tag)
-#     assets: $(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz
-#     assetUploadMode: replace
-#     isDraft: true
-#     addChangeLog: true
+- task: GitHubRelease@0
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  inputs:
+    gitHubConnection: drsensor
+    title: $(Build.SourceVersionMessage)
+    repositoryName: $(Build.Repository.Name)
+    action: edit
+    tag: $(build.tag)
+    assets: $(Build.ArtifactStagingDirectory)/cli/scrap-$(TARGET).tar.gz
+    assetUploadMode: replace
+    isDraft: true
+    addChangeLog: false
 
 - bash: |
-    ln README.md packages/core/README.md
-    ./scripts/package.sh --allow-dirty
+    ./scripts/package.sh
   displayName: Package crates
 - task: CopyFiles@2
   inputs:
@@ -133,9 +124,8 @@ steps:
 # But it has a caveat, it need to install rust again :sad: (no build needed)
 - bash: |
     cargo login $DRSENSOR
-    # TODO: replace with {core,transpiler/*,cli}
-    for cargo_toml in packages/cli/Cargo.toml; do
-      cargo publish --manifest-path $cargo_toml --no-verify --allow-dirty
+    for cargo_toml in packages/{core,transpiler/*,cli}/Cargo.toml; do
+      cargo publish --manifest-path $cargo_toml --no-verify
     done
   displayName: Publish to crates.io
   condition: and(and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/')), eq( variables['Agent.OS'], 'Windows_NT' ))

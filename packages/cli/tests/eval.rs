@@ -14,7 +14,7 @@ mod should_ok {
 
 	#[test]
 	fn non_interactive_mode() -> Result<(), Error> {
-		let args = None;
+		let args = Some("--format xstate");
 		let mut command = subcommand::eval(args).unwrap();
 		command.assert().success();
 
@@ -30,7 +30,7 @@ mod should_ok {
 
 	#[test]
 	fn interactive_mode() -> Result<(), Error> {
-		let args = Some("--interactive");
+		let args = Some("--format smcat --interactive");
 		let mut command = subcommand::eval(args).unwrap();
 		command.assert().success();
 

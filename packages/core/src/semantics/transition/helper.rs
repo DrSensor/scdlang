@@ -25,7 +25,13 @@ pub(super) mod get {
 		for span in pair.into_inner() {
 			match span.as_rule() {
 				Name::state => target = span.as_str(),
-				Symbol::arrow::right | Symbol::arrow::left => ops = span.as_rule(),
+				Symbol::arrow::both
+				| Symbol::arrow::right
+				| Symbol::arrow::left
+				| Symbol::double_arrow::right
+				| Symbol::double_arrow::left
+				| Symbol::tail_arrow::right
+				| Symbol::tail_arrow::left => ops = span.as_rule(),
 				_ => unreachable!("Rule::{:?}", span.as_rule()),
 			}
 		}

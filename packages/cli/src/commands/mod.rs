@@ -21,7 +21,7 @@ impl<'c> CLI<'c> for Main {
 		cmd.version(crate_version!()).about(crate_description!())
 	}
 
-	fn invoke(_matches: &ArgMatches) -> Result {
+	fn invoke(_matches: &ArgMatches) -> Result<()> {
 		Ok(())
 	}
 }

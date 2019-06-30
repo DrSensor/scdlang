@@ -21,12 +21,40 @@ Read as: "*state **A*** transition to *state **B*** at *event **C***" ✔
 ```scl
 A <-> B @ C
 ```
-Read as: "*state **A*** transition to/from *state **B*** at *event **C***"
+Read as: "*state **A*** transition to/from *state **B*** at *event **C***" ✔
 
 ```scl
 A -> B @ C,D,E
 ```
 Read as: "*state **A*** transition to *state **B*** at *event **C**, **D**, or **E***"
+
+```scl
+A -> A @ C
+B -> B @ C
+```
+or
+```scl
+A ->> B @ C
+```
+or
+```scl
+B <<- A @ C
+```
+Read as: "*state **A*** loop into *state **B*** at *event **C** ✔
+
+```scl
+A -> A
+B -> B @ C
+```
+or
+```scl
+A >-> B @ C
+```
+or
+```scl
+B <-< A @ C
+```
+Read as: "*state **A*** transition to *state **B*** then loop at *event **C** ✔
 
 ##### 2nd form
 ```scl
@@ -163,8 +191,8 @@ Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *co
 
 ##### use $expression
 ```scl
-context VarX as x
-context VarY as y
+let VarX as x
+let VarY as y
 
 A -> B @ C[x > y]
 ```
@@ -177,15 +205,15 @@ A -> B @ C[D|!E]
 ```
 or
 ```scl
-context VarX as x
-context VarY as y
+let VarX as x
+let VarY as y
 
 A -> B @ C[x > y & y > 0]
 ```
 
 ##### use "in state" guards
 ```scl
-context VarX as x
+let VarX as x
 
 state A {
   E -> G @ F
@@ -221,8 +249,8 @@ Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *co
 
 ```scl
 @ [D] {
-  => J |> g
-  A -> B @ C |> f
+  A -> J @ D |> g
+  A ->> B @ C[isEmergency] |> f
 }
 ```
 Read as: "only if *condition **D*** is true:

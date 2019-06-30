@@ -1,9 +1,6 @@
 [package]
 name = "scdlang_xstate"
-version = "0.1.0"
-description = "Scdlang parser for targeting JavaScript library XState"
-license = "UPL-1.0"
-repository = "https://github.com/drsensor/scdlang"
+version = "0.1.1"
 authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
 keywords = ["dsl", "statemachine", "language"]
 categories = ["parser-implementations"]
@@ -13,9 +10,6 @@ edition = "2018"
 scdlang = { path = "../../core", version = "0.1.0" }
 serde_json = "1"
 serde = { version = "1", features = ["derive"] }
-pest-ast = "0.3"
-from-pest = "0.3"
-pest = "2"
 voca_rs = "1"
 
 [dev-dependencies]

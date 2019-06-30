@@ -82,9 +82,10 @@ action "Perf CLI release" {
 	uses = "docker://python:alpine"
 	runs = "./.github/profiler.sh"
 	args = [
-		"${HOME}/.bin/scrap code examples/simple.scl --parser asg",
-		"${HOME}/.bin/scrap code examples/simple.scl --stream --parser asg",
-		"${HOME}/.bin/scrap code examples/simple.scl --stream --parser ast",
+		"${HOME}/.bin/scrap code examples/simple.scl --format xstate",
+		"${HOME}/.bin/scrap code examples/simple.scl --format xstate --stream",
+		"${HOME}/.bin/scrap code examples/simple.scl --format smcat",
+		"${HOME}/.bin/scrap code examples/simple.scl --format smcat --stream",
 	],
 	env = { PREPARE = "./scripts/gensample.py 1000 > examples/simple.scl" }
 }

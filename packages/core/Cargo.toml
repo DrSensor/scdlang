@@ -1,6 +1,6 @@
 [package]
 name = "scdlang"
-version = "0.1.0"
+version = "0.1.1"
 description = "Core parser of Statecharts Description Languange"
 license = "UPL-1.0"
 repository = "https://github.com/drsensor/scdlang"
@@ -14,6 +14,7 @@ edition = "2018"
 pest = "2"
 pest_derive = "2"
 lazy_static = "1"
+either = "*"
 
 [badges]
 maintenance = { status = "actively-developed" }

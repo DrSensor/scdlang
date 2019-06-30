@@ -1,0 +1,14 @@
+[package]
+name = "scdlang_smcat"
+version = "0.1.1"
+authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+scdlang = { path = "../../core" }
+serde_json = "*"
+serde = { version = "*", features = ["derive"] }
+serde_with = { version = "*", features = ["json"] }
+
+[dev-dependencies]
+assert-json-diff = "*"

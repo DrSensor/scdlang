@@ -15,7 +15,7 @@ syntax:
 #### on entry
 ```scl
 state Alpha {
-  entry |> something
+  @entry |> something
 }
 ```
 or
@@ -56,7 +56,7 @@ Read as: "execute *action **something*** when transition from *state **Alpha***"
 
 #### on entry and exit
 ```scl
-state Alpha { entry,exit |> something }
+state Alpha { @ entry,exit |> something }
 ```
 or (discouraged)
 ```scl
@@ -76,8 +76,8 @@ Read as: "when transition to/from *state **Alpha***, execute *action **something
 
 #### on entry and exit at different state
 ```scl
-state Alpha { entry |> something }
-state Beta { exit |> something }
+state Alpha { @entry |> something }
+state Beta { @exit |> something }
 ```
 or
 ```scl
@@ -97,8 +97,8 @@ Read as: "when transition to *state **Alpha*** or transition from *state **Beta*
 #### on entry and exit at different action
 ```scl
 state Alpha {
-  entry |> createThing
-  exit |> destroyThing
+  @entry |> createThing
+  @exit |> destroyThing
 }
 ```
 or
@@ -120,11 +120,11 @@ Read as: "
 
 #### action with expression
 ```scl
-context VarX as x
+let VarX as x
 
 state Alpha {
-  entry |> --x
-  exit |> ++x
+  @entry |> --x
+  @exit |> ++x
 }
 ```
 Read as: "decrement `x` when entering *state **Alpha*** and increment `x` if exiting *state **Alpha***"
@@ -135,7 +135,7 @@ state Beta { do |> beeping }
 ```
 or
 ```scl
-Beta |>| beeping
+Beta >< beeping
 ```
 Read as: "perform *activity **beeping*** when on *state **Beta***"
 
@@ -144,18 +144,30 @@ Read as: "perform *activity **beeping*** when on *state **Beta***"
 ```scl
 state Beta { @ Click }
 ```
+or
+```scl
+Beta @ Click
+```
 Read as: "*event **Click*** can occurred while in *state **Beta***"
 
 ##### with action
 ```scl
 state Beta { @ Click |> something }
 ```
+or
+```scl
+Beta @ Click |> something
+```
 Read as: "execute *action **something*** when *event **Click*** occurred while in *state **Beta***"
 
 ##### with guard 🤔
 ```scl
-state Beta { @ Click[x > 0 & {A}] }
+state Beta { @ Click[x > 0 & In(A)] |> something }
 ```
-Read as: "*event **Click*** can occurred while in *state **Beta*** only if in *state **Alpha***"
+or
+```scl
+Beta @ Click[x > 0 & In(A)] |> something
+```
+Read as: "execute *action **something*** *event **Click*** can occurred while in *state **Beta*** only if in *state **Alpha***"
 
 ---

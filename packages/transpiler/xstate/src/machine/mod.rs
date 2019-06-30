@@ -1,15 +1,14 @@
 #![allow(clippy::unit_arg)]
 mod schema;
-
 use schema::*;
 
 use scdlang::{prelude::*, semantics::Kind, Scdlang};
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use serde_json::json;
 use std::{error, fmt, mem::ManuallyDrop};
 use voca_rs::case::{camel_case, shouty_snake_case};
 
-#[derive(Default, Serialize, Deserialize)]
+#[derive(Default, Serialize)]
 /** Transpiler Scdlang → XState.
 
 # Examples
@@ -43,15 +42,14 @@ impl<'a> Parser<'a> for Machine<'a> {
 
 	fn insert_parse(&mut self, source: &str) -> Result<(), DynError> {
 		let ast = ManuallyDrop::new(Self::try_parse(source, self.builder.to_owned())?);
-		Ok(
-			for (current_state, transition) in ast.schema.states.to_owned(/*FIXME: expensive clone*/) {
-				self.schema
-					.states
-					.entry(current_state)
-					.and_modify(|t| t.on.extend(transition.on.clone()))
-					.or_insert(transition);
-			},
-		)
+		for (current_state, transition) in ast.schema.states.to_owned(/*FIXME: expensive clone*/) {
+			self.schema
+				.states
+				.entry(current_state)
+				.and_modify(|t| t.on.extend(transition.on.clone()))
+				.or_insert(transition);
+		}
+		Ok(())
 	}
 
 	fn try_parse(source: &str, builder: Scdlang<'a>) -> Result<Self, DynError> {

@@ -14,7 +14,7 @@ check: clear
 	RUST_BACKTRACE={{mode}} just {{command}}
 
 # Run `just +command` whenever some files is changed
-@watch command +args:
+@watch command +args='':
 	watchexec --restart --clear 'just {{command}} {{args}}'
 
 # Run all kind of tests

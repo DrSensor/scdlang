@@ -47,6 +47,21 @@ pub mod grammar {
 			pub use crate::core::Rule::{
 				TransitionTo as right,
 				TransitionFrom as left,
+				TransitionToggle as both,
+			};
+		}
+
+		pub mod double_arrow {
+			pub use crate::core::Rule::{
+				LoopTo as right,
+				LoopFrom as left,
+			};
+		}
+
+		pub mod tail_arrow {
+			pub use crate::core::Rule::{
+				TransientLoopTo as right,
+				TransientLoopFrom as left,
 			};
 		}
 	}
@@ -66,6 +81,11 @@ pub mod test {
 	use super::*;
 	use grammar::Rule;
 	use pest::error::Error;
+
+	const BASE_ISSUES: &str = "https://github.com/DrSensor/scdlang";
+	pub fn issue(id: isize) {
+		println!("{}/issues/{}", BASE_ISSUES, id)
+	}
 
 	pub fn expression(expression: &str) -> Result<&str, Error<Rule>> {
 		Ok(crate::parse(expression)?.as_str())

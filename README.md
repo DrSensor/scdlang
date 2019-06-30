@@ -1,10 +1,16 @@
 # Scdlang
 <sup>**S**tate**c**harts **D**escription **Lang**uage</sup><br>
 
+<blockquote>
+
+powered by [🌟](https://help.github.com/en/articles/about-stars)
+
+Don't let _him_ be a stargazer alone!
+</blockquote>
+
 [![current version](https://badge.fury.io/gh/drsensor%2Fscdlang.svg)](https://github.com/drsensor/scdlang/releases/latest)
 [![Docker image size](https://img.shields.io/microbadger/image-size/scdlang/scrap/latest.svg)](https://hub.docker.com/r/scdlang/scrap)
-![License](https://img.shields.io/github/license/drsensor/scdlang.svg)
-[![gitstore](https://enjoy.gitstore.app/repositories/badge-DrSensor/scdlang.svg)](https://enjoy.gitstore.app/repositories/DrSensor/scdlang)
+[![License](https://img.shields.io/github/license/drsensor/scdlang.svg)](./LICENSE)
 
 > 🚧 Still **Work in Progress** 🏗️
 
@@ -27,9 +33,10 @@ Scdlang (pronounced `/ˈesˌsi:ˈdi:ˈlæŋ/`) is a description language for des
   - [ ] [Sismic](https://sismic.readthedocs.io/en/latest/)
   - [ ] [SCXML](https://www.w3.org/TR/scxml/)
 - Compile into other formats (hopefully, no promise):
-  - [ ] WebAssembly (possibly via AssemblyScript CLI 😋)
+  - [ ] WebAssembly (using [parity-wasm](https://github.com/paritytech/parity-wasm))
 - Code generation 🤔
-  - [ ] Rust macro derive? (I'm still afraid if it will conflict with another crates)
+  - [ ] Rust proc macro derive? (I'm still afraid if it will conflict with another crates)
+  - [ ] Elixir `use` macros 💪
 
 > For more info, see the changelog in the [release page][]
 
@@ -67,11 +74,10 @@ Any contributions are welcome as long as it follow [Code of Conduct](CODE_OF_CON
 
 This project is licensed under the UPL-1.0 License - see the [LICENSE](LICENSE) file for details
 
-## Credits
+## Resources
 
-- *Statecharts in the Making: A Personal Account* by David Harel
-- [Welcome to the world of Statecharts](https://statecharts.github.io/) started by @mogsie in December 2017
-- [Fundamentals: why state machines?](https://gist.github.com/thure/dcffc30117b9a9800084) by @thure
+- *Statecharts in the Making: A Personal Account* by David Harel (the inventor of Statecharts concept)
+- [Welcome to the world of Statecharts](https://statecharts.github.io/)
 
 [Graphviz]: https://www.graphviz.org/
 [PlantUML]: http://plantuml.com/state-diagram
