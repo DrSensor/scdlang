@@ -133,7 +133,8 @@ steps:
 # But it has a caveat, it need to install rust again :sad: (no build needed)
 - bash: |
     cargo login $DRSENSOR
-    for cargo_toml in packages/{*,transpiler/*}/Cargo.toml; do
+    # TODO: replace with {core,transpiler/*,cli}
+    for cargo_toml in packages/{transpiler/*,cli}/Cargo.toml; do
       cargo publish --manifest-path $cargo_toml --no-verify --allow-dirty
     done
   displayName: Publish to crates.io

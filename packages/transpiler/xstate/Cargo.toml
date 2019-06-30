@@ -19,4 +19,4 @@ pest = "2"
 voca_rs = "1"
 
 [dev-dependencies]
-assert-json-diff = "*"
+assert-json-diff = "1"
