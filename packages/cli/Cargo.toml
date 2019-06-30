@@ -43,7 +43,7 @@ prettyprint = "0.*"
 colored = "1"
 
 [dev-dependencies]
-predicates = "*"
-assert_fs = "*"
-assert_cmd = "*"
-rexpect = "*"
+predicates = "1"
+assert_fs = "0.*"
+assert_cmd = "0.*"
+rexpect = "0.3"

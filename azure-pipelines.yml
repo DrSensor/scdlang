@@ -134,7 +134,7 @@ steps:
 - bash: |
     cargo login $DRSENSOR
     # TODO: replace with {core,transpiler/*,cli}
-    for cargo_toml in packages/{transpiler/*,cli}/Cargo.toml; do
+    for cargo_toml in packages/cli/Cargo.toml; do
       cargo publish --manifest-path $cargo_toml --no-verify --allow-dirty
     done
   displayName: Publish to crates.io
