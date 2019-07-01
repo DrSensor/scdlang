@@ -90,11 +90,14 @@ impl<'c> CLI<'c> for Eval {
 		let mut loc = 0;
 		let mut parse = |expression: &str| -> Result<()> {
 			machine.configure().with_err_line(loc);
-			if !expression.is_empty() {
+			if !expression.trim().is_empty() && !expression.trim().starts_with("//") {
 				match machine.insert_parse(expression) {
 					Ok(_) => {
 						if args.is_present("interactive") {
-							pprint(hook(machine.to_string())?, expression)?;
+							pprint(
+								hook(machine.to_string())?,
+								&format!("{} {}", format!("{}:", loc + 1).bright_black(), expression),
+							)?;
 						}
 					}
 					Err(err) => {
@@ -105,8 +108,8 @@ impl<'c> CLI<'c> for Eval {
 						}
 					}
 				}
-				loc += 1;
 			}
+			loc += 1;
 			Ok(())
 		};
 
