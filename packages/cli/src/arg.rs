@@ -6,11 +6,11 @@ pub mod output {
 	use super::*;
 	use crate::iter::Merge;
 
-	pub const TARGET: &str = "format";
+	pub const TARGET: &str = "target";
 	pub fn target<'o>() -> Arg<'o, 'o> {
 		Arg::with_name(TARGET)
 			.short("f")
-			.long(TARGET)
+			.long("format")
 			.help("Select output format")
 			.required(true)
 			.takes_value(true)
@@ -48,10 +48,10 @@ pub mod output {
 		}
 	}
 
-	pub const FORMAT: &str = "as";
+	pub const FORMAT: &str = "format";
 	pub fn format<'o>() -> Arg<'o, 'o> {
 		Arg::with_name(FORMAT)
-			.long(FORMAT)
+			.long("as")
 			.help("Select parser output")
 			.requires(TARGET)
 			.hidden(which("smcat").is_err()) // TODO: don't hide it when support another output (e.g typescript)

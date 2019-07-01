@@ -55,7 +55,6 @@ pub mod print {
 				Mode::Error => self
 					.configure()
 					.grid(true)
-					.header(true)
 					.theme("Sublime Snazzy")
 					.paging_mode(PagingMode::Error)
 					.build(),
@@ -148,6 +147,8 @@ pub mod spawn {
 			&[
 				"--input-type",
 				"json",
+				"--direction",
+				"left-right",
 				"--output-type",
 				if format::ext::GRAPH_EASY.iter().any(|f| f == &fmt) {
 					"dot"

@@ -94,17 +94,24 @@ impl<'c> CLI<'c> for Eval {
 				match machine.insert_parse(expression) {
 					Ok(_) => {
 						if args.is_present("interactive") {
-							pprint(
-								hook(machine.to_string())?,
-								&format!("{} {}", format!("{}:", loc + 1).bright_black(), expression),
-							)?;
+							// TODO: refactor console.rs
+							let header = format!(
+								"{} {}",
+								if atty::is(Stream::Stdout) {
+									format!("{}:", loc + 1).bright_black().to_string()
+								} else {
+									format!("{}:", loc + 1)
+								},
+								expression
+							);
+							pprint(hook(machine.to_string())?, &header)?;
 						}
 					}
 					Err(err) => {
 						if args.is_present("strict") {
 							return Err(err);
 						} else {
-							epprint(err.to_string(), expression)?;
+							epprint(err.to_string(), "")?;
 						}
 					}
 				}
