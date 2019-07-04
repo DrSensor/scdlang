@@ -6,19 +6,6 @@ pub mod output {
 	use super::*;
 	use crate::iter::*;
 
-	pub const TARGET: &str = "target";
-	pub fn target<'o>() -> Arg<'o, 'o> {
-		Arg::from_usage("<target> -f, --format 'Select output format'")
-			.takes_value(true)
-			.possible_values(&{
-				let mut possible_values = vec!["xstate", "smcat"];
-				if which("graph-easy").is_ok() || which("dot").is_ok() {
-					possible_values.push("graph");
-				}
-				possible_values
-			})
-	}
-
 	#[allow(clippy::match_bool)]
 	pub fn validate<'s>(args: &ArgMatches) -> Result<(), Error<'s>> {
 		use format::{ext::*, XSTATE};
@@ -42,6 +29,26 @@ pub mod output {
 			}
 			_ => Ok(()),
 		}
+	}
+
+	pub const DIST: &str = "dist";
+	pub fn dist<'o>() -> Arg<'o, 'o> {
+		Arg::from_usage("[dist] -o, --output [DIST] 'Output the result to this directory / file'")
+			.required_ifs(&format::BLOB.iter().map(|&fmt| (output::FORMAT, fmt)).collect::<Vec<_>>())
+		// TODO: submit 👇 as a bug issue to clap-rs (not compatible with args_from_usage)
+		// Arg::from_usage("[DIST] 'Output the result to this directory / file'")
+		// 	.required_ifs(&format::BLOB.iter().map(|&fmt| (output::FORMAT, fmt)).collect::<Vec<_>>()),
+	}
+
+	pub const TARGET: &str = "target";
+	pub fn target<'o>() -> Arg<'o, 'o> {
+		Arg::from_usage("<target> -f, --format <target> 'Select output format'").possible_values(&{
+			let mut possible_values = vec!["xstate", "smcat"];
+			if which("graph-easy").is_ok() || which("dot").is_ok() {
+				possible_values.push("graph");
+			}
+			possible_values
+		})
 	}
 
 	pub const FORMAT: &str = "format";

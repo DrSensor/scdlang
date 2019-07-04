@@ -163,15 +163,18 @@ pub mod format {
 
 	pub fn into_legacy_dot(input: &str) -> String {
 		use regex::Regex;
-		const REGEX_OLD2NEW_DOT: &str = r#"( style=["']\w+["'])|( penwidth=["']?\d+.\d["']?)"#;
-		let re = Regex::new(REGEX_OLD2NEW_DOT).expect("valid regex");
+		let re = Regex::new(re::OLD_TO_NEW_DOT).expect("valid regex");
 		re.replace_all(input, "").replace("note", "box")
+	}
+
+	mod re {
+		pub const OLD_TO_NEW_DOT: &str = r#"( style=["']\w+["'])|( penwidth=["']?\d+.\d["']?)"#;
 	}
 }
 
 // TODO: make a blog about "Categorizing process using trait system"
 pub mod spawn {
-	use super::format;
+	use super::{format, iter::*};
 	use std::{
 		io::{self, Read, Write},
 		process::*,
@@ -179,43 +182,47 @@ pub mod spawn {
 
 	pub trait ShortProcess {
 		type Input;
-		fn output_from(self, input: Self::Input) -> io::Result<String>;
+		type Output; //TODO:[String] wait associated type defaults to be stable
+		fn output_from(self, input: Self::Input) -> io::Result<Self::Output>;
 	}
 
-	pub fn smcat(fmt: &str) -> io::Result<impl ShortProcess<Input = String>> {
+	pub fn smcat(fmt: &str) -> io::Result<impl ShortProcess<Input = String, Output = String>> {
+		use format::ext::*;
 		let (input, output) = (None, None) as (Option<Stdio>, Option<Stdio>);
 		Process::new(
 			"smcat",
 			format!(
 				"-I json -d left-right -T {}",
-				// if format::ext::GRAPH_EASY.iter().any(|f| f == &fmt) {
-				"dot" // } else {
-				      // fmt
-				      // }
+				if fmt.one_of(&merge(&[&GRAPH_EASY, &DOT])) {
+					"dot"
+				} else {
+					fmt
+				}
 			),
 		)
 		.spawn(input, output)
 	}
 
-	pub fn graph_easy(fmt: &str) -> io::Result<impl ShortProcess<Input = String>> {
+	pub fn graph_easy(fmt: &str) -> io::Result<impl ShortProcess<Input = String, Output = String>> {
 		let (input, output): (Option<Stdio>, Option<Stdio>) = (None, None);
 		Process::new("graph-easy", format!("--as {}", fmt)).spawn(input, output)
 	}
 
-	pub fn dot(fmt: &str) -> impl ShortProcess<Input = (String, Child)> {
+	pub fn dot(fmt: &str) -> impl ShortProcess<Input = (String, Child), Output = Vec<u8>> {
 		Process::new("dot", format!("-T{}", fmt))
 	}
 
 	impl ShortProcess for Process<'_> {
 		type Input = (String, Child);
-		fn output_from(self, input: Self::Input) -> io::Result<String> {
-			let mut output = String::new();
+		type Output = Vec<u8>;
+		fn output_from(self, input: Self::Input) -> io::Result<Self::Output> {
+			let mut output = Vec::new();
 			let (input, mut child) = input;
 
 			write!(child.stdin.as_mut().expect("process not exit"), "{}", input)?;
 			child = self.spawn(child.stdout.take(), None as Option<Stdio>)?;
 			child.wait()?;
-			child.stdout.as_mut().expect("process to exit").read_to_string(&mut output)?;
+			child.stdout.as_mut().expect("process to exit").read_to_end(&mut output)?;
 
 			Ok(output)
 		}
@@ -223,7 +230,8 @@ pub mod spawn {
 
 	impl ShortProcess for Child {
 		type Input = String;
-		fn output_from(mut self, input: Self::Input) -> io::Result<String> {
+		type Output = String;
+		fn output_from(mut self, input: Self::Input) -> io::Result<Self::Output> {
 			let mut output = String::new();
 
 			write!(self.stdin.as_mut().expect("process not exit"), "{}", input)?;
