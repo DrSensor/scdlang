@@ -4,19 +4,15 @@ use which::which;
 
 pub mod output {
 	use super::*;
-	use crate::iter::Merge;
+	use crate::iter::*;
 
 	pub const TARGET: &str = "target";
 	pub fn target<'o>() -> Arg<'o, 'o> {
-		Arg::with_name(TARGET)
-			.short("f")
-			.long("format")
-			.help("Select output format")
-			.required(true)
+		Arg::from_usage("<target> -f, --format 'Select output format'")
 			.takes_value(true)
 			.possible_values(&{
 				let mut possible_values = vec!["xstate", "smcat"];
-				if which("graph-easy").is_ok() {
+				if which("graph-easy").is_ok() || which("dot").is_ok() {
 					possible_values.push("graph");
 				}
 				possible_values
@@ -29,18 +25,18 @@ pub mod output {
 		match (args.value_of(TARGET), args.value_of(FORMAT)) {
 			(Some(fmt), Some(out)) => {
 				let (target, format) = (fmt.to_string(), out.to_string());
-				let error_if_not = |formats: &'s [&'s str]| match formats.iter().any(|f| *f == out) {
+				let error_if_not = |formats: &[&'s str]| match formats.iter().any(|f| f == &out) {
 					true => Ok(()),
 					false => Err(Error::WrongFormat {
 						target,
 						format,
-						possible_formats: formats,
+						possible_formats: formats.to_vec(),
 					}),
 				};
 				match fmt {
 					"xstate" => error_if_not(&XSTATE),
 					"smcat" => error_if_not(&SMCAT),
-					"graph" => error_if_not(&GRAPH_EASY),
+					"graph" => error_if_not(&merge(&[&GRAPH_EASY, &DOT])),
 					_ => Ok(()),
 				}
 			}
@@ -50,9 +46,7 @@ pub mod output {
 
 	pub const FORMAT: &str = "format";
 	pub fn format<'o>() -> Arg<'o, 'o> {
-		Arg::with_name(FORMAT)
-			.long("as")
-			.help("Select parser output")
+		Arg::from_usage("[format] --as 'Select parser output'")
 			.requires(TARGET)
 			.hidden(which("smcat").is_err()) // TODO: don't hide it when support another output (e.g typescript)
 			.possible_values(&{
@@ -63,6 +57,9 @@ pub mod output {
 					possible_formats.merge_from_slice(&format::ext::SMCAT);
 					if which("graph-easy").is_ok() {
 						possible_formats.merge_from_slice(&format::ext::GRAPH_EASY);
+					}
+					if which("dot").is_ok() {
+						possible_formats.merge_from_slice(&format::ext::DOT);
 					}
 				}
 				possible_formats

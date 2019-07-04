@@ -7,6 +7,22 @@ pub mod commands;
 #[path = "error.rs"]
 pub mod error;
 
+use error::Error;
+use std::any::Any;
+
+impl<T> Downcast for T {}
+pub trait Downcast {
+	// TODO: find a way to convert Box<dyn Any> into Box<dyn Error>
+	// https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=0b19ec3df257a583d4e560cbfb51b808
+	fn downcast<T: Any>(self) -> Result<T, Error<'static>>
+	where
+		Self: Sized + 'static,
+	{
+		let this: Box<dyn Any> = Box::new(self);
+		this.downcast::<T>().map(|t| *t).map_err(|_| Error::Downcast)
+	}
+}
+
 pub mod prompt {
 	use rustyline::config::{self, *};
 
@@ -89,7 +105,35 @@ pub mod print {
 }
 
 pub mod iter {
-	use std::{iter::FromIterator, ops::Deref};
+	use std::{hash::Hash, iter::FromIterator, ops::Deref};
+
+	impl Compare for &str {}
+	impl<T: PartialEq + Clone> Merge<T> for Vec<T> {
+		fn merge_value(&mut self, item: T) {
+			if !self.iter().any(|v| *v == item) {
+				self.push(item);
+			}
+		}
+	}
+
+	#[rustfmt::skip]
+	pub fn merge<T: Clone + Hash + Eq>(slices: &[&[T]]) -> Vec<T> {
+		use std::collections::HashSet;
+		slices.iter().cloned()
+			.flatten().cloned()
+			.collect::<HashSet<_>>() // https://www.rosettacode.org/wiki/Remove_duplicate_elements#Rust
+			.drain().collect()
+	}
+
+	pub trait Compare {
+		fn one_of(&self, /*TODO:replace*/ collection: &[Self] /*with impl IntoIterator*/) -> bool
+		where
+			Self: Sized + PartialEq,
+		{
+			collection.iter().any(|item| item == self)
+		}
+	}
+
 	pub trait Merge<T: PartialEq + Clone>: FromIterator<T> + Deref<Target = [T]> {
 		fn merge_value(&mut self, item: T);
 		fn merge_from_slice(&mut self, items: &[T]) {
@@ -101,93 +145,129 @@ pub mod iter {
 			self.merge_from_slice(&items)
 		}
 	}
-
-	impl<T> Merge<T> for Vec<T>
-	where
-		T: PartialEq + Clone,
-	{
-		fn merge_value(&mut self, item: T) {
-			if !self.iter().any(|v| *v == item) {
-				self.push(item);
-			}
-		}
-	}
 }
 
+// TODO: Hacktoberfest
 pub mod format {
 	pub const XSTATE: [&str; 1] = ["json" /*, typescript*/];
 	pub const SMCAT: &str = "json";
+	#[rustfmt::skip]
+	pub const BLOB: [&str; 13] = ["bmp", "gd", "gd2", "gif", "jpg", "jpeg", "jpe", "png", "svgz", "tif", "tiff", "vmlz", "webmp"];
 
+	#[rustfmt::skip]
 	pub mod ext {
 		pub const SMCAT: [&str; 7] = ["svg", "dot", "smcat", "json", "html", "scxml", "xmi"];
-		pub const GRAPH_EASY: [&str; 10] = ["ascii", "boxart", "bmp", "gif", "jpg", "pdf", "png", "ps", "ps2", "tif"];
+		pub const DOT: [&str; 28] = ["bmp", "eps", "fig", "gd", "gd2", "gif", "jpg", "jpeg", "jpe", "json", "json0", "dot_json", "xdot_json", "pic", "plain", "plain-ext", "png", "ps", "ps2", "svg", "svgz", "tif", "tiff", "tk", "vml", "vmlz", "vrml", "wbmp"];
+		pub const GRAPH_EASY: [&str; 11] = ["ascii", "boxart", "txt", "bmp", "gif", "jpg", "pdf", "png", "ps", "ps2", "tif"];
 	}
 
 	pub fn into_legacy_dot(input: &str) -> String {
 		use regex::Regex;
-		let re = Regex::new(r#"( style=["']\w+["'])|( penwidth=["']?\d+.\d["']?)"#).expect("valid regex");
+		const REGEX_OLD2NEW_DOT: &str = r#"( style=["']\w+["'])|( penwidth=["']?\d+.\d["']?)"#;
+		let re = Regex::new(REGEX_OLD2NEW_DOT).expect("valid regex");
 		re.replace_all(input, "").replace("note", "box")
 	}
 }
 
+// TODO: make a blog about "Categorizing process using trait system"
 pub mod spawn {
 	use super::format;
 	use std::{
 		io::{self, Read, Write},
-		process::{Child, Command, Stdio},
+		process::*,
 	};
 
 	pub trait ShortProcess {
-		fn output_from(self, input: String) -> io::Result<String>;
+		type Input;
+		fn output_from(self, input: Self::Input) -> io::Result<String>;
 	}
 
-	pub fn smcat(fmt: &str) -> io::Result<impl ShortProcess> {
-		Ok(Process(spawn(
+	pub fn smcat(fmt: &str) -> io::Result<impl ShortProcess<Input = String>> {
+		let (input, output) = (None, None) as (Option<Stdio>, Option<Stdio>);
+		Process::new(
 			"smcat",
-			&[
-				"--input-type",
-				"json",
-				"--direction",
-				"left-right",
-				"--output-type",
-				if format::ext::GRAPH_EASY.iter().any(|f| f == &fmt) {
-					"dot"
-				} else {
-					fmt
-				},
-			],
-		)?))
+			format!(
+				"-I json -d left-right -T {}",
+				// if format::ext::GRAPH_EASY.iter().any(|f| f == &fmt) {
+				"dot" // } else {
+				      // fmt
+				      // }
+			),
+		)
+		.spawn(input, output)
 	}
 
-	pub fn graph_easy(fmt: &str) -> io::Result<impl ShortProcess> {
-		Ok(Process(spawn("graph-easy", &["--as", fmt])?))
+	pub fn graph_easy(fmt: &str) -> io::Result<impl ShortProcess<Input = String>> {
+		let (input, output): (Option<Stdio>, Option<Stdio>) = (None, None);
+		Process::new("graph-easy", format!("--as {}", fmt)).spawn(input, output)
 	}
 
-	impl ShortProcess for Process {
-		fn output_from(mut self, input: String) -> io::Result<String> {
+	pub fn dot(fmt: &str) -> impl ShortProcess<Input = (String, Child)> {
+		Process::new("dot", format!("-T{}", fmt))
+	}
+
+	impl ShortProcess for Process<'_> {
+		type Input = (String, Child);
+		fn output_from(self, input: Self::Input) -> io::Result<String> {
+			let mut output = String::new();
+			let (input, mut child) = input;
+
+			write!(child.stdin.as_mut().expect("process not exit"), "{}", input)?;
+			child = self.spawn(child.stdout.take(), None as Option<Stdio>)?;
+			child.wait()?;
+			child.stdout.as_mut().expect("process to exit").read_to_string(&mut output)?;
+
+			Ok(output)
+		}
+	}
+
+	impl ShortProcess for Child {
+		type Input = String;
+		fn output_from(mut self, input: Self::Input) -> io::Result<String> {
 			let mut output = String::new();
 
-			write!(self.0.stdin.as_mut().expect("process not exit"), "{}", input)?;
-			self.0.wait()?;
-			self.0.stdout.as_mut().expect("process to exit").read_to_string(&mut output)?;
+			write!(self.stdin.as_mut().expect("process not exit"), "{}", input)?;
+			self.wait()?;
+			self.stdout.as_mut().expect("process to exit").read_to_string(&mut output)?;
 
 			Ok(output)
 		}
 	}
 
 	pub trait ActiveProcess {
-		fn output_from(&mut self, input: String) -> io::Result<String>;
+		type Input;
+		fn output_from(&mut self, input: Self::Input) -> io::Result<String>;
 	}
 
 	// INSERT ActiveProcess cli that always keepalive here (if any)
 
-	impl ActiveProcess for Process {
-		fn output_from(&mut self, input: String) -> io::Result<String> {
+	impl ActiveProcess for Process<'_> {
+		type Input = (String, Child);
+		fn output_from(&mut self, input: Self::Input) -> io::Result<String> {
+			let mut output = String::new();
+			let (input, mut child) = input;
+
+			write!(child.stdin.as_mut().expect("process not exit"), "{}", input)?;
+			let mut child = self.spawn(child.stdout.take(), None as Option<Stdio>)?;
+			loop {
+				if let Some(stdout) = child.stdout.as_mut() {
+					stdout.read_to_string(&mut output)?;
+					break;
+				}
+			}
+
+			Ok(output)
+		}
+	}
+
+	impl ActiveProcess for Child {
+		type Input = String;
+		fn output_from(&mut self, input: Self::Input) -> io::Result<String> {
 			let mut output = String::new();
 
-			write!(self.0.stdin.as_mut().expect("process not exit"), "{}", input)?;
+			write!(self.stdin.as_mut().expect("process not exit"), "{}", input)?;
 			loop {
-				if let Some(stdout) = self.0.stdout.as_mut() {
+				if let Some(stdout) = self.stdout.as_mut() {
 					stdout.read_to_string(&mut output)?;
 					break;
 				}
@@ -196,12 +276,22 @@ pub mod spawn {
 		}
 	}
 
-	struct Process(Child);
-	fn spawn(cmd: &str, args: &[&str]) -> io::Result<Child> {
-		Command::new(cmd)
-			.args(args)
-			.stdin(Stdio::piped())
-			.stdout(Stdio::piped())
-			.spawn()
+	pub struct Process<'p> {
+		cmd: &'p str,
+		args: String,
+	}
+
+	impl<'p> Process<'p> {
+		fn new(cmd: &'p str, args: String) -> Self {
+			Process { cmd, args }
+		}
+
+		fn spawn(&self, input: Option<impl Into<Stdio>>, output: Option<impl Into<Stdio>>) -> io::Result<Child> {
+			Command::new(self.cmd)
+				.args(self.args.split_whitespace().into_iter())
+				.stdin(input.map_or(Stdio::piped(), Into::into))
+				.stdout(output.map_or(Stdio::piped(), Into::into))
+				.spawn()
+		}
 	}
 }

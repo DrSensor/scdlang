@@ -13,10 +13,11 @@ pub enum Error<'s> {
 		topic: &'s str,
 	},
 	StreamParse(&'s str),
+	Downcast,
 	WrongFormat {
 		target: String,
 		format: String,
-		possible_formats: &'s [&'s str],
+		possible_formats: Vec<&'s str>,
 	},
 }
 
@@ -85,6 +86,7 @@ impl fmt::Display for Error<'_> {
 		use Error::*;
 		match self {
 			StreamParse(err) => write!(f, "{}", err),
+			Downcast => write!(f, "downcast::<{:?}>::()", self),
 			Count { count, topic } => write!(f, "Found {} error on {}", count, topic),
 			WrongFormat {
 				target,

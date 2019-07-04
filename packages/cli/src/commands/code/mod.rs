@@ -3,11 +3,13 @@ use crate::{
 	cli::*,
 	error::*,
 	format,
+	iter::*,
 	print::*,
 	spawn::{self, *},
+	Downcast,
 };
 use atty::Stream;
-use clap::{App, ArgMatches};
+use clap::{App, Arg, ArgMatches};
 use colored::*;
 use scdlang::Transpiler;
 use scdlang_smcat as smcat;
@@ -31,14 +33,20 @@ impl<'c> CLI<'c> for Code {
 	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
 		cmd.visible_aliases(&["generate", "gen", "declaration", "declr"])
 			.about("Generate from scdlang file declaration to another format")
-			.args(&[output::target(), output::format()])
+			.args(&[
+				// TODO: submit 👇 as a bug issue to clap-rs (not compatible with args_from_usage)
+				// Arg::from_usage("[DIST] 'Output the result to this directory / file'")
+				// 	.required_ifs(&format::BLOB.iter().map(|&fmt| (output::FORMAT, fmt)).collect::<Vec<_>>()),
+				output::target(),
+				output::format(),
+			])
 	}
 
 	fn invoke(args: &ArgMatches) -> Result<()> {
 		let filepath = args.value_of("FILE").unwrap_or_default();
 		let target = args.value_of(output::TARGET).unwrap_or_default();
 		let output_format = args.value_of(output::FORMAT).unwrap_or_default();
-		let mut print = PRINTER(args.value_of(output::FORMAT).unwrap_or("txt"));
+		let mut print = PRINTER(output_format);
 
 		let mut machine: Box<dyn Transpiler> = match target {
 			"xstate" => Box::new(match output_format {
@@ -86,11 +94,20 @@ impl<'c> CLI<'c> for Code {
 		}
 
 		let mut machine = machine.to_string();
-		if which("smcat").is_ok() && ["smcat", "graph"].iter().any(|t| *t == target) {
-			machine = spawn::smcat(output_format)?.output_from(machine)?;
-
-			if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|f| *f == output_format) {
-				machine = spawn::graph_easy(output_format)?.output_from(format::into_legacy_dot(&machine))?;
+		if which("smcat").is_ok() && target.one_of(&["smcat", "graph"]) {
+			use format::ext;
+			let smcat = spawn::smcat(output_format)?;
+			match target {
+				"smcat" => machine = smcat.output_from(machine)?,
+				"graph" if which("dot").is_ok() && output_format.one_of(&ext::DOT) => {
+					let input = (machine, smcat.downcast()?);
+					machine = spawn::dot(output_format).output_from(input)?;
+				}
+				"graph" if which("graph-easy").is_ok() && output_format.one_of(&ext::GRAPH_EASY) => {
+					let input = format::into_legacy_dot(&smcat.output_from(machine)?);
+					machine = spawn::graph_easy(output_format)?.output_from(input)?;
+				}
+				_ => unreachable!("target.one_of(&[\"smcat\", \"graph\"])"),
 			}
 		}
 
