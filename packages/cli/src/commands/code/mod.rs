@@ -103,7 +103,7 @@ impl<'c> CLI<'c> for Code {
 				_ => unreachable!("--format {}", target),
 			}
 		} else {
-			Vec::new() as Vec<u8>
+			machine.into_bytes()
 		};
 
 		match args.value_of(output::DIST) {

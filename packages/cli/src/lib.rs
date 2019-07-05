@@ -296,7 +296,7 @@ pub mod spawn {
 
 		fn spawn(&self, input: Option<impl Into<Stdio>>, output: Option<impl Into<Stdio>>) -> io::Result<Child> {
 			Command::new(self.cmd)
-				.args(self.args.split_whitespace().into_iter())
+				.args(self.args.split_whitespace())
 				.stdin(input.map_or(Stdio::piped(), Into::into))
 				.stdout(output.map_or(Stdio::piped(), Into::into))
 				.spawn()

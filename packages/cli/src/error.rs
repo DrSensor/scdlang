@@ -17,7 +17,7 @@ pub enum Error<'s> {
 	WrongFormat {
 		target: String,
 		format: String,
-		possible_formats: Vec<&'s str>,
+		possible_formats: Box<[&'s str]>,
 	},
 }
 

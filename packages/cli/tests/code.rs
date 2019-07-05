@@ -52,7 +52,7 @@ mod should_ok {
 		let flags = normalize(flags);
 		let target = NamedTempFile::new("dimple.json").unwrap();
 		let args = Some(format!(
-			"{file} {dist}{args}",
+			"{file} -o {dist}{args}",
 			file = path::example(input).unwrap(),
 			dist = target.path().display(),
 			args = flags

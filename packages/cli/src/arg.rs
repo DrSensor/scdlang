@@ -17,7 +17,7 @@ pub mod output {
 					false => Err(Error::WrongFormat {
 						target,
 						format,
-						possible_formats: formats.to_vec(),
+						possible_formats: formats.into(),
 					}),
 				};
 				match fmt {
