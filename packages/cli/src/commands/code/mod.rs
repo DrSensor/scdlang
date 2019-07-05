@@ -87,23 +87,24 @@ impl<'c> CLI<'c> for Code {
 		}
 
 		let machine = machine.to_string();
-		let mut result = Vec::new() as Vec<u8>;
-		if which("smcat").is_ok() && target.one_of(&["smcat", "graph"]) {
+		let result = if which("smcat").is_ok() && target.one_of(&["smcat", "graph"]) {
 			use format::ext;
 			let smcat = spawn::smcat(output_format)?;
 			match target {
-				"smcat" => result = smcat.output_from(machine)?.into(),
+				"smcat" => smcat.output_from(machine)?.into(),
 				"graph" if which("dot").is_ok() && output_format.one_of(&ext::DOT) => {
 					let input = (machine, smcat.downcast()?);
-					result = spawn::dot(output_format).output_from(input)?;
+					spawn::dot(output_format).output_from(input)?
 				}
 				"graph" if which("graph-easy").is_ok() && output_format.one_of(&ext::GRAPH_EASY) => {
 					let input = format::into_legacy_dot(&smcat.output_from(machine)?);
-					result = spawn::graph_easy(output_format)?.output_from(input)?.into();
+					spawn::graph_easy(output_format)?.output_from(input)?.into()
 				}
-				_ => unreachable!("target.one_of(&[\"smcat\", \"graph\"])"),
+				_ => unreachable!("--format {}", target),
 			}
-		}
+		} else {
+			Vec::new() as Vec<u8>
+		};
 
 		match args.value_of(output::DIST) {
 			Some(dist) => fs::write(dist, result)?,

@@ -4,9 +4,11 @@ use crate::{
 	arg::output,
 	cli::{Result, CLI},
 	format,
+	iter::*,
 	print::*,
 	prompt,
 	spawn::{self, *},
+	Downcast,
 };
 use atty::Stream;
 use clap::{App, ArgMatches};
@@ -16,6 +18,7 @@ use rustyline::Editor;
 use scdlang::Transpiler;
 use scdlang_smcat as smcat;
 use scdlang_xstate as xstate;
+use std::fs;
 use which::which;
 
 pub struct Eval;
@@ -29,7 +32,17 @@ impl<'c> CLI<'c> for Eval {
 	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
 		cmd.visible_alias("repl")
 			.about("Evaluate scdlang expression in interactive manner")
-			.args(&[output::target(), output::format()])
+			.args(&[
+				output::dist().long_help(
+					"The output depend if it's directory or file:
+If directory => It will output a numbered file in sequence everytime the REPL produce output.
+	Useful if the input is from stdin.
+If file => It will be overwriten everytime the REPL produce output, especially if `--interactive` is set.
+	Useful if combined with live preview",
+				),
+				output::target(),
+				output::format(),
+			])
 	}
 
 	fn invoke(args: &ArgMatches) -> Result<()> {
@@ -56,7 +69,7 @@ impl<'c> CLI<'c> for Eval {
 		} else {
 			(Mode::Debug, Mode::Error)
 		};
-		let print = PRINTER(args.value_of(output::FORMAT).unwrap_or("txt")).change(print_mode);
+		let print = PRINTER(output_format).change(print_mode);
 		let eprint = PRINTER("haskell").change(eprint_mode);
 
 		#[rustfmt::skip]
@@ -73,18 +86,35 @@ impl<'c> CLI<'c> for Eval {
 			fallback: Err(&|s| eprintln!("{}\n", s))
 		}.print(string);
 
-		let hook = |input: String| -> Result<String> {
-			if which("smcat").is_ok() && ["smcat", "graph"].iter().any(|t| *t == target) {
-				let mut result = spawn::smcat(output_format)?.output_from(input)?;
-
-				if which("graph-easy").is_ok() && format::ext::GRAPH_EASY.iter().any(|ext| *ext == output_format) {
-					result = format::into_legacy_dot(&result);
-					result = spawn::graph_easy(output_format)?.output_from(result)?;
-				}
+		let hook = |input: String| -> Result<Vec<u8>> {
+			use format::ext;
+			if which("smcat").is_ok() && target.one_of(&["smcat", "graph"]) {
+				let smcat = spawn::smcat(output_format)?;
+				let result = match target {
+					"smcat" => smcat.output_from(input)?.into(),
+					"graph" if which("dot").is_ok() && output_format.one_of(&ext::DOT) => {
+						let input = (input, smcat.downcast()?);
+						spawn::dot(output_format).output_from(input)?
+					}
+					"graph" if which("graph-easy").is_ok() && output_format.one_of(&ext::GRAPH_EASY) => {
+						let input = format::into_legacy_dot(&smcat.output_from(input)?);
+						spawn::graph_easy(output_format)?.output_from(input)?.into()
+					}
+					_ => unreachable!("--format {}", target),
+				};
 				Ok(result)
 			} else {
-				Ok(input)
+				Ok(input.into())
 			}
+		};
+
+		let output = |input: String, header: Option<String>| -> Result<()> {
+			let result = hook(input)?;
+			match args.value_of(output::DIST) {
+				Some(dist) => fs::write(dist, result)?,
+				None => pprint(String::from_utf8(result)?, &header.unwrap_or_default())?,
+			};
+			Ok(())
 		};
 
 		let mut loc = 0;
@@ -104,7 +134,7 @@ impl<'c> CLI<'c> for Eval {
 								},
 								expression
 							);
-							pprint(hook(machine.to_string())?, &header)?;
+							output(machine.to_string(), Some(header))?;
 						}
 					}
 					Err(err) => {
@@ -133,7 +163,7 @@ impl<'c> CLI<'c> for Eval {
 		}
 
 		if !args.is_present("interactive") {
-			pprint(hook(machine.to_string())?, "")?;
+			output(machine.to_string(), None)?;
 		}
 
 		Ok(())
