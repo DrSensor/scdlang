@@ -89,7 +89,7 @@ impl<'c> CLI<'c> for Code {
 		let machine = machine.to_string();
 		let result = if which("smcat").is_ok() && target.one_of(&["smcat", "graph"]) {
 			use format::ext;
-			let smcat = spawn::smcat(output_format)?;
+			let smcat = spawn::smcat(if target == "graph" { "dot" } else { output_format })?;
 			match target {
 				"smcat" => smcat.output_from(machine)?.into(),
 				"graph" if which("dot").is_ok() && output_format.one_of(&ext::DOT) => {

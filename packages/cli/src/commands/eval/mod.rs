@@ -89,7 +89,7 @@ If file => It will be overwriten everytime the REPL produce output, especially i
 		let hook = |input: String| -> Result<Vec<u8>> {
 			use format::ext;
 			if which("smcat").is_ok() && target.one_of(&["smcat", "graph"]) {
-				let smcat = spawn::smcat(output_format)?;
+				let smcat = spawn::smcat(if target == "graph" { "dot" } else { output_format })?;
 				let result = match target {
 					"smcat" => smcat.output_from(input)?.into(),
 					"graph" if which("dot").is_ok() && output_format.one_of(&ext::DOT) => {

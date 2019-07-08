@@ -174,7 +174,6 @@ pub mod format {
 
 // TODO: make a blog about "Categorizing process using trait system"
 pub mod spawn {
-	use super::{format, iter::*};
 	use std::{
 		io::{self, Read, Write},
 		process::*,
@@ -187,20 +186,8 @@ pub mod spawn {
 	}
 
 	pub fn smcat(fmt: &str) -> io::Result<impl ShortProcess<Input = String, Output = String>> {
-		use format::ext::*;
 		let (input, output) = (None, None) as (Option<Stdio>, Option<Stdio>);
-		Process::new(
-			"smcat",
-			format!(
-				"-I json -d left-right -T {}",
-				if fmt.one_of(&merge(&[&GRAPH_EASY, &DOT])) {
-					"dot"
-				} else {
-					fmt
-				}
-			),
-		)
-		.spawn(input, output)
+		Process::new("smcat", format!("-I json -d left-right -T {}", fmt)).spawn(input, output)
 	}
 
 	pub fn graph_easy(fmt: &str) -> io::Result<impl ShortProcess<Input = String, Output = String>> {
