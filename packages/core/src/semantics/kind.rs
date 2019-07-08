@@ -16,8 +16,11 @@ pub enum Kind<'g> {
 /** An Enum returned by [Expression.semantic_check](trait.Expression.html#tymethod.semantic_check)
 to detect incorrect semantics */
 pub enum Found {
+	/// Threw when detect errornous expressions or statements
 	Error(String),
+	/// Threw when detect expressions or statements that can cause ambiguity
 	Warning(String),
+	/// All is well 😉
 	None,
 }
 

@@ -1,6 +1,7 @@
 #![allow(clippy::unit_arg)]
 mod schema;
 mod utils;
+pub use scdlang::Transpiler;
 
 use scdlang::{
 	prelude::*,

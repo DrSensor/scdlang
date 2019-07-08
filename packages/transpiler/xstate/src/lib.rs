@@ -1,5 +1,4 @@
 pub use scdlang::Transpiler;
-pub mod machine;
 
-#[doc(inline)]
+mod machine;
 pub use machine::Machine;

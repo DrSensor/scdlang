@@ -117,11 +117,23 @@ If file => It will be overwriten everytime the REPL produce output, especially i
 			Ok(())
 		};
 
+		if atty::is(Stream::Stdin) {
+			if !args.is_present("interactive") {
+				println!("Press Ctrl-D / Ctrl-C to exit and print the final results");
+				println!("> type `print` show the result");
+			}
+			println!("> type `exit` to close this session\n");
+		}
+
 		let mut loc = 0;
-		let mut parse = |expression: &str| -> Result<()> {
+		let mut last_line = String::new();
+		while let Ok(line) = repl.readline(&format!("{} ", prompt::REPL.bold())) {
 			machine.configure().with_err_line(loc);
-			if !expression.trim().is_empty() && !expression.trim().starts_with("//") {
-				match machine.insert_parse(expression) {
+			let line = line.as_str().trim();
+			match line {
+				"exit" => break,
+				"print" if !args.is_present("interactive") => output(machine.to_string(), None)?,
+				_ if !line.trim().is_empty() && !line.trim().starts_with("//") => match machine.insert_parse(line) {
 					Ok(_) => {
 						if args.is_present("interactive") {
 							// TODO: refactor console.rs
@@ -132,7 +144,7 @@ If file => It will be overwriten everytime the REPL produce output, especially i
 								} else {
 									format!("{}:", loc + 1)
 								},
-								expression
+								line
 							);
 							output(machine.to_string(), Some(header))?;
 						}
@@ -144,25 +156,13 @@ If file => It will be overwriten everytime the REPL produce output, especially i
 							epprint(err.to_string(), "")?;
 						}
 					}
-				}
-			}
-			loc += 1;
-			Ok(())
-		};
-
-		if !args.is_present("interactive") && atty::is(Stream::Stdin) {
-			println!("Press Ctrl-D to exit and print the final results");
-		}
-
-		while let Ok(line) = repl.readline(&format!("{} ", prompt::REPL.bold())) {
-			match line.as_str() {
-				"exit" => break,
-				// FIXME: "print" => pprint(hook(machine.to_string())?, "")?,
-				_ => parse(&line)?,
+				},
+				_ => last_line = line.to_string(),
 			};
+			loc += 1;
 		}
 
-		if !args.is_present("interactive") {
+		if !args.is_present("interactive") && last_line == "print" {
 			output(machine.to_string(), None)?;
 		}
 

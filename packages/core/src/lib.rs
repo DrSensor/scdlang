@@ -14,9 +14,7 @@ pub use external::Parser as Transpiler;
 /// A prelude providing convenient access to commonly-used features of scdlang core parser.
 pub mod prelude {
 	pub use super::{external::*, utils::naming::*};
-
 	pub use pest::Parser as PestParser;
-	pub use std::convert::*;
 }
 
 /** A helper module for aliasing several generated [`Rule`] which alias of [`pest::RuleType`]
@@ -40,6 +38,9 @@ pub mod grammar {
 
 	#[allow(non_snake_case)]
 	#[rustfmt::skip]
+	/** Enum variants that represent a symbol (e.g `->`, `@`) 
+	
+	Each of them follow [unicode name](http://xahlee.info/comp/unicode_index.html) */
 	pub mod Symbol {
 		pub use super::Rule::TriggerAt as at;
 
@@ -68,6 +69,7 @@ pub mod grammar {
 
 	#[allow(non_snake_case)]
 	#[rustfmt::skip]
+	/// Enum variants that represent a name (e.g `state`, `event`)
 	pub mod Name {
 		pub use super::Rule::{
 			StateName as state,
