@@ -9,8 +9,8 @@ pub(crate) fn sanitize(name: &str) -> String {
 }
 
 #[derive(Debug, Clone)]
-/// Type for differentiating between native naming convention [`Unquoted`](#Unquoted)
-/// and free naming convention [`Quoted`](#Quoted)
+/// Type for differentiating between native naming convention [`Unquoted`](enum.Name.html#variant.Unquoted)
+/// and free naming convention [`Quoted`](enum.Name.html#variant.Quoted)
 pub enum Name<'t> {
 	/// e.g "double quote", 'single quote', or `backtick`
 	Quoted(String),

@@ -1,26 +1,12 @@
 /*! A module for acessing semantics type.
 
-See [`Scdlang`] for example.
-[`Scdlang`]: ../struct.Scdlang.html */
+See [`Scdlang`](../struct.Scdlang.html) for example. */
 mod graph;
 mod kind;
 mod transition;
 
 pub(crate) use graph::*;
 pub use kind::*;
-
-#[derive(Debug, Clone)]
-pub enum Check {
-	Auto,
-	Manual,
-	None,
-}
-
-impl Default for Check {
-	fn default() -> Self {
-		Check::Auto // WARNING: see crate::core::Scdlang::new
-	}
-}
 
 pub(super) mod analyze {
 	// WARNING: move this on separate file when it became more complex

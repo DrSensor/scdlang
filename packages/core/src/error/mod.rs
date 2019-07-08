@@ -1,7 +1,7 @@
 mod format;
 mod util;
 
-use crate::{grammar::*, semantics::Check};
+use crate::grammar::*;
 use pest;
 
 pub type PestError = pest::error::Error<Rule>;
@@ -13,10 +13,6 @@ pub type PestError = pest::error::Error<Rule>;
 pub enum Error {
 	/// Happen when there is syntax or semantics error
 	Parse(Box<PestError>),
-
-	// FIXME: fix link not found 👇
-	/// Happen when calling [Expression::semantic_check](../../trait.Expression.html) but [`Builder.with_err_semantic(Check::{Auto, None})`](../../trait.Builder.html)
-	SemanticCheck(Check),
 
 	/// Can happen when accessing caches unsafely
 	Deadlock,

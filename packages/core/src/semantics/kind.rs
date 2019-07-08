@@ -13,6 +13,8 @@ pub enum Kind<'g> {
 	Statement(Box<dyn Statement + 'g>),
 }
 
+/** An Enum returned by [Expression.semantic_check](trait.Expression.html#tymethod.semantic_check)
+to detect incorrect semantics */
 pub enum Found {
 	Error(String),
 	Warning(String),
