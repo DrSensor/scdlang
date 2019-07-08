@@ -1,0 +1,53 @@
+digraph {
+  rankdir=LR
+  compound=true
+  nodesep="1"
+  node [shape=egg]
+  GhAction [shape=none,label="",image="assets/logo_octocat.png"]
+  Azure [shape=none,label="",image="assets/logo_azure.png"]
+  Report [shape=box,label="",labelloc=t,image="assets/example_report.png"]
+
+  GhAction -> "Testing" [label="on push"]
+
+  GhAction -> "Measure Performance" [label="on pull_request"]
+  "Measure Performance" -> measure_run [lhead=cluster_rtime]
+  "Measure Performance" -> precompile [lhead=cluster_ctime]
+  measure_build -> Report
+  measure_run -> Report [ltail=cluster_rtime]
+
+  Azure -> "Build Release" [label="on pull_request/tag"]
+  "Build Release" -> platform [lhead=cluster_artifact]
+  platform -> registry [label="on tag → upload to", ltail=cluster_artifact]
+
+  subgraph cluster_artifact {
+    platform [shape=record,label="
+      <mac>Mac
+      |<windows>Windows
+      |<linux>Linux
+    "]
+    label="artifacts"
+  }
+
+  subgraph cluster_ctime {
+    precompile [shape=oval,label="pre-compile\nall dependencies"]
+    measure_build [shape=box,label="measure Build Time"]
+    precompile -> measure_build [minlen=0]
+    label="Compile Time"
+  }
+
+  subgraph cluster_rtime {
+    measure_run [shape=record,label="
+      <cpu>Load CPU | <mem>Peak Memory
+    "]
+    label="Run Time"
+  }
+
+  registry [shape=record,label=<
+    <table cellborder="1" cellpadding="4" cellspacing="0" border="0">
+      <tr><td border="0" valign="top" cellpadding="10">registries</td></tr>
+      <tr><td>Github Release Page</td></tr>
+      <tr><td>Docker Hub</td></tr>      
+      <tr><td border="3" color="limegreen">Rust Package Registry</td></tr>      
+    </table>
+  >]
+}

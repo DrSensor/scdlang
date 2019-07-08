@@ -1,3 +1,7 @@
+# assets
+*.png
+!/**/assets/*
+
 # initial implementation
 packages/parser-scdlang/*
 

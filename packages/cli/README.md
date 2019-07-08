@@ -185,7 +185,7 @@ Some CLI and tools that can came handy:
 ```shell
 watchexec "scrap code $FILE.scl -f graph" --clear --watch $FILE.scl
 ```
-TODO: ![add gif]()
+![live preview boxart.gif](https://files.steempeak.com/file/steempeak/drsensor/xKsEZn7a-live20preview20boxart.gif)
 </details>
 
 <details><summary>Live preview the visual representation of media output (svg, jpg, png, etc)</summary>
@@ -196,35 +196,35 @@ watchexec "scrap code $INPUT.scl -o $OUTPUT.svg -f smcat --as svg" --clear --wat
 live-server --watch=$INPUT.scl --entry-file=$OUTPUT.svg --port=2019 --wait=2020
 google-chrome --app=http://localhost:2019
 ```
-TODO: ![add gif]()
+![live preview svg.gif](https://files.steempeak.com/file/steempeak/drsensor/865FJM93-live20preview20svg.compressed.gif)
 
 - For VSCode user, you can `--output` it `--as` media file like png or jpg then open it in VSCode
 ```shell
-watchexec "scrap code $INPUT.scl -o $OUTPUT.png -f smcat --as png" --clear --watch $INPUT.scl
+watchexec "scrap code $INPUT.scl -o $OUTPUT.png -f graph --as png" --watch $INPUT.scl
 code $OUTPUT.png
 ```
+![live preview png.gif](https://files.steempeak.com/file/steempeak/drsensor/sco5lkYP-live20preview20png.gif)
 </details>
 
 <details><summary>Inspect each line</summary>
 
 ```shell
-cat $FILE.scl | scrap repl --interactive -f graph
+cat $FILE.scl | scrap repl --interactive --format graph
 ```
-TODO: ![add gif]()
-
+![Inspect each line](https://user-images.githubusercontent.com/4953069/60797897-5edba800-a19a-11e9-9e32-dd0b14e8a53c.gif)
   <details><summary>Only inspect result</summary>
 
 ```shell
-cat $FILE.scl | scrap repl --interactive -f xstate 2>/dev/null
+cat $FILE.scl | scrap repl --interactive --format xstate 2>/dev/null
 ```
-TODO: ![add gif]()
+![Only inspect result on each line](https://user-images.githubusercontent.com/4953069/60797896-5edba800-a19a-11e9-8b1b-3ae73e0e08c0.gif)
   </details>
   <details><summary>Only inspect error</summary>
 
 ```shell
-cat $FILE.scl | scrap repl --interactive -f xstate 1>/dev/null
+cat $FILE.scl | scrap repl --interactive --format xstate 1>/dev/null
 ```
-TODO: ![add gif]()
+![Only inspect error on each line](https://user-images.githubusercontent.com/4953069/60797894-5e431180-a19a-11e9-93c4-942f7bd6b78c.gif)
   </details>
 </details>
 
@@ -233,29 +233,28 @@ TODO: ![add gif]()
 ```shell
 scrap code $FILE.scl --stream 2> $OUTPUT.log
 ```
-TODO: ![add gif]()
+![Log error to file](https://user-images.githubusercontent.com/4953069/60797893-5e431180-a19a-11e9-97a4-bfe0509cd18a.gif)
 </details>
 
 <details><summary>Print in plain format (no syntax highlighter)</summary>
 
 ```shell
-scrap code $FILE.scl -f xstate --stream 2>&1 | cat
+scrap code $FILE.scl --format xstate --stream 2>&1 | cat
 ```
-TODO: ![add gif]()
-
+![Print in plain format](https://user-images.githubusercontent.com/4953069/60797892-5e431180-a19a-11e9-85f5-d2347fbd1879.gif)
   <details><summary>Only print result</summary>
 
 ```shell
-scrap code $FILE.scl -f xstate --stream 2>/dev/null | cat
+scrap code $FILE.scl --format xstate --stream 2>/dev/null | cat
 ```
-TODO: ![add gif]()
+![Only print result and in plain format](https://user-images.githubusercontent.com/4953069/60797891-5daa7b00-a19a-11e9-8776-22cbd33050a6.gif)
   </details>
   <details><summary>Only print error</summary>
 
 ```shell
-scrap code $FILE.scl -f xstate --stream 2>&1 1>/dev/null | cat
+scrap code $FILE.scl --format xstate --stream 2>&1 1>/dev/null | cat
 ```
-TODO: ![add gif]()
+![Only print error and in plain format](https://user-images.githubusercontent.com/4953069/60797889-5daa7b00-a19a-11e9-8266-d5dc4121bfd6.gif)
   </details>
 </details>
 
@@ -263,23 +262,16 @@ TODO: ![add gif]()
   <details><summary>Inspect and log error</summary>
 
 ```shell
-cat $FILE.scl | scrap repl --interactive -f xstate 2> $OUTPUT.log
+cat $FILE.scl | scrap repl --interactive --format xstate 2> $OUTPUT.log
 ```
-TODO: ![add gif]()
+![Inspect and log error](https://user-images.githubusercontent.com/4953069/60797887-5d11e480-a19a-11e9-97fd-5192bae5b55f.gif)
   </details>
   <details><summary>Inspect and log result</summary>
 
 ```shell
-cat $FILE.scl | scrap repl --interactive -f xstate > $OUTPUT.log
+cat $FILE.scl | scrap repl --interactive --format xstate > $OUTPUT.log
 ```
-TODO: ![add gif]()
-  </details>
-  <details><summary>Inspect and log both</summary>
-
-```shell
-cat $FILE.scl | scrap repl --interactive -f xstate > $OUTPUT.log 2>&1
-```
-TODO: ![add gif]()
+![Inspect and log result](https://user-images.githubusercontent.com/4953069/60797885-5c794e00-a19a-11e9-9b78-7e7be793548b.gif)
   </details>
 </details>
 
