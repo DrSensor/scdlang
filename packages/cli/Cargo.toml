@@ -25,7 +25,7 @@ scdlang = { path = "../core", version = "0.1.1" }
 scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.1" }
 scdlang_smcat = { path = "../transpiler/smcat", version = "0.1.1" }
 atty = "0.2"
-rustyline = "3"
+rustyline = "5"
 prettyprint = "0.*"
 colored = "1"
 which = "2"
@@ -42,7 +42,7 @@ scdlang = { path = "../core", version = "0.1.1" }
 scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.1" }
 scdlang_smcat = { path = "../transpiler/smcat", version = "0.1.1" }
 atty = "0.2"
-rustyline = "3"
+rustyline = "5"
 prettyprint = "0.*"
 colored = "1"
 which = "2"
