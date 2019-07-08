@@ -7,19 +7,19 @@ pub mod commands;
 #[path = "error.rs"]
 pub mod error;
 
-use error::Error;
+use error::Error as ScrapError;
 use std::any::Any;
 
 impl<T> Downcast for T {}
 pub trait Downcast {
 	// TODO: find a way to convert Box<dyn Any> into Box<dyn Error>
 	// https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=0b19ec3df257a583d4e560cbfb51b808
-	fn downcast<T: Any>(self) -> Result<T, Error<'static>>
+	fn downcast<T: Any>(self) -> Result<T, ScrapError<'static>>
 	where
 		Self: Sized + 'static,
 	{
 		let this: Box<dyn Any> = Box::new(self);
-		this.downcast::<T>().map(|t| *t).map_err(|_| Error::Downcast)
+		this.downcast::<T>().map(|t| *t).map_err(|_| ScrapError::Downcast)
 	}
 }
 
