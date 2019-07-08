@@ -1,0 +1,21 @@
+// D Flip-flop
+Reset ->> Set @ /*D=1*/ Data
+Reset <<- Set @ /*D=0*/ Off
+
+// T Flip-flop
+// Reset <-> Set @ /*T=1*/ Toggle
+// ->> Set @ /*T=0*/ Off
+// ->> Reset @ /*T=0*/ Off
+
+// SR Flip-flop
+// Reset -> Set @ /*S=1 R=0*/ Set
+// Reset <- Set @ /*S=0 R=1*/ Reset
+// ->> Reset @ /*S=R=0*/ Off
+// ->> Set @ /*S=R=0*/ Off
+
+// JK Flip-flop
+// Reset <-> Set @ /*J=1 K=1*/ JK
+// Reset --> Set @ /*J=1 K=0*/ J
+// Reset <-- Set @ /*J=0 K=1*/ K
+// ->> Reset @ /*J=K=0*/ Off
+// ->> Set @ /*J=K=0*/ Off
