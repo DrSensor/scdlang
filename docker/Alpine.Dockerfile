@@ -32,7 +32,7 @@ RUN /dist/smcat --version
 
 FROM node:alpine
 
-LABEL version="0.1.1" \
+LABEL version="0.2.0" \
       repository="https://github.com/drsensor/scdlang" \
       homepage="https://drsensor.github.io/scdlang" \
       maintainer="Fahmi Akbar Wildana <sensorfied@gmail.com>"

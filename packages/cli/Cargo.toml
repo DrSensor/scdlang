@@ -1,6 +1,6 @@
 [package]
 name = "s-crap"
-version = "0.1.1"
+version = "0.2.0"
 description = "A CLI for working with Scdlang"
 license = "UPL-1.0"
 repository = "https://github.com/drsensor/scdlang"
@@ -21,9 +21,9 @@ doctest = false
 doc = false
 
 [dependencies]
-scdlang = { path = "../core", version = "0.1.1" }
-scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.1" }
-scdlang_smcat = { path = "../transpiler/smcat", version = "0.1.1" }
+scdlang = { path = "../core", version = "0.2.0" }
+scdlang_xstate = { path = "../transpiler/xstate", version = "0.2.0" }
+scdlang_smcat = { path = "../transpiler/smcat", version = "0.2.0" }
 atty = "0.2"
 rustyline = "5"
 prettyprint = "0.*"
@@ -38,9 +38,9 @@ features = ["wrap_help"]
 # WARNING: This make compilation time doubled!! Seems cargo has serious issue here 😠
 [build-dependencies]
 clap = "2"
-scdlang = { path = "../core", version = "0.1.1" }
-scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.1" }
-scdlang_smcat = { path = "../transpiler/smcat", version = "0.1.1" }
+scdlang = { path = "../core", version = "0.2.0" }
+scdlang_xstate = { path = "../transpiler/xstate", version = "0.2.0" }
+scdlang_smcat = { path = "../transpiler/smcat", version = "0.2.0" }
 atty = "0.2"
 rustyline = "5"
 prettyprint = "0.*"

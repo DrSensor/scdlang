@@ -43,7 +43,7 @@ clean: _clean-analyze
 	cargo clean
 	pipenv clean
 
-version_subjects := "Cargo.lock Dockerfile 'packages/**/Cargo.toml'"
+version_subjects := "Cargo.lock '**Dockerfile' 'packages/**/Cargo.toml'"
 # Prepare for release
 release version:
 	#!/usr/bin/env bash
