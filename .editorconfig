@@ -20,7 +20,7 @@ indent_style = space
 indent_size = 4
 insert_final_newline = false
 
-[{Dockerfile,*{.pest,yml,yaml}}]
+[{*Dockerfile,*{.pest,yml,yaml}}]
 indent_style = space
 indent_size = 2
 insert_final_newline = false

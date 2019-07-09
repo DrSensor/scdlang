@@ -1,8 +1,9 @@
 use super::{Rule, Scdlang};
 use crate::{
 	error::*,
-	semantics::{analyze::SemanticCheck, *},
+	semantics::{analyze::*, *},
 };
+use either::Either;
 use pest::{self, error::Error as PestError, iterators::Pairs};
 use std::{fmt, *};
 
@@ -30,20 +31,25 @@ impl<'g> Scdlang<'g> {
 
 	/// Parse from `source` then iterate.
 	/// This is the preferred methods for implementing transpiler, codegen, or compiler.
-	pub fn iter_from(&self, source: &'g str) -> Result<Vec<Kind<'_>>, Error> {
-		use convert::TryFrom;
+	pub fn iter_from(&self, source: &'g str) -> Result<Vec<Kind>, Error> {
 		let pairs = self.parse(source)?;
 		pairs
 			.filter(|pair| if let Rule::EOI = pair.as_rule() { false } else { true })
 			.map(|pair| {
 				Ok(match pair.as_rule() {
-					Rule::expression if self.semantic_error => Transition::analyze_from(pair, &self)?.into_kind(),
-					Rule::expression => Transition::try_from(pair)?.into_kind(),
+					Rule::expression if self.semantic_error => Transition::analyze_from(pair, &self)?.into_kinds(),
+					Rule::expression => Transition::from(pair).into_kinds(),
 					_ => unreachable!("Rule::{:?}", pair.as_rule()),
 				})
 			})
+			// see https://paulkernfeld.com/2018/11/03/flatten-nested-iterator-result.html
+			// and https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=5d59f87affa104d758d9c58655d4aed9
+			.flat_map(|result| match result {
+				Err(e) => Either::Left(iter::once(Err(e))),
+				Ok(kinds) => Either::Right(kinds.into_iter().map(Ok)),
+			})
 			.collect()
-		// WARNING: ideally 👆 should be implemented using function generator but Rust not support it yet
+		// WARNING: ideally 👆 should be implemented using function generator but Rust not support it yet. Maybe I should use closure arg 🤔
 	}
 }
 

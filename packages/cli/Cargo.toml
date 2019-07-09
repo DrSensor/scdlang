@@ -1,12 +1,17 @@
 [package]
-name = "scrap"
+name = "s-crap"
 version = "0.1.1"
 description = "A CLI for working with Scdlang"
+license = "UPL-1.0"
+repository = "https://github.com/drsensor/scdlang"
 authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
+keywords = ["statemachine", "language", "cli", "scdlang"]
+categories = ["command-line-utilities"]
 edition = "2018"
 
 [[bin]]
 name = "scrap"
+path = "src/main.rs"
 test = false
 doc = false
 doctest = false
@@ -16,29 +21,35 @@ doctest = false
 doc = false
 
 [dependencies]
-scdlang-core = { path = "../core" }
-scdlang_xstate = { path = "../transpiler/xstate" }
-atty = "*"
-rustyline = "*"
-prettyprint = "*"
-colored = "*"
+scdlang = { path = "../core", version = "0.1.1" }
+scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.1" }
+scdlang_smcat = { path = "../transpiler/smcat", version = "0.1.1" }
+atty = "0.2"
+rustyline = "5"
+prettyprint = "0.*"
+colored = "1"
+which = "2"
+regex = "1"
 
 [dependencies.clap]
-version = "*"
+version = "2"
 features = ["wrap_help"]
 
 # WARNING: This make compilation time doubled!! Seems cargo has serious issue here 😠
 [build-dependencies]
-clap = "*"
-scdlang-core = { path = "../core" }
-scdlang_xstate = { path = "../transpiler/xstate" }
-atty = "*"
-rustyline = "*"
-prettyprint = "*"
-colored = "*"
+clap = "2"
+scdlang = { path = "../core", version = "0.1.1" }
+scdlang_xstate = { path = "../transpiler/xstate", version = "0.1.1" }
+scdlang_smcat = { path = "../transpiler/smcat", version = "0.1.1" }
+atty = "0.2"
+rustyline = "5"
+prettyprint = "0.*"
+colored = "1"
+which = "2"
+regex = "1"
 
 [dev-dependencies]
-predicates = "*"
-assert_fs = "*"
-assert_cmd = "*"
-rexpect = "*"
+predicates = "1"
+assert_fs = "0.*"
+assert_cmd = "0.*"
+rexpect = "0.3"

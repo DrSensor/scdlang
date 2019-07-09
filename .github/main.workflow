@@ -46,9 +46,9 @@ action "Perf cargo" {
 	uses = "./.github/action/perf"
 	args = [
 		"build --all",
-		"build -p scdlang-core",
+		"build -p scdlang",
 		"build -p scdlang_xstate",
-		"build -p scrap",
+		"build -p s-crap",
 	]
 }
 
@@ -70,7 +70,7 @@ action "Build Release cli as musl" {
 	args = [
 		"rustup target add x86_64-unknown-linux-musl",
 		"apt-get update && apt-get install -y musl-tools",
-		"cargo build --target x86_64-unknown-linux-musl --release -p ${BIN}",
+		"cargo build --target x86_64-unknown-linux-musl --release --bin ${BIN}",
 		"mkdir -p ${HOME}/.bin/",
 		"mv target/x86_64-unknown-linux-musl/release/${BIN} ${HOME}/.bin/${BIN}",
 	]
@@ -82,9 +82,10 @@ action "Perf CLI release" {
 	uses = "docker://python:alpine"
 	runs = "./.github/profiler.sh"
 	args = [
-		"${HOME}/.bin/scrap code examples/simple.scl --parser asg",
-		"${HOME}/.bin/scrap code examples/simple.scl --stream --parser asg",
-		"${HOME}/.bin/scrap code examples/simple.scl --stream --parser ast",
+		"${HOME}/.bin/scrap code examples/simple.scl --format xstate",
+		"${HOME}/.bin/scrap code examples/simple.scl --format xstate --stream",
+		"${HOME}/.bin/scrap code examples/simple.scl --format smcat",
+		"${HOME}/.bin/scrap code examples/simple.scl --format smcat --stream",
 	],
 	env = { PREPARE = "./scripts/gensample.py 1000 > examples/simple.scl" }
 }

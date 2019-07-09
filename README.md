@@ -24,20 +24,24 @@ Scdlang (pronounced `/ˈesˌsi:ˈdi:ˈlæŋ/`) is a description language for des
 - **Transferable** to any implementation (e.g platform, programming language, runtime, etc)
 
 ### Key Features
-- [x] Awesome [CLI](packages/cli/README.md)
+- [x] Awesome CLI (see [usage](packages/cli/README.md))
 - [x] Syntax is inspired from various drawing languages like [mermaid][], [Graphviz][], [PlantUML][], and many more
 - [x] Decent error message
 - [x] Avoid invalid and ambigous transition via semantics analysis
 - Transpile into other formats:
   - [x] [XState](https://xstate.js.org/docs/)
-  - [ ] [State Machine cat][]
+  - [x] [State Machine cat][]
+  - [ ] [CSV](https://github.com/DrSensor/scdlang/issues/24)
   - [ ] [Sismic](https://sismic.readthedocs.io/en/latest/)
   - [ ] [SCXML](https://www.w3.org/TR/scxml/)
+  - [ ] [WaveDrom](https://observablehq.com/@drom/wavedrom)
 - Compile into other formats (hopefully, no promise):
   - [ ] WebAssembly (using [parity-wasm](https://github.com/paritytech/parity-wasm))
 - Code generation 🤔
-  - [ ] Rust proc macro derive? (I'm still afraid if it will conflict with another crates)
-  - [ ] Elixir `use` macros 💪
+  - [ ] Julia via [`@generated`](https://docs.julialang.org/en/v1/manual/metaprogramming/#Generated-functions-1) implemented as [parametric](https://docs.julialang.org/en/v1/manual/methods/#Parametric-Methods-1) [multiple-dispatch](https://en.wikipedia.org/wiki/Multiple_dispatch#Julia) [functors](https://docs.julialang.org/en/v1/manual/methods/#Function-like-objects-1)
+  - [ ] Rust via [`#[proc_macro_attribute]`](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros) implemented as [typestate programming](https://rust-embedded.github.io/book/static-guarantees/typestate-programming.html)? (I'm still afraid if it will conflict with another crates)
+  - [ ] Elixir via [`use`](https://elixir-lang.org/getting-started/alias-require-and-import.html#use) macro which desugar [gen_statem](https://andrealeopardi.com/posts/connection-managers-with-gen_statem/)💪
+  - [ ] Flutter via [`builder_factories`](https://github.com/flutter/flutter/wiki/Code-generation-in-Flutter) (waiting for the [FFI](https://github.com/dart-lang/sdk/issues/34452) to be stable)
 
 > For more info, see the changelog in the [release page][]
 
@@ -47,22 +51,24 @@ Currently, this project only have the binary CLI for each OS. Please go to the [
 ### Installing
 Just download the binary in the [release page][] or follow this instructions 👇
 
-#### Linux
+#### Linux🐧
 TODO: (AUR, DEB, RPM) or via shellscript just like installing rustup
 
-#### MacOS
+#### MacOS🍏
 TODO: brew or via shellscript just like installing rustup
 
-#### Windows
+#### Windows🗔
 TODO: chocolatey or via msi installer just like installing rustup
 
-#### [Docker](https://hub.docker.com/r/scdlang/scrap)
+#### using [Docker](https://hub.docker.com/r/scdlang/scrap)🐳
 ```console
 docker pull scdlang/scrap
 ```
 
-#### via Cargo
-TODO: TBD
+#### via [Cargo](https://doc.rust-lang.org/cargo)📦
+```console
+cargo install s-crap
+```
 
 ## Contributing
 ![open "help wanted" issues](https://img.shields.io/github/issues/drsensor/scdlang/help%20wanted.svg)
@@ -73,7 +79,7 @@ Any contributions are welcome as long as it follow [Code of Conduct](CODE_OF_CON
 
 ## License
 
-This project is licensed under the UPL-1.0 License - see the [LICENSE](LICENSE) file for details
+This project is licensed under the Universal Permissive License 1.0 - see the [LICENSE](LICENSE) file for details
 
 ## Resources
 

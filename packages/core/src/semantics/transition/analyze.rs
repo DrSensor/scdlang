@@ -1,36 +1,54 @@
 use super::helper::prelude::*;
-use crate::{cache, semantics, utils::naming::sanitize};
-use semantics::{analyze, Kind, Transition};
+use crate::{cache, semantics, utils::naming::sanitize, Error};
+use semantics::{analyze::*, Kind, Transition};
 
-impl<'t> analyze::SemanticCheck<'t> for Transition<'t> {
-	fn analyze_error(&self, span: Span<'t>, options: &'t Scdlang) -> Result<(), ScdlError> {
-		let mut t1_cache = cache::transition()?;
+impl SemanticCheck for Transition<'_> {
+	fn check_error(&self) -> Result<Option<String>, Error> {
+		let mut cache_transition = cache::transition()?;
 
 		let (current, target) = (sanitize(self.from.name), sanitize(self.to.name));
+		let t_cache = cache_transition.entry(current).or_default();
 
-		let t2_cache = t1_cache.entry(current).or_default();
-		match &self.at {
+		Ok(match &self.at {
 			Some(trigger) => {
-				if t2_cache.contains_key(&None) {
-					return Err(options.err_from_span(span, self.warn_conflict(&t2_cache)).into());
-				} else if let Some(prev_target) = t2_cache.insert(Some(trigger.into()), target) {
-					return Err(options.err_from_span(span, self.warn_duplicate(&prev_target)).into());
+				if t_cache.contains_key(&None) {
+					Some(self.warn_conflict(&t_cache))
+				} else if let Some(prev_target) = t_cache.insert(Some(trigger.into()), target) {
+					Some(self.warn_duplicate(&prev_target))
+				} else {
+					None
 				}
 			}
 			None => {
-				if t2_cache.keys().any(Option::is_some) {
-					return Err(options.err_from_span(span, self.warn_conflict(&t2_cache)).into());
-				} else if let Some(prev_target) = t2_cache.insert(None, target) {
-					return Err(options.err_from_span(span, self.warn_duplicate(&prev_target)).into());
+				if t_cache.keys().any(Option::is_some) {
+					Some(self.warn_conflict(&t_cache))
+				} else if let Some(prev_target) = t_cache.insert(None, target) {
+					Some(self.warn_duplicate(&prev_target))
+				} else {
+					None
 				}
 			}
-		}
+		})
+	}
+}
 
+impl<'t> SemanticAnalyze<'t> for Transition<'t> {
+	fn analyze_error(&self, span: Span<'t>, options: &'t Scdlang) -> Result<(), Error> {
+		let make_error = |message| options.err_from_span(span, message).into();
+		for transition in self.clone().into_iter() {
+			if let Some(message) = transition.check_error()? {
+				return Err(make_error(message));
+			}
+		}
 		Ok(())
 	}
 
-	fn into_kind(self) -> Kind<'t> {
-		Kind::Expression(Box::new(self))
+	fn into_kinds(self) -> Vec<Kind<'t>> {
+		let mut kinds = Vec::new();
+		for transition in self.into_iter() {
+			kinds.push(transition.into());
+		}
+		kinds
 	}
 }
 

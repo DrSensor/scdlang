@@ -14,9 +14,7 @@ pub use external::Parser as Transpiler;
 /// A prelude providing convenient access to commonly-used features of scdlang core parser.
 pub mod prelude {
 	pub use super::{external::*, utils::naming::*};
-
 	pub use pest::Parser as PestParser;
-	pub use std::convert::*;
 }
 
 /** A helper module for aliasing several generated [`Rule`] which alias of [`pest::RuleType`]
@@ -40,6 +38,9 @@ pub mod grammar {
 
 	#[allow(non_snake_case)]
 	#[rustfmt::skip]
+	/** Enum variants that represent a symbol (e.g `->`, `@`) 
+	
+	Each of them follow [unicode name](http://xahlee.info/comp/unicode_index.html) */
 	pub mod Symbol {
 		pub use super::Rule::TriggerAt as at;
 
@@ -47,12 +48,28 @@ pub mod grammar {
 			pub use crate::core::Rule::{
 				TransitionTo as right,
 				TransitionFrom as left,
+				TransitionToggle as both,
+			};
+		}
+
+		pub mod double_arrow {
+			pub use crate::core::Rule::{
+				LoopTo as right,
+				LoopFrom as left,
+			};
+		}
+
+		pub mod tail_arrow {
+			pub use crate::core::Rule::{
+				TransientLoopTo as right,
+				TransientLoopFrom as left,
 			};
 		}
 	}
 
 	#[allow(non_snake_case)]
 	#[rustfmt::skip]
+	/// Enum variants that represent a name (e.g `state`, `event`)
 	pub mod Name {
 		pub use super::Rule::{
 			StateName as state,
@@ -66,6 +83,11 @@ pub mod test {
 	use super::*;
 	use grammar::Rule;
 	use pest::error::Error;
+
+	const BASE_ISSUES: &str = "https://github.com/DrSensor/scdlang";
+	pub fn issue(id: isize) {
+		println!("{}/issues/{}", BASE_ISSUES, id)
+	}
 
 	pub fn expression(expression: &str) -> Result<&str, Error<Rule>> {
 		Ok(crate::parse(expression)?.as_str())

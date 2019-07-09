@@ -4,7 +4,7 @@ use std::{process::Command, result as builtins};
 pub type Result = builtins::Result<Command, CargoError>;
 
 fn exec(subcmd: &str, args: Option<&str>) -> Result {
-	let mut cmd = Command::cargo_bin(env!("CARGO_PKG_NAME"))?;
+	let mut cmd = Command::cargo_bin("scrap")?;
 	cmd.arg(subcmd);
 	if let Some(arguments) = args {
 		cmd.args(arguments.split(' '));

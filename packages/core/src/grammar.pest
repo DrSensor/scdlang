@@ -4,14 +4,23 @@ DescriptionFile = _{ SOI ~ CRLF? ~ (
   ) ~ NEWLINE*
 )* ~ EOI }
 
-expression = { StateName ~ transition ~ trigger? }
-transition = { (TransitionTo|TransitionFrom) ~ StateName }
-trigger    = { TriggerAt ~ EventName }
+expression =  { (self_transition|(StateName ~ transition)) ~ trigger? }
+  self_transition = { LoopTo ~ StateName }
+  transition      = { ( TransitionToggle
+                      | TransientLoopTo | LoopTo | TransitionTo
+                      | TransientLoopFrom | LoopFrom | TransitionFrom
+                      ) ~ StateName }
+  trigger         = { TriggerAt ~ EventName }
 
 // #region symbol/operator
-TransitionTo   = @{ "-"+ ~ ">" }
-TransitionFrom = @{ "<" ~ "-"+ }
-TriggerAt      = @{ "@" }
+TransitionTo           = @{ "-"+ ~ ">" }
+TransitionFrom         = @{ "<" ~ "-"+ }
+TransitionToggle       = @{ "<" ~ "-"+ ~ ">" }
+LoopTo                 = @{ "-"+ ~ ">>" }
+LoopFrom               = @{ "<<" ~ "-"+ }
+TransientLoopTo        = @{ ">" ~ "-"+ ~ ">" }
+TransientLoopFrom      = @{ "<" ~ "-"+ ~ "<" }
+TriggerAt              = @{ "@" }
 // #endregion
 
 // #region name

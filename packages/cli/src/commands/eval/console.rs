@@ -1,5 +1,4 @@
 #![allow(clippy::unit_arg)]
-use crate::error::Error;
 use atty::Stream;
 use prettyprint::{PrettyPrint, PrettyPrintError};
 
@@ -12,11 +11,11 @@ pub struct Console<'p> {
 }
 
 impl Console<'_> {
-	pub fn print(self, string: String) -> Result<(), Error> {
+	pub fn print(self, string: String) -> Result<(), PrettyPrintError> {
 		Ok(match self.fallback {
 			Ok(fallback_print) if !atty::is(Stream::Stdout) => fallback_print(string),
 			Err(fallback_print) if !atty::is(Stream::Stderr) => fallback_print(string),
-			_ => self.pretty_print(string).map_err(|e| Error::Whatever(e.into()))?,
+			_ => self.pretty_print(string)?,
 		})
 	}
 

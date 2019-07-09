@@ -14,7 +14,7 @@ check: clear
 	RUST_BACKTRACE={{mode}} just {{command}}
 
 # Run `just +command` whenever some files is changed
-@watch command +args:
+@watch command +args='':
 	watchexec --restart --clear 'just {{command}} {{args}}'
 
 # Run all kind of tests
@@ -52,8 +52,10 @@ release version:
 	TAG=`(git describe --abbrev=0 || echo 0.0.0) 2>/dev/null | ./scripts/version.py {{version}}`
 	git commit -S --edit --message "Release v${TAG}" \
 	&& git tag --annotate $TAG --message "$(git log -1 --pretty=%B)" --sign
+	./scripts/package.py
 	if [ $? -ne 0 ]; then
 		git reset {{version_subjects}}
+		rm -r target/package
 		./scripts/version.py {{version}}- && cargo check
 	fi
 
@@ -63,11 +65,11 @@ build args='':
 
 # Run all unit test
 unit:
-	cargo test --lib --all --exclude scrap -- --test-threads=1
+	cargo test --lib --all --exclude s-crap -- --test-threads=1
 
 # Run all integration test
 integration:
-	cargo test --tests -p scrap -- --test-threads=1
+	cargo test --tests -p s-crap -- --test-threads=1
 
 # Show reports of macro-benchmark
 @stats git-flags='':

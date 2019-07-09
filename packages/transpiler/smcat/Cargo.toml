@@ -1,7 +1,7 @@
 [package]
-name = "scdlang_xstate"
+name = "scdlang_smcat"
 version = "0.1.1"
-description = "Scdlang parser for targeting JavaScript library XState"
+description = "Scdlang parser for targeting AST of state-machine-cat"
 license = "UPL-1.0"
 repository = "https://github.com/drsensor/scdlang"
 authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
@@ -13,7 +13,7 @@ edition = "2018"
 scdlang = { path = "../../core", version = "0.1.1" }
 serde_json = "1"
 serde = { version = "1", features = ["derive"] }
-voca_rs = "1"
+serde_with = { version = "1", features = ["json"] }
 
 [dev-dependencies]
 assert-json-diff = "1"

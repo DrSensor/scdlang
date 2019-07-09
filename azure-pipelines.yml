@@ -69,7 +69,6 @@ steps:
 
 - script: cargo build --release --target $(TARGET)
   displayName: Build release
-
 - task: CopyFiles@2
   inputs:
     sourceFolder: $(Build.SourcesDirectory)/target/$(TARGET)/release
@@ -82,15 +81,15 @@ steps:
       _scrap.ps1
       scrap.exe
     targetFolder: $(Build.BinariesDirectory)
-
 - task: ArchiveFiles@2
   inputs:
     rootFolderOrFile: $(Build.BinariesDirectory)
     archiveType: tar
     tarCompression: gz
-    archiveFile: $(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz
+    archiveFile: $(Build.ArtifactStagingDirectory)/cli/scrap-$(TARGET).tar.gz
 - task: PublishBuildArtifacts@1
   inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/cli'
     artifactName: cli
 
 - template: docker/azure-pipelines.yml
@@ -103,7 +102,32 @@ steps:
     repositoryName: $(Build.Repository.Name)
     action: edit
     tag: $(build.tag)
-    assets: $(Build.ArtifactStagingDirectory)/scrap-$(TARGET).tar.gz
+    assets: $(Build.ArtifactStagingDirectory)/cli/scrap-$(TARGET).tar.gz
     assetUploadMode: replace
     isDraft: true
     addChangeLog: false
+
+- bash: |
+    ./scripts/package.sh
+  displayName: Package crates
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: $(Build.SourcesDirectory)/target/package
+    contents: '**.crate'
+    targetFolder: $(Build.ArtifactStagingDirectory)/crate
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/crate'
+    artifactName: crates
+
+# TODO: Split this as a separate job after GitHubRelease@0 done
+# But it has a caveat, it need to install rust again :sad: (no build needed)
+- bash: |
+    cargo login $DRSENSOR
+    for cargo_toml in packages/{core,transpiler/*,cli}/Cargo.toml; do
+      cargo publish --manifest-path $cargo_toml --no-verify
+    done
+  displayName: Publish to crates.io
+  condition: and(and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/')), eq( variables['Agent.OS'], 'Windows_NT' ))
+  env:
+    DRSENSOR: $(crateioConnection)

@@ -1,7 +1,7 @@
 //! Module that contain semantics graph of Scdlang which modeled as [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph)
 #![allow(dead_code)]
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// SCXML equivalent:
 /// ```scxml
 /// <state id="from.name">
@@ -15,19 +15,29 @@ pub struct Transition<'t> {
 	pub kind: TransitionType<'t>, // 🤔 maybe I should hide it then implement kind() method
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// ```scl
 /// state A {
 /// 	B -> C // Internal(A)
 /// }
 /// A -> D // External
+/// A <-> F // Duplex
+/// A ->> L // Loop
 /// ```
+#[allow(clippy::large_enum_variant)]
 pub enum TransitionType<'t> {
-	Internal(&'t State<'t>),
-	External, // 🤔 should I implement Default trait?
+	Inside {
+		state: &'t State<'t>,
+		kind: &'t TransitionType<'t>,
+	},
+	Normal, // 🤔 should I implement Default trait?
+	Toggle,
+	Loop {
+		transient: bool,
+	},
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 /// SCXML equivalent:
 /// ```scxml
 /// <state id="name"/>

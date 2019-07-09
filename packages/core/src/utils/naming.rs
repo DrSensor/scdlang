@@ -9,8 +9,8 @@ pub(crate) fn sanitize(name: &str) -> String {
 }
 
 #[derive(Debug, Clone)]
-/// Type for differentiating between native naming convention [`Unquoted`](#Unquoted)
-/// and free naming convention [`Quoted`](#Quoted)
+/// Type for differentiating between native naming convention [`Unquoted`](enum.Name.html#variant.Unquoted)
+/// and free naming convention [`Quoted`](enum.Name.html#variant.Quoted)
 pub enum Name<'t> {
 	/// e.g "double quote", 'single quote', or `backtick`
 	Quoted(String),
@@ -30,6 +30,12 @@ impl<'t> From<&'t str> for Name<'t> {
 		} else {
 			Unquoted(name)
 		}
+	}
+}
+
+impl From<Name<'_>> for String {
+	fn from(name: Name) -> Self {
+		String::from(&name as &str)
 	}
 }
 
@@ -67,6 +73,12 @@ impl ops::Deref for Name<'_> {
 			Quoted(name) => name,
 			Unquoted(name) => *name,
 		}
+	}
+}
+
+impl Default for Name<'_> {
+	fn default() -> Self {
+		Name::Quoted("".to_string())
 	}
 }
 

@@ -11,7 +11,7 @@ mod should_ok {
 	use predicates::str;
 
 	static FROM_EXAMPLES: [&str; 2] = ["multi-line.scl", "simple.scl"];
-	static FLAGS: &str = "";
+	static FLAGS: &str = "--format xstate";
 
 	#[test]
 	fn parse_valid_file() {
@@ -27,7 +27,7 @@ mod should_ok {
 		use super::*;
 
 		static FROM_EXAMPLE: &str = "simple.scl";
-		static FLAGS: &str = "--stream";
+		static FLAGS: &str = "--format smcat --stream";
 
 		#[test]
 		fn parse_valid_file() {
@@ -52,7 +52,7 @@ mod should_ok {
 		let flags = normalize(flags);
 		let target = NamedTempFile::new("dimple.json").unwrap();
 		let args = Some(format!(
-			"{file} {dist}{args}",
+			"{file} -o {dist}{args}",
 			file = path::example(input).unwrap(),
 			dist = target.path().display(),
 			args = flags
@@ -74,7 +74,7 @@ mod should_fail {
 
 	#[test]
 	fn parse_invalid_file() {
-		let mut command = subcommand::code(Some("🤘.scl --stream")).unwrap();
+		let mut command = subcommand::code(Some("🤘.scl --format smcat --stream")).unwrap();
 		command.assert().failure().code(ENOENT);
 	}
 }

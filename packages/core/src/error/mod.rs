@@ -11,17 +11,8 @@ pub type PestError = pest::error::Error<Rule>;
 /// Parse-related error type.
 // WARNING: 👇 adding lifetime annotation can cause lifetime refactoring hell 💢 (it will break Parser trait)
 pub enum Error {
-	#[deprecated = "because it's rarely happen"]
-	WrongRule(Rule),
-
 	/// Happen when there is syntax or semantics error
 	Parse(Box<PestError>),
-
-	#[deprecated = "because it's rarely happen"]
-	EmptyDeclaration,
-
-	#[deprecated = "because it's rarely happen"]
-	MissingOperator,
 
 	/// Can happen when accessing caches unsafely
 	Deadlock,
