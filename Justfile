@@ -52,7 +52,7 @@ release version:
 	TAG=`(git describe --abbrev=0 || echo 0.0.0) 2>/dev/null | ./scripts/version.py {{version}}`
 	git commit -S --edit --message "Release v${TAG}" \
 	&& git tag --annotate $TAG --message "$(git log -1 --pretty=%B)" --sign
-	./scripts/package.py
+	./scripts/package.sh
 	if [ $? -ne 0 ]; then
 		git reset {{version_subjects}}
 		rm -r target/package

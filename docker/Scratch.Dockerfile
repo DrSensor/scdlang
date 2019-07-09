@@ -1,6 +1,6 @@
 FROM scratch
 
-LABEL version="0.2.0" \
+LABEL version="0.2.1" \
       repository="https://github.com/drsensor/scdlang" \
       homepage="https://drsensor.github.io/scdlang" \
       maintainer="Fahmi Akbar Wildana <sensorfied@gmail.com>"
