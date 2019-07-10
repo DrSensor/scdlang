@@ -1,9 +1,19 @@
 # These are supported funding model platforms
 
+# Main funding model (because it can invite someone to a teams)
 # github: drsensor # Replace with up to 4 GitHub Sponsors-enabled usernames e.g., [user1, user2]
+liberapay: drsensor
+issuehunt: drsensor
+
+# For technical support and services
+# otechie: # Replace with a single Otechie username
+# tidelift: # Replace with a single Tidelift platform-name/package-name e.g., npm/babel
+
+# For infrastructure maintenances and travel fees
+# open_collective: # Replace with a single Open Collective username
+# community_bridge: # Replace with a single Community Bridge project-name e.g., cloud-foundry
+
+# These 3 are personal
 ko_fi: drsensor
 patreon: DrSensor
-# open_collective: # Replace with a single Open Collective username
-# tidelift: # Replace with a single Tidelift platform-name/package-name e.g., npm/babel
-# community_bridge: # Replace with a single Community Bridge project-name e.g., cloud-foundry
-# custom: # Replace with a single custom sponsorship URL
+# custom: # Replace with a single custom sponsorship URL or [LINK1, LINK2, LINK3, LINK4]
