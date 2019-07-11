@@ -173,12 +173,12 @@ OPTIONS:
 ```
 </details>
 
-## Tips & Tricks
+## Cheats
 
 Some CLI and tools that can came handy:
 - [`watchexec`](https://github.com/watchexec/watchexec)  ->  Executes commands in response to file modifications.
 - [`live-server`](http://tapiov.net/live-server)         ->  A simple development http server with live reload capability. Useful to quickly preview the `svg` output
-- [`bat`](https://github.com/sharkdp/bat)                ->  A cat(1) clone that supports syntax highlighting. Useful for trying various syntax highlighter when displaying the output.
+- [`Jusfile`](https://github.com/casey/just) or [`Makefile`](https://wikipedia.org/wiki/Makefile)  -> Task runner to automatically perform frequent tasks
 
 <details><summary>Live preview the visual representation in terminal window</summary>
 
