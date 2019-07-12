@@ -1,6 +1,7 @@
 ---
 title: Declaring internal action, activity, and event
 references:
+status: **okay-ish**
 syntax:
   - scdlang
   - rust

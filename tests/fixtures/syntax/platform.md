@@ -1,10 +1,12 @@
 ---
 title: Conditional compilation
 references:
+status: 🤔
 ---
 ![type state picture]()
 ---
 #### Platform specific section
+This feature akin to environment variable that enable/disable specific code.
 
 ##### If platform {}
 <details><summary>multi-line</summary>

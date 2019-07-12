@@ -4,6 +4,7 @@ references:
   - https://www.uml-diagrams.org/state-machine-diagrams.html
   - https://github.com/sverweij/state-machine-cat
   - https://play.rust-lang.org/?version=stable&mode=debug&edition=2018&gist=cb3b16f55f4d6ad25fc54f5058c7dacf
+status: **so far so good**
 syntax:
   - scdlang
   - rust
@@ -94,7 +95,7 @@ A -> B[C]
 ```
 or
 ```scl
-compund state B {
+compound state B {
   C -> A
 }
 
@@ -147,7 +148,7 @@ A,I |-> Z
 ```
 </details>
 
-> **no transitions should exist between parallel state nodes**
+> **no transitions should exist between parallel state block**
 
 #### history shallow & deep
 > default is shallow

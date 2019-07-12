@@ -1,6 +1,7 @@
 ---
 title: Invoking services (or other state machine)
 references:
+status: **half-baked**
 syntax:
   - scdlang
 ---

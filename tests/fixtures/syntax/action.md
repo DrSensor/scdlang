@@ -1,7 +1,8 @@
 ---
 title: Declaring internal action, activity, and event
 references:
-- [xstate internal transition](https://xstate.js.org/docs/guides/internal.html)
+  - [xstate internal transition](https://xstate.js.org/docs/guides/internal.html)
+status: **okay-ish**
 syntax:
   - scdlang
   - rust
@@ -36,7 +37,7 @@ Read as: "execute *action **something*** when transition to *state **Alpha***"
 
 #### on exit
 ```scl
-state Alpha { exit |> something }
+state Alpha { @exit |> something }
 ```
 or
 ```scl
@@ -149,6 +150,7 @@ or
 Beta @ Click
 ```
 Read as: "*event **Click*** can occurred while in *state **Beta***"
+> I think ☝️ should be forbidden
 
 ##### with action
 ```scl

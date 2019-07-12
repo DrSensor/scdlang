@@ -1,6 +1,7 @@
 ---
 title: File separation
 references:
+status: **half-baked**
 ---
 ![type state picture]()
 ---
@@ -10,15 +11,15 @@ state {*} = import`./relative/path/explicit/extension.scl`
 ```
 Read as: "use all statements in the `extension.scl`, no transition expression is included"
 
-#### Partial use statement
+#### Partial import
 ```scl
 state {
   State0
-  CompoundState1[NestedCoumpundState],
-  CompoundState2[
+  CompoundState1 => { NestedCoumpundState },
+  CompoundState2 => {
     NestedCoumpundState as C2,
     NState
-  ],
+  },
 } = import`./relative/path/explicit/extension.scl`
 ```
 
@@ -27,18 +28,6 @@ state {
 import`./relative/path/explicit/extension.scl`
 ```
 Read as: "import all transitions on the `extension.scl`, including the nested transition"
-
-#### Partial use statement but with/include the side effect
-```scl
-state {
-  State0,
-  CompoundState1[NestedCoumpundState],
-  CompoundState2[
-    NestedState as [C2],
-    NState
-  ],
-} = import`./relative/path/explicit/extension.scl`
-```
 
 ### Import as a service (a.k.a external State Machine)
 ```scl
@@ -50,10 +39,11 @@ Read as: "import all transition as a *service* with a name **extMachine**"
 
 ```scl
 service extMachine {
-  state {*} = import`./relative/path/explicit/extension.scl`
+  state { Compound, * } = import`./extension.scl`
+  use Compound
 }
 ```
-Read as: "use all statements in the `extension.scl` while also import all transitions as a *service* with a name **extMachine**""
+Read as: "import all statements in the `extension.scl` while also use all transitions in **Compound** state  as a *service* with a name **extMachine**""
 
 ### Import as a specific state
 ```scl
@@ -69,3 +59,25 @@ Read as: "import all transition as a *compound state* with a name **Extend**"
 parallel state Extend = import`./relative/path/explicit/extension.scl`
 ```
 Read as: "import all transition as a *parallel state* with a name **Extend**"
+
+### Import and execute script as an action (also applied to activity)
+```scl
+Alpha |> import`./script.js`
+```
+or
+```scl
+import`./script.js` <| Alpha
+```
+or
+```scl
+action runThing = import`./script.js`
+
+Alpha |> runThing
+```
+or
+```scl
+state Alpha {
+  @exit |> import`./script.js`
+}
+```
+Read as: "import and execute ***./script.js*** when transition from *state **Alpha***"

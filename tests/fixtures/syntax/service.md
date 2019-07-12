@@ -3,6 +3,7 @@ title: Invoking services (or other state machine)
 references:
   - https://xstate.js.org/docs/guides/communication.html#scxml
   - https://www.w3.org/TR/scxml/#invoke
+status: **half-baked**
 syntax:
   - scdlang
 ---
