@@ -59,6 +59,7 @@ TODO: brew or via shellscript just like installing rustup
 TODO: chocolatey or via msi installer just like installing rustup
 
 #### using [Docker](https://hub.docker.com/r/scdlang/scrap)🐳
+> [smcat][State Machine Cat], [dot][Graphviz], and [graph-easy][] are pre-installed in this docker image
 ```console
 docker pull scdlang/scrap
 ```
@@ -88,4 +89,5 @@ This project is licensed under the Universal Permissive License 1.0 - see the [L
 [PlantUML]: http://plantuml.com/state-diagram
 [mermaid]: https://mermaidjs.github.io/
 [State Machine Cat]: https://github.com/sverweij/state-machine-cat
+[graph-easy]: https://metacpan.org/pod/distribution/Graph-Easy/bin/graph-easy
 [release page]: https://github.com/DrSensor/scdlang/releases
