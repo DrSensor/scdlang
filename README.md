@@ -28,6 +28,7 @@ Scdlang (pronounced `/ˈesˌsi:ˈdi:ˈlæŋ/`) is a description language for des
 - Transpile into other formats:
   - [x] [XState](https://xstate.js.org/docs/)
   - [x] [State Machine Cat][]
+  - [ ] [Kingly](https://brucou.github.io/documentation/)
   - [ ] [CSV](https://github.com/DrSensor/scdlang/issues/24)
   - [ ] [Sismic](https://sismic.readthedocs.io/en/latest/)
   - [ ] [SCXML](https://www.w3.org/TR/scxml/)
