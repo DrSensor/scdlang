@@ -188,7 +188,7 @@ A -> B @ C[*] |> *
 ```scl
 A -> B @ C[isD]
 ```
-Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *condition **isD*** is true"
+Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *condition **isD*** is true" ✔
 
 ##### use $expression
 ```scl
@@ -200,19 +200,24 @@ A -> B @ C[x > y]
 Read as: "*state **A*** transition to *state **B*** at *event **C*** only if `x > y`"
 
 ##### use boolean operator
+> doesn't map well with xstate
 - symbol: `|`,`&`,`!`,`^`
 ```scl
 A -> B @ C[D|!E]
 ```
-or
+Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *condition **D*** is true or *condition **E*** is false"
+
 ```scl
 let VarX as x
 let VarY as y
 
 A -> B @ C[x > y & y > 0]
 ```
+Read as: "*state **A*** transition to *state **B*** at *event **C*** only if `x > y` and `y > 0`"
 
 ##### use "in state" guards
+> Only valid if it's transition from compound/parallel state
+<!--TODO: need to explore more about when this guard become illegal-->
 ```scl
 let VarX as x
 
@@ -220,7 +225,7 @@ state A {
   E -> G @ F
   G -> E @ F
 }
-A -> B @ C[<G>] //TODO: consider to use `in` keyword 🤔
+A -> B @ C[in G]
 ```
 Read as: "*state **A*** transition to *state **B*** at *event **C*** only if **A** is in *state **G***"
 
@@ -229,7 +234,7 @@ Read as: "*state **A*** transition to *state **B*** at *event **C*** only if **A
 ```scl
 A -> B @ C |> f
 ```
-Read as: "*state **A*** transition to *state **B*** at *event **C*** will execute *action **f***"
+Read as: "*state **A*** transition to *state **B*** at *event **C*** will execute *action **f***" ✔
 
 ```scl
 |> f {
@@ -244,12 +249,12 @@ Read as: "execute *action **f***
 
 ##### with guards
 ```scl
-A -> B @ C[D] |> f
+A -> B @ C[isD] |> f
 ```
-Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *condition **D*** is true will execute *action **f***"
+Read as: "*state **A*** transition to *state **B*** at *event **C*** only if *condition **isD*** is true will execute *action **f***" ✔
 
 ```scl
-@ [D] {
+@ [isD] {
   A -> J @ D |> g
   A ->> B @ C[isEmergency] |> f
 }
