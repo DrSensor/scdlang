@@ -1,4 +1,4 @@
-FROM python:slim AS helper
+FROM python:slim-buster AS helper
 
 RUN apt-get update && \
     apt-get install --no-install-recommends -y \
@@ -12,7 +12,7 @@ RUN pip install pyinstaller && \
     pyinstaller wrap-args.py --onefile --distpath /bin
 
 # ----------------- Github Action ------------------------
-FROM rust:slim
+FROM rust:slim-buster
 
 LABEL "name"="perf" \
       "maintainer"="Fahmi Akbar Wildana <f.a.wildana@gmail.com>" \
@@ -28,7 +28,6 @@ ADD https://github.com/sharkdp/hyperfine/releases/download/v1.5.0/hyperfine_1.5.
     /tmp/
 
 RUN chmod +x /tmp/* && \
-    apt-get update && apt-get install -y libc6 && \
     dpkg -i /tmp/hyperfine_1.5.0_amd64.deb && \
     mv /tmp/jq-linux64 /usr/bin/jq && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
