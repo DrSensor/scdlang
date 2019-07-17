@@ -23,12 +23,12 @@ LABEL "com.github.actions.name"="GitHub Action for Measuring Performance" \
       "com.github.actions.icon"="clock" \
       "com.github.actions.color"="orange"
 
-ADD https://github.com/sharkdp/hyperfine/releases/download/v1.5.0/hyperfine_1.5.0_amd64.deb \
+ADD https://github.com/sharkdp/hyperfine/releases/download/v1.6.0/hyperfine_1.6.0_amd64.deb \
     https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 \
     /tmp/
 
 RUN chmod +x /tmp/* && \
-    dpkg -i /tmp/hyperfine_1.5.0_amd64.deb && \
+    dpkg -i /tmp/hyperfine_1.6.0_amd64.deb && \
     mv /tmp/jq-linux64 /usr/bin/jq && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
