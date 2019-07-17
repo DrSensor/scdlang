@@ -80,14 +80,27 @@ impl<'a> Parser<'a> for Machine<'a> {
 						}
 						states
 					});
+					let (event, cond, action) = (
+						expr.event().map(|e| e.into()),
+						expr.guard().map(|e| e.into()),
+						expr.action().map(|e| e.into()),
+					);
+					#[rustfmt::skip]
 					let transition = Transition {
 						from: expr.current_state().into(),
 						to: expr.next_state().into(),
-						event: expr.event().map(|e| e.into()),
-						label: expr.event().map(|e| e.into()),
-						color,
-						note,
-						..Default::default()
+						label: if event.is_some() || cond.is_some() || action.is_some() {
+							let action_cond = action.is_some() || cond.is_some();
+							let (event, cond, action) = (event.clone(), cond.clone(), action.clone());
+							Some(format!( // add spacing on each token
+								"{on}{is}{run}",
+								on = event.map(|event| format!("{}{spc}", event, spc = if action_cond { " " } else { "" },))
+									.unwrap_or_default(),
+								is = cond.map(|guard| format!("[{}]{spc}", guard, spc = if action.is_some() { " " } else { "" },))
+									.unwrap_or_default(),
+								run = action.map(|act| format!("/ {}", act)).unwrap_or_default()
+							))
+						} else { None }, event, cond, action, color, note
 					};
 					match &mut schema.transitions {
 						Some(transitions) => transitions.push(transition),
