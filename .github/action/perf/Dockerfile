@@ -28,6 +28,7 @@ ADD https://github.com/sharkdp/hyperfine/releases/download/v1.5.0/hyperfine_1.5.
     /tmp/
 
 RUN chmod +x /tmp/* && \
+    apt-get update && apt-get install -y libc6 && \
     dpkg -i /tmp/hyperfine_1.5.0_amd64.deb && \
     mv /tmp/jq-linux64 /usr/bin/jq && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
