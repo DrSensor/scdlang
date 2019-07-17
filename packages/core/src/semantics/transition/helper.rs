@@ -39,17 +39,50 @@ pub(super) mod get {
 		(ops, target)
 	}
 
-	pub fn trigger(pair: TokenPair) -> &str {
-		let mut event = "";
+	pub fn arrowless_transition(pair: TokenPair) -> (&str, Event, Action) {
+		let (mut state, mut event, mut action) = ("", Event::default(), Action::default());
 
 		for span in pair.into_inner() {
 			match span.as_rule() {
-				Name::event => event = span.as_str(),
+				Rule::StateName => state = span.as_str(),
+				Rule::trigger => event = super::get::trigger(span),
+				Rule::action => action = Action { name: span.as_str() },
+				_ => unreachable!(
+					"Rule::{:?} not found when determine the lhs, rhs, and operators",
+					span.as_rule()
+				),
+			}
+		}
+
+		(state, event, action)
+	}
+
+	pub fn action(pair: TokenPair) -> &str {
+		let mut action = "";
+
+		for span in pair.into_inner() {
+			match span.as_rule() {
+				Name::action => action = span.as_str(),
+				Symbol::triangle::right => { /* reserved when exit/entry is implemented */ }
+				_ => unreachable!("Rule::{:?}", span.as_rule()),
+			}
+		}
+
+		action
+	}
+
+	pub fn trigger(pair: TokenPair) -> Event {
+		let (mut event, mut guard) = (None, None);
+
+		for span in pair.into_inner() {
+			match span.as_rule() {
+				Name::event => event = Some(span.as_str()),
+				Name::guard => guard = Some(span.as_str()),
 				Symbol::at => { /* reserved when Internal Event is implemented */ }
 				_ => unreachable!("Rule::{:?}", span.as_rule()),
 			}
 		}
 
-		event
+		Event { name: event, guard }
 	}
 }

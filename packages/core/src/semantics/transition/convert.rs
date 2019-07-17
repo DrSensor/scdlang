@@ -1,13 +1,13 @@
 #![allow(deprecated)]
 use super::helper::{get, prelude::*};
-use crate::semantics::{Event, StateType, Transition, TransitionType};
+use crate::semantics::{Action, StateType, Transition, TransitionType};
 
 impl<'t> From<TokenPair<'t>> for Transition<'t> {
 	fn from(pair: TokenPair<'t>) -> Self {
-		let mut lhs = "";
+		let (mut lhs, mut rhs) = ("", "");
 		let mut ops = Rule::EOI;
-		let mut rhs = "";
 		let mut event = None;
+		let mut action = None;
 
 		// determine the lhs, rhs, and operators
 		for span in pair.into_inner() {
@@ -25,11 +25,15 @@ impl<'t> From<TokenPair<'t>> for Transition<'t> {
 					lhs = rhs;
 					ops = operators;
 				}
-				Rule::trigger => {
-					event = Some(Event {
-						name: get::trigger(span),
-					})
+				Rule::internal_transition => {
+					let (state, ev, act) = get::arrowless_transition(span);
+					lhs = state;
+					rhs = lhs;
+					event = Some(ev);
+					action = Some(act);
 				}
+				Rule::trigger => event = Some(get::trigger(span)),
+				Rule::action => action = Some(Action { name: get::action(span) }),
 				_ => unreachable!(
 					"Rule::{:?} not found when determine the lhs, rhs, and operators",
 					span.as_rule()
@@ -69,6 +73,7 @@ impl<'t> From<TokenPair<'t>> for Transition<'t> {
 			from: current_state,
 			to: next_state,
 			at: event,
+			run: action,
 			kind: transition_type,
 		}
 	}

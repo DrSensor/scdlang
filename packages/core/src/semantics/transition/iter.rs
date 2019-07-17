@@ -8,7 +8,8 @@ impl<'i> IntoIterator for Transition<'i> {
 
 	fn into_iter(mut self) -> Self::IntoIter {
 		TransitionIterator(match self.kind {
-			TransitionType::Normal => [self].to_vec(),
+			/*FIXME: iterator for internal transition*/
+			TransitionType::Normal | TransitionType::Internal => [self].to_vec(),
 			TransitionType::Toggle => {
 				self.kind = TransitionType::Normal;
 				let (mut left, right) = (self.clone(), self);

@@ -58,7 +58,7 @@ impl Transition<'_> {
 		match &self.at {
 			Some(trigger) => format!(
 				"duplicate transition: {} -> {},{} @ {}",
-				self.from.name, self.to.name, prev_target, trigger.name
+				self.from.name, self.to.name, prev_target, trigger
 			),
 			None => format!(
 				"duplicate transient transition: {} -> {},{}",

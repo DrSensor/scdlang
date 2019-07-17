@@ -12,7 +12,7 @@ expression =  { (internal_transition | (self_transition | (StateName ~ transitio
                           | TransientLoopFrom | LoopFrom | TransitionFrom
                           ) ~ StateName }
   trigger             = { TriggerAt ~ (EventName ~ guard?) }
-    guard             = { "[" ~ guardName ~ "]" }
+    guard             = _{ "[" ~ guardName ~ "]" }
   action              = { PlayNext ~ actionName }
 
 // #region symbol/operator

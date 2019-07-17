@@ -35,10 +35,9 @@ pub trait Expression: Debug {
 	fn current_state(&self) -> Name;
 	fn next_state(&self) -> Name;
 	fn event(&self) -> Option<Name>;
+	fn guard(&self) -> Option<Name>;
+	fn action(&self) -> Option<Name>;
 	fn semantic_check(&self) -> Result<Found, Error>;
-	fn action(&self) -> Option<&Any/*👈TBD*/> {
-		unimplemented!("TBD")
-	}
 }
 
 /** [UNIMPLEMENTED] Mostly everything that use curly braces.
