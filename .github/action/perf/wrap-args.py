@@ -31,9 +31,5 @@ list_command = [s.split(maxsplit=1)[0] for s in command_help]  # remove help des
 
 grouped = group_command(" ".join(sys.argv[1:]), list_command)
 
-
-def prefix_command(f):
-    '"{prefix} {}"'.format(f'" "{f} '.join(grouped), prefix=f)
-
-
+prefix_command = lambda f: '"{prefix} {}"'.format(f'" "{f} '.join(grouped), prefix=f)
 print(prefix_command("cargo"))

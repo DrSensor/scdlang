@@ -16,6 +16,6 @@ else
   du -sh $CARGO_HOME/registry || true
 fi; echo
 
-sh -c "hyperfine --show-output --export-json '${PERF_HOME}/${GITHUB_ACTION}.json' -p '${PERF_PREPARE:-"cargo clean $members"}' -w 10 $(wrap-args $*)"
+sh -c "hyperfine --export-json '${PERF_HOME}/${GITHUB_ACTION}.json' -p '${PERF_PREPARE:-"cargo clean $members"}' -w 10 $(wrap-args $*)"
 
 ${PERF_TEARDOWN}
