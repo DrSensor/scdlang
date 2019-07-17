@@ -57,8 +57,7 @@ action "Test all rust project" {
 	runs = "./.github/entrypoint.sh"
 	args = [
 		"cargo install just",
-		"just unit",
-		"just integration || true",
+		"just test",
 	]
 	env = { PWD = "/github/workspace" }
 }
