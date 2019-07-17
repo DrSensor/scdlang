@@ -13,6 +13,7 @@ edition = "2018"
 scdlang = { path = "../../core", version = "0.2.1" }
 serde_json = "1"
 serde = { version = "1", features = ["derive"] }
+serde_with = { version = "1", features = ["json"] }
 voca_rs = "1"
 
 [dev-dependencies]

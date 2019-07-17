@@ -4,7 +4,6 @@ use schema::*;
 
 use scdlang::{prelude::*, semantics::Kind, Scdlang};
 use serde::Serialize;
-use serde_json::json;
 use std::{error, fmt, mem::ManuallyDrop};
 use voca_rs::case::{camel_case, shouty_snake_case};
 
@@ -60,17 +59,29 @@ impl<'a> Parser<'a> for Machine<'a> {
 				Kind::Expression(expr) => {
 					let current_state = expr.current_state().map(camel_case);
 					let next_state = expr.next_state().map(camel_case);
+					let action = expr.action().map(|e| e.map(camel_case));
+					let guard = expr.guard().map(|e| e.map(camel_case));
 					let event_name = expr.event().map(|e| e.map(shouty_snake_case)).unwrap_or_default();
+
+					let transition = if guard.is_none() && action.is_none() {
+						Transition::Target(next_state)
+					} else {
+						Transition::Object {
+							target: if next_state.is_empty() { None } else { Some(next_state) },
+							actions: action,
+							cond: guard,
+						}
+					};
 
 					schema
 						.states
 						.entry(current_state)
 						.and_modify(|t| {
-							t.on.entry(event_name.to_string()).or_insert_with(|| json!(next_state));
+							t.on.entry(event_name.to_string()).or_insert_with(|| transition.clone());
 						})
-						.or_insert(Transition {
+						.or_insert(State {
 							// TODO: waiting for map macros https://github.com/rust-lang/rfcs/issues/542
-							on: [(event_name.to_string(), json!(next_state))].iter().cloned().collect(),
+							on: [(event_name.to_string(), transition)].iter().cloned().collect(),
 						});
 				}
 				_ => unimplemented!("TODO: implement the rest on the next update"),
@@ -112,6 +123,7 @@ type DynError = Box<dyn error::Error>;
 mod test {
 	use super::*;
 	use assert_json_diff::assert_json_eq;
+	use serde_json::json;
 
 	#[test]
 	fn transient_transition() -> Result<(), DynError> {

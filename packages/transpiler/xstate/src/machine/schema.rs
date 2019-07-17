@@ -1,15 +1,28 @@
 use serde::Serialize;
-use serde_json::Value;
+use serde_with::skip_serializing_none;
 use std::collections::HashMap;
 
+#[skip_serializing_none]
 #[derive(Debug, Clone, Serialize)]
-pub struct Transition {
-	pub on: HashMap<String, Value>,
+#[serde(untagged)]
+pub enum Transition {
+	Target(String),
+	Object {
+		target: Option<String>,
+		actions: Option<String>, // TODO: actions should be Option<Vec<String>>
+		cond: Option<String>,
+	},
+}
+
+type Event = String;
+#[derive(Debug, Clone, Serialize)]
+pub struct State {
+	pub on: HashMap<Event, Transition>,
 	// 🤔☝️ how about convert it to struct of #[derive(Hash, Eq, PartialEq, Debug)]
 	// see https://doc.rust-lang.org/nightly/std/collections/struct.HashMap.html#examples
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct StateChart {
-	pub states: HashMap<String, Transition>,
+	pub states: HashMap<String, State>,
 }
