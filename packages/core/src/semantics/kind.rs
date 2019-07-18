@@ -33,7 +33,7 @@ A -> B
 ``` */
 pub trait Expression: Debug {
 	fn current_state(&self) -> Name;
-	fn next_state(&self) -> Name;
+	fn next_state(&self) -> Option<Name>;
 	fn event(&self) -> Option<Name>;
 	fn guard(&self) -> Option<Name>;
 	fn action(&self) -> Option<Name>;

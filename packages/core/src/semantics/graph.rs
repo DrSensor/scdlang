@@ -11,7 +11,7 @@ use std::fmt::{self, Display};
 /// ```
 pub struct Transition<'t> {
 	pub from: State<'t>,
-	pub to: State<'t>,
+	pub to: Option<State<'t>>,
 	pub at: Option<Event<'t>>,
 	pub run: Option<Action<'t>>,
 	pub kind: TransitionType<'t>, // 🤔 maybe I should hide it then implement kind() method

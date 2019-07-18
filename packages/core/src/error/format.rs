@@ -9,10 +9,9 @@ impl FineTune for PestError {
 		if let ParsingError { positives, negatives } = self.variant {
 			let negatives = negatives.excludes(&[EOI, PASCAL_CASE, QUOTED]);
 
-			let mut positives = positives.excludes(&[EOI]);
+			let mut positives = positives.excludes(&[EOI, expression]);
 			positives = match &positives[..] {
 				[Symbol::at, Name::state] => vec![Symbol::at],
-				[Rule::expression, Symbol::at] => vec![Symbol::at],
 				_ => positives,
 			};
 
@@ -41,6 +40,7 @@ impl<'t> Scdlang<'t> {
 			Symbol::arrow::right => "->".to_string(),
 			Symbol::arrow::left => "<-".to_string(),
 			Symbol::at => "@".to_string(),
+			Symbol::triangle::right => "|>".to_string(),
 			Rule::transition => "-->, <--, ->>, <<-, >->, <-<, or <->".to_string(),
 			_ => format!("{:?}", rule),
 		})

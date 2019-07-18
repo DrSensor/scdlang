@@ -6,10 +6,10 @@ use std::collections::HashMap;
 #[derive(Debug, Clone, Serialize)]
 #[serde(untagged)]
 pub enum Transition {
-	Target(String),
+	Target(Option<String>),
 	Object {
 		target: Option<String>,
-		actions: Option<String>, // TODO: actions should be Option<Vec<String>>
+		actions: Option<String>, // TODO: should be Option<Vec<String>> in the future
 		cond: Option<String>,
 	},
 }

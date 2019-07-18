@@ -43,7 +43,7 @@ mod variant {
 						| "A -> B->"
 						| "A -> B PascalCase"
 						| "A -> B 'quoted'"
-						| "A -> B invalid name" => assert_eq!("expected @", message),
+						| "A -> B invalid name" => assert_eq!("expected @ or |>", message),
 						_ => unreachable!("{}", expression),
 					},
 					ParsingError { .. } => unimplemented!("TODO: implement this if there is any case for that"),

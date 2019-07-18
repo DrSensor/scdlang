@@ -13,15 +13,15 @@ impl<'i> IntoIterator for Transition<'i> {
 			TransitionType::Toggle => {
 				self.kind = TransitionType::Normal;
 				let (mut left, right) = (self.clone(), self);
-				left.from = right.to.clone();
-				left.to = right.from.clone();
+				left.from = right.to.clone().expect("not Internal");
+				left.to = Some(right.from.clone());
 				[left, right].to_vec()
 			}
 			TransitionType::Loop { transient } => {
 				/* A ->> B @ C */
-				if self.from.name != self.to.name {
+				if self.from.name != self.to.as_ref().expect("not Internal").name {
 					let (mut self_loop, mut normal) = (self.clone(), self);
-					self_loop.from = self_loop.to.clone();
+					self_loop.from = self_loop.to.as_ref().expect("not Internal").clone();
 					normal.kind = TransitionType::Normal;
 					normal.at = if transient { None } else { normal.at };
 					[normal, self_loop].to_vec()

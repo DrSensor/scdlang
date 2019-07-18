@@ -43,25 +43,25 @@ impl<'t> From<TokenPair<'t>> for Transition<'t> {
 
 		// determine the current, next, and type of the State
 		let (transition_type, (current_state, next_state)) = match ops {
-			None => (TransitionType::Internal, get::state(lhs, rhs, &StateType::Atomic)),
+			None => (TransitionType::Internal, get::state(lhs, None, &StateType::Atomic)),
 			Some(Symbol::double_arrow::right) => (
 				TransitionType::Loop { transient: false },
-				get::state(lhs, rhs, &StateType::Atomic),
+				get::state(lhs, Some(rhs), &StateType::Atomic),
 			),
 			Some(Symbol::tail_arrow::right) => (
 				TransitionType::Loop { transient: true },
-				get::state(lhs, rhs, &StateType::Atomic),
+				get::state(lhs, Some(rhs), &StateType::Atomic),
 			),
-			Some(Symbol::arrow::right) => (TransitionType::Normal, get::state(lhs, rhs, &StateType::Atomic)),
-			Some(Symbol::arrow::both) => (TransitionType::Toggle, get::state(lhs, rhs, &StateType::Atomic)),
-			Some(Symbol::arrow::left) => (TransitionType::Normal, get::state(rhs, lhs, &StateType::Atomic)),
+			Some(Symbol::arrow::right) => (TransitionType::Normal, get::state(lhs, Some(rhs), &StateType::Atomic)),
+			Some(Symbol::arrow::both) => (TransitionType::Toggle, get::state(lhs, Some(rhs), &StateType::Atomic)),
+			Some(Symbol::arrow::left) => (TransitionType::Normal, get::state(rhs, Some(lhs), &StateType::Atomic)),
 			Some(Symbol::tail_arrow::left) => (
 				TransitionType::Loop { transient: true },
-				get::state(rhs, lhs, &StateType::Atomic),
+				get::state(rhs, Some(lhs), &StateType::Atomic),
 			),
 			Some(Symbol::double_arrow::left) => (
 				TransitionType::Loop { transient: false },
-				get::state(rhs, lhs, &StateType::Atomic),
+				get::state(rhs, Some(lhs), &StateType::Atomic),
 			),
 			Some(_) => unreachable!(
 				"Rule::{:?} not found when determine the current, next, and type of the State",

@@ -6,7 +6,10 @@ impl SemanticCheck for Transition<'_> {
 	fn check_error(&self) -> Result<Option<String>, Error> {
 		let mut cache_transition = cache::transition()?;
 
-		let (current, target) = (sanitize(self.from.name), sanitize(self.to.name));
+		let (current, target) = (
+			sanitize(self.from.name),
+			sanitize(self.to.as_ref().unwrap_or(&self.from).name),
+		);
 		let t_cache = cache_transition.entry(current).or_default();
 
 		Ok(match &self.at {
@@ -58,11 +61,16 @@ impl Transition<'_> {
 		match &self.at {
 			Some(trigger) => format!(
 				"duplicate transition: {} -> {},{} @ {}",
-				self.from.name, self.to.name, prev_target, trigger
+				self.from.name,
+				self.to.as_ref().unwrap_or(&self.from).name,
+				prev_target,
+				trigger
 			),
 			None => format!(
 				"duplicate transient transition: {} -> {},{}",
-				self.from.name, self.to.name, prev_target
+				self.from.name,
+				self.to.as_ref().unwrap_or(&self.from).name,
+				prev_target
 			),
 		}
 	}

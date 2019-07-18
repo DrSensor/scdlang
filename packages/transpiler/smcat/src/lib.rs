@@ -64,48 +64,73 @@ impl<'a> Parser<'a> for Machine<'a> {
 		for kind in builder.iter_from(source)? {
 			match kind {
 				Kind::Expression(expr) => {
-					let (color, note) = match builder.semantic_error {
-						false => match expr.semantic_check()? {
-							Found::Error(message) => (Some("red".to_string()), Some(message.split_to_vec('\n'))),
-							_ => (None, None),
-						},
-						true => (None, None),
-					};
-					schema.states.merge(&{
-						let mut states = [expr.current_state().into_type(Regular), expr.next_state().into_type(Regular)];
-						if let Some(color) = &color {
-							states.iter_mut().for_each(|s| {
-								s.with_color(color);
-							});
+					let (color, note) = match expr.semantic_check()? {
+						Found::Error(ref message) if !builder.semantic_error => {
+							(Some("red".to_string()), Some(message.split_to_vec('\n')))
 						}
-						states
-					});
+						_ => (None, None),
+					};
 					let (event, cond, action) = (
 						expr.event().map(|e| e.into()),
 						expr.guard().map(|e| e.into()),
 						expr.action().map(|e| e.into()),
 					);
-					#[rustfmt::skip]
-					let transition = Transition {
-						from: expr.current_state().into(),
-						to: expr.next_state().into(),
-						label: if event.is_some() || cond.is_some() || action.is_some() {
-							let action_cond = action.is_some() || cond.is_some();
-							let (event, cond, action) = (event.clone(), cond.clone(), action.clone());
-							Some(format!( // add spacing on each token
-								"{on}{is}{run}",
-								on = event.map(|event| format!("{}{spc}", event, spc = if action_cond { " " } else { "" },))
-									.unwrap_or_default(),
-								is = cond.map(|guard| format!("[{}]{spc}", guard, spc = if action.is_some() { " " } else { "" },))
-									.unwrap_or_default(),
-								run = action.map(|act| format!("/ {}", act)).unwrap_or_default()
-							))
-						} else { None }, event, cond, action, color, note
-					};
-					match &mut schema.transitions {
-						Some(transitions) => transitions.push(transition),
-						None => schema.transitions = Some(vec![transition]),
-					};
+
+					schema.states.merge(&{
+						let (mut current, mut next) = (
+							expr.current_state().into_type(Regular),
+							expr.next_state().map(|s| s.into_type(Regular)),
+						);
+						if let Some(color) = &color {
+							// mark error
+							current.with_color(color);
+							next = next.map(|mut s| s.with_color(color).clone())
+						}
+						if let Some(next) = next {
+							vec![current, next]
+						} else {
+							// internal transition
+							if let (Some(event), Some(action)) = (event.as_ref(), action.as_ref()) {
+								let internal = ActionType {
+									r#type: ActionTypeType::Activity,
+									body: match cond.as_ref() {
+										None => format!("{} / {}", event, action),
+										Some(cond) => format!("{} [{}] / {}", event, cond, action),
+									},
+								};
+								current.actions = Some(current.actions.map_or(vec![internal.clone()], |mut v| {
+									v.push(internal);
+									v
+								}));
+							}
+							vec![current]
+						}
+					});
+
+					// external transition
+					if let Some(next_state) = expr.next_state() {
+						#[rustfmt::skip]
+						let transition = Transition {
+							from: expr.current_state().into(),
+							to: next_state.into(),
+							label: if event.is_some() || cond.is_some() || action.is_some() {
+								let action_cond = action.is_some() || cond.is_some();
+								let (event, cond, action) = (event.clone(), cond.clone(), action.clone());
+								Some(format!( // add spacing on each token
+									"{on}{is}{run}",
+									on = event.map(|event| format!("{}{spc}", event, spc = if action_cond { " " } else { "" },))
+										.unwrap_or_default(),
+									is = cond.map(|guard| format!("[{}]{spc}", guard, spc = if action.is_some() { " " } else { "" },))
+										.unwrap_or_default(),
+									run = action.map(|act| format!("/ {}", act)).unwrap_or_default()
+								))
+							} else { None }, event, cond, action, color, note
+						};
+						match &mut schema.transitions {
+							Some(transitions) => transitions.push(transition),
+							None => schema.transitions = Some(vec![transition]),
+						};
+					}
 				}
 				_ => unimplemented!("TODO: implement the rest on the next update"),
 			}

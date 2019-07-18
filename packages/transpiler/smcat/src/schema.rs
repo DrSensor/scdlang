@@ -57,7 +57,7 @@ pub struct ActionType {
 	pub body: String,
 
 	#[serde(rename = "type")]
-	pub action_type_type: ActionTypeType,
+	pub r#type: ActionTypeType,
 }
 
 #[skip_serializing_none]

@@ -13,8 +13,8 @@ pub(super) mod get {
 	use super::prelude::*;
 	use crate::semantics::*;
 
-	pub fn state<'t>(current: &'t str, next: &'t str, kind: &'t StateType) -> (State<'t>, State<'t>) {
-		(State { name: current, kind }, State { name: next, kind })
+	pub fn state<'t>(current: &'t str, next: Option<&'t str>, kind: &'t StateType) -> (State<'t>, Option<State<'t>>) {
+		(State { name: current, kind }, next.map(|name| State { name, kind }))
 	}
 
 	type Tuple<'target> = (Rule, &'target str);
@@ -40,13 +40,14 @@ pub(super) mod get {
 	}
 
 	pub fn arrowless_transition(pair: TokenPair) -> (&str, Event, Action) {
+		use super::get;
 		let (mut state, mut event, mut action) = ("", Event::default(), Action::default());
 
 		for span in pair.into_inner() {
 			match span.as_rule() {
 				Rule::StateName => state = span.as_str(),
-				Rule::trigger => event = super::get::trigger(span),
-				Rule::action => action = Action { name: span.as_str() },
+				Rule::trigger => event = get::trigger(span),
+				Rule::action => action = Action { name: get::action(span) },
 				_ => unreachable!("Rule::{:?}", span.as_rule()),
 			}
 		}

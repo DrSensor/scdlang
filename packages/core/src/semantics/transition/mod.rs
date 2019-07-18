@@ -14,8 +14,8 @@ impl Expression for Transition<'_> {
 		self.from.name.into()
 	}
 
-	fn next_state(&self) -> Name {
-		self.to.name.into()
+	fn next_state(&self) -> Option<Name> {
+		self.to.as_ref().map(|state| state.name.into())
 	}
 
 	fn event(&self) -> Option<Name> {
@@ -63,14 +63,14 @@ mod pair {
 					"A <- D" => {
 						let state: Transition = expression.into();
 						assert_eq!(state.from.name, "D");
-						assert_eq!(state.to.name, "A");
+						assert_eq!(state.to.map(|n| n.name), Some("A"));
 						assert!(state.at.is_none());
 					}
 					"A -> D @ C" => {
 						let state: Transition = expression.into();
 						let event = state.at.expect("struct Event");
 						assert_eq!(state.from.name, "A");
-						assert_eq!(state.to.name, "D");
+						assert_eq!(state.to.map(|n| n.name), Some("D"));
 						assert_eq!(event.name, Some("C"));
 					}
 					_ => unreachable!("{}", expression.as_str()),
@@ -92,23 +92,23 @@ mod pair {
 						// contains state name B or E
 						let (mut states, mut transitions) =
 							(["B", "E"].iter(), Transition::from(expression.clone()).into_iter());
-						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.name == *s)));
+						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.map(|n| n.name) == Some(*s))));
 
 						let [state_b, state_e] = Transition::from(expression).into_iter().collect::<[Transition; 2]>();
-						assert_eq!(state_b.from.name, state_e.to.name);
-						assert_eq!(state_b.to.name, state_e.from.name);
+						assert_eq!(Some(state_b.from.name), state_e.to.map(|n| n.name));
+						assert_eq!(state_b.to.map(|n| n.name), Some(state_e.from.name));
 						assert_eq!(state_b.at.is_none(), state_e.at.is_none());
 					}
 					"A <-> D @ C" => {
 						// contains state name A or D
 						let (mut states, mut transitions) =
 							(["A", "D"].iter(), Transition::from(expression.clone()).into_iter());
-						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.name == *s)));
+						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.map(|n| n.name) == Some(*s))));
 
 						let [state_a, state_d] = Transition::from(expression).into_iter().collect::<[Transition; 2]>();
 						let [event_a, event_d] = [state_a.at.expect("struct Event"), state_d.at.expect("struct Event")];
-						assert_eq!(state_a.from.name, state_d.to.name);
-						assert_eq!(state_a.to.name, state_d.from.name);
+						assert_eq!(Some(state_a.from.name), state_d.to.map(|n| n.name));
+						assert_eq!(state_a.to.map(|n| n.name), Some(state_d.from.name));
 						assert!([event_a.name, event_d.name].iter().all(|e| *e == Some("C")));
 					}
 					_ => unreachable!("{}", expression.as_str()),
@@ -133,45 +133,47 @@ mod pair {
 						// contains state name X or Z
 						let (mut states, mut transitions) =
 							(["X", "Z"].iter(), Transition::from(expression.clone()).into_iter());
-						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.name == *s)));
+						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.map(|n| n.name) == Some(*s))));
 
 						let [state_z, state_x] = Transition::from(expression).into_iter().collect::<[Transition; 2]>();
 						assert_eq!(state_z.from.name, "Z");
-						assert_eq!(state_z.from.name, state_z.to.name);
+						assert_eq!(Some(state_z.from.name), state_z.to.map(|n| n.name));
 						assert_eq!(state_x.from.name, "X");
-						assert_eq!(state_x.to.name, state_z.from.name);
+						assert_eq!(state_x.to.map(|n| n.name), Some(state_z.from.name));
 						assert_eq!(state_z.at.is_none(), state_x.at.is_none());
 					}
 					"A ->> D @ C" => {
 						// contains state name A or D
 						let (mut states, mut transitions) =
 							(["A", "D"].iter(), Transition::from(expression.clone()).into_iter());
-						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.name == *s)));
+						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.map(|n| n.name) == Some(*s))));
 
 						let [state_d, state_a] = Transition::from(expression).into_iter().collect::<[Transition; 2]>();
 						let [event_d, event_a] = [state_d.at.expect("struct Event"), state_a.at.expect("struct Event")];
 						assert_eq!(state_d.from.name, "D");
-						assert_eq!(state_d.from.name, state_d.to.name);
+						assert_eq!(Some(state_d.from.name), state_d.to.map(|n| n.name));
 						assert_eq!(state_a.from.name, "A");
-						assert_eq!(state_a.to.name, state_d.from.name);
+						assert_eq!(state_a.to.map(|n| n.name), Some(state_d.from.name));
 						assert!([event_d.name, event_a.name].iter().all(|e| *e == Some("C")));
 					}
 					"D <<- E @ B" => {
 						// contains state name E or D
 						let (mut states, mut transitions) =
 							(["E", "D"].iter(), Transition::from(expression.clone()).into_iter());
-						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.name == *s)));
+						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.map(|n| n.name) == Some(*s))));
 
 						let [state_d, state_e] = Transition::from(expression).into_iter().collect::<[Transition; 2]>();
 						let [event_d, event_e] = [state_d.at.expect("struct Event"), state_e.at.expect("struct Event")];
 						assert_eq!(state_d.from.name, "D");
-						assert_eq!(state_d.from.name, state_e.to.name);
+						assert_eq!(Some(state_d.from.name), state_e.to.as_ref().map(|n| n.name));
 						assert_eq!(state_e.from.name, "E");
-						assert_eq!(state_e.to.name, state_d.from.name);
+						assert_eq!(state_e.to.map(|n| n.name), Some(state_d.from.name));
 						assert!([event_d.name, event_e.name].iter().all(|e| *e == Some("B")));
 					}
 					"->> E @ C" => Transition::from(expression).into_iter().for_each(|transition| {
-						assert!([transition.from.name, transition.to.name].iter().all(|e| *e == "E"));
+						assert!([Some(transition.from.name), transition.to.map(|n| n.name)]
+							.iter()
+							.all(|e| *e == Some("E")));
 						assert_eq!(transition.at.expect("struct Event").name, Some("C"));
 					}),
 					_ => unreachable!("{}", expression.as_str()),
@@ -194,41 +196,41 @@ mod pair {
 						// contains state name X or Z
 						let (mut states, mut transitions) =
 							(["X", "Z"].iter(), Transition::from(expression.clone()).into_iter());
-						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.name == *s)));
+						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.map(|n| n.name) == Some(*s))));
 
 						let [state_z, state_x] = Transition::from(expression).into_iter().collect::<[Transition; 2]>();
 						assert_eq!(state_z.from.name, "Z");
-						assert_eq!(state_z.from.name, state_z.to.name);
+						assert_eq!(Some(state_z.from.name), state_z.to.map(|n| n.name));
 						assert_eq!(state_x.from.name, "X");
-						assert_eq!(state_x.to.name, state_z.from.name);
+						assert_eq!(state_x.to.map(|n| n.name), Some(state_z.from.name));
 						assert_eq!(state_z.at.is_none(), state_x.at.is_none());
 					}
 					"A >-> D @ C" => {
 						// contains state name A or D
 						let (mut states, mut transitions) =
 							(["A", "D"].iter(), Transition::from(expression.clone()).into_iter());
-						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.name == *s)));
+						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.map(|n| n.name) == Some(*s))));
 
 						let [state_d, state_a] = Transition::from(expression).into_iter().collect::<[Transition; 2]>();
 						assert_eq!(state_d.from.name, "D");
-						assert_eq!(state_d.from.name, state_d.to.name);
+						assert_eq!(Some(state_d.from.name), state_d.to.map(|n| n.name));
 						assert_eq!(state_d.at.expect("struct Event").name, Some("C"));
 						assert_eq!(state_a.from.name, "A");
-						assert_eq!(state_a.to.name, state_d.from.name);
+						assert_eq!(state_a.to.map(|n| n.name), Some(state_d.from.name));
 						assert!(state_a.at.is_none());
 					}
 					"D <-< E @ B" => {
 						// contains state name E or D
 						let (mut states, mut transitions) =
 							(["E", "D"].iter(), Transition::from(expression.clone()).into_iter());
-						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.name == *s)));
+						assert!(states.any(|s| transitions.any(|t| t.from.name == *s || t.to.map(|n| n.name) == Some(*s))));
 
 						let [state_d, state_e] = Transition::from(expression).into_iter().collect::<[Transition; 2]>();
 						assert_eq!(state_d.from.name, "D");
-						assert_eq!(state_d.from.name, state_e.to.name);
+						assert_eq!(Some(state_d.from.name), state_e.to.as_ref().map(|n| n.name));
 						assert_eq!(state_d.at.expect("struct Event").name, Some("B"));
 						assert_eq!(state_e.from.name, "E");
-						assert_eq!(state_e.to.name, state_d.from.name);
+						assert_eq!(state_e.to.map(|n| n.name), Some(state_d.from.name));
 						assert!(state_e.at.is_none());
 					}
 					_ => unreachable!("{}", expression.as_str()),

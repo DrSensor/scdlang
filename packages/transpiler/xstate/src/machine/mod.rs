@@ -57,17 +57,21 @@ impl<'a> Parser<'a> for Machine<'a> {
 		for kind in builder.iter_from(source)? {
 			match kind {
 				Kind::Expression(expr) => {
-					let current_state = expr.current_state().map(camel_case);
-					let next_state = expr.next_state().map(camel_case);
+					let (current_state, next_state) = (
+						expr.current_state().map(camel_case),
+						expr.next_state().map(|e| e.map(camel_case)),
+					);
+					let (event_name, guard) = (
+						expr.event().map(|e| e.map(shouty_snake_case)).unwrap_or_default(),
+						expr.guard().map(|e| e.map(camel_case)),
+					);
 					let action = expr.action().map(|e| e.map(camel_case));
-					let guard = expr.guard().map(|e| e.map(camel_case));
-					let event_name = expr.event().map(|e| e.map(shouty_snake_case)).unwrap_or_default();
 
 					let transition = if guard.is_none() && action.is_none() {
 						Transition::Target(next_state)
 					} else {
 						Transition::Object {
-							target: if next_state.is_empty() { None } else { Some(next_state) },
+							target: next_state,
 							actions: action,
 							cond: guard,
 						}
