@@ -47,10 +47,7 @@ pub(super) mod get {
 				Rule::StateName => state = span.as_str(),
 				Rule::trigger => event = super::get::trigger(span),
 				Rule::action => action = Action { name: span.as_str() },
-				_ => unreachable!(
-					"Rule::{:?} not found when determine the lhs, rhs, and operators",
-					span.as_rule()
-				),
+				_ => unreachable!("Rule::{:?}", span.as_rule()),
 			}
 		}
 

@@ -11,7 +11,7 @@ expression =  { (internal_transition | (self_transition | (StateName ~ transitio
                           | TransientLoopTo | LoopTo | TransitionTo
                           | TransientLoopFrom | LoopFrom | TransitionFrom
                           ) ~ StateName }
-  trigger             = { TriggerAt ~ (EventName ~ guard?) }
+  trigger             = { TriggerAt ~ (guard|(EventName ~ guard?)) }
     guard             = _{ "[" ~ guardName ~ "]" }
   action              = { PlayNext ~ actionName }
 
