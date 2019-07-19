@@ -81,34 +81,27 @@ impl<'a> Parser<'a> for Machine<'a> {
 							expr.current_state().into_type(Regular),
 							expr.next_state().map(|s| s.into_type(Regular)),
 						);
-						if let Some(color) = &color {
-							// mark error
+						if let/* mark error */Some(color) = &color {
 							current.with_color(color);
 							next = next.map(|mut s| s.with_color(color).clone())
 						}
 						if let Some(next) = next {
-							vec![current, next]
+							vec![current, next] // external transition
 						} else {
-							// internal transition
 							if let (Some(event), Some(action)) = (event.as_ref(), action.as_ref()) {
-								let internal = ActionType {
+								current.actions = Some(vec![ActionType {
 									r#type: ActionTypeType::Activity,
 									body: match cond.as_ref() {
 										None => format!("{} / {}", event, action),
 										Some(cond) => format!("{} [{}] / {}", event, cond, action),
 									},
-								};
-								current.actions = Some(current.actions.map_or(vec![internal.clone()], |mut v| {
-									v.push(internal);
-									v
-								}));
+								}]);
 							}
-							vec![current]
+							vec![current] // internal transition
 						}
 					});
 
-					// external transition
-					if let Some(next_state) = expr.next_state() {
+					if let/* external transition */Some(next_state) = expr.next_state() {
 						#[rustfmt::skip]
 						let transition = Transition {
 							from: expr.current_state().into(),

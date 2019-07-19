@@ -5,7 +5,7 @@
 use serde::Serialize;
 use serde_with::skip_serializing_none;
 
-// TODO: is it necessary to watch smcat-ast.schema.json then generate this automatically on each release 🤔
+// TODO: replace Vec with HashSet
 
 #[skip_serializing_none]
 #[derive(Debug, Default, Clone, Serialize)]
@@ -51,7 +51,7 @@ pub struct Coordinate {
 	pub transitions: Option<Vec<Transition>>,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize)]
 pub struct ActionType {
 	#[serde(rename = "body")]
 	pub body: String,
@@ -88,7 +88,7 @@ pub struct Transition {
 	pub to: String,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Serialize)]
 pub enum ActionTypeType {
 	#[serde(rename = "activity")]
 	Activity,
