@@ -53,9 +53,9 @@ Unlocked features:
   - [x] `svg`      -> Scalable Vector Graphics
   - [x] `dot`      -> the DOT language
   - [x] `txt`      -> Graph::Easy text
-  - [ ] `vcg`      -> VCG (Visualizing Compiler Graphs - a subset of GDL) text
-  - [ ] `gdl`      -> GDL (Graph Description Language) text
-  - [ ] `graphml`  -> GraphML
+  - [x] `vcg`      -> VCG (Visualizing Compiler Graphs - a subset of GDL) text
+  - [x] `gdl`      -> GDL (Graph Description Language) text
+  - [x] `graphml`  -> GraphML
   - [x] `bmp`      -> Windows bitmap
   - [x] `gif`      -> GIF
   - [ ] `hpgl`     -> HP-GL/2 vector graphic

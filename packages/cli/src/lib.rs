@@ -158,7 +158,7 @@ pub mod format {
 	pub mod ext {
 		pub const SMCAT: [&str; 7] = ["svg", "dot", "smcat", "json", "html", "scxml", "xmi"];
 		pub const DOT: [&str; 32] = ["bmp", "canon", "dot", "gv", "xdot", "eps", "fig", "gd", "gd2", "gif", "jpg", "jpeg", "jpe", "json", "json0", "dot_json", "xdot_json", "pic", "plain", "plain-ext", "png", "ps", "ps2", "svg", "svgz", "tif", "tiff", "tk", "vml", "vmlz", "vrml", "wbmp"];
-		pub const GRAPH_EASY: [&str; 13] = ["ascii", "boxart", "svg", "dot", "txt", "bmp", "gif", "jpg", "pdf", "png", "ps", "ps2", "tif"];
+		pub const GRAPH_EASY: [&str; 16] = ["ascii", "boxart", "svg", "dot", "txt", "vcg", "gdl", "graphml", "bmp", "gif", "jpg", "pdf", "png", "ps", "ps2", "tif"];
 	}
 
 	pub fn into_legacy_dot(input: &str) -> String {
