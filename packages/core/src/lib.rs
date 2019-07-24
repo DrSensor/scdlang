@@ -10,6 +10,8 @@ pub mod utils;
 pub use crate::core::{parse, Scdlang};
 pub use error::Error;
 pub use external::Parser as Transpiler;
+pub use external::Parser as Compiler;
+pub use external::Parser as Codegen;
 
 /// A prelude providing convenient access to commonly-used features of scdlang core parser.
 pub mod prelude {

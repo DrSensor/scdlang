@@ -27,7 +27,7 @@ println!("{}", parser.to_string());
 ``` */
 pub struct Machine<'a> {
 	#[serde(skip)]
-	builder: Scdlang<'a>,
+	builder: Scdlang<'a>, // TODO: refactor this as specialized builder
 
 	#[serde(flatten)]
 	schema: Coordinate, // TODO: replace with 👇 when https://github.com/serde-rs/serde/issues/1507 resolved

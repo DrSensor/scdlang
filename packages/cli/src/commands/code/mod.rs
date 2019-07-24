@@ -9,7 +9,7 @@ use crate::{
 	Downcast,
 };
 use atty::Stream;
-use clap::{App, ArgMatches};
+use clap::{App, Arg, ArgMatches};
 use colored::*;
 use scdlang::Transpiler;
 use scdlang_smcat as smcat;
@@ -32,20 +32,29 @@ impl<'c> CLI<'c> for Code {
 	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
 		cmd.visible_aliases(&["generate", "gen", "declaration", "declr"])
 			.about("Generate from scdlang file declaration to another format")
-			.args(&[output::dist(), output::target(), output::format()])
+			.args(&[
+				output::dist(),
+				output::target(),
+				output::format(),
+				/* FIXME:👉*/ Arg::with_name("name").long("name").short("n").takes_value(true),
+			])
 	}
 
 	fn invoke(args: &ArgMatches) -> Result<()> {
-		let filepath = args.value_of("FILE").unwrap_or_default();
-		let target = args.value_of(output::TARGET).unwrap_or_default();
-		let output_format = args.value_of(output::FORMAT).unwrap_or_default();
-		let mut print = PRINTER(output_format);
+		let value_of = |arg| args.value_of(arg).unwrap_or_default();
+		let (target, output_format) = (value_of(output::TARGET), value_of(output::FORMAT));
+		let (mut print, filepath) = (PRINTER(output_format), value_of("FILE"));
+		let export_name = value_of("name");
 
 		let mut machine: Box<dyn Transpiler> = match target {
-			"xstate" => Box::new(match output_format {
-				"json" => xstate::Machine::new(),
-				"typescript" => unreachable!("TODO: on the next update"),
-				_ => unreachable!("{} --as {:?}", Self::NAME, args.value_of(output::FORMAT)),
+			"xstate" => Box::new({
+				let mut machine = xstate::Machine::new();
+				let config = machine.configure();
+				config.set("output", output_format);
+				if let "javascript" | "typescript" | "dts" = output_format {
+					config.set("export_name", export_name);
+				}
+				machine
 			}),
 			"smcat" | "graph" => {
 				let mut machine = Box::new(smcat::Machine::new());

@@ -1,5 +1,6 @@
 use crate::{cache, error::Error, external::Builder};
 use pest_derive::Parser;
+use std::collections::HashMap;
 
 #[derive(Parser, Default, Clone)] // 🤔 is it wise to derive from Copy&Clone ?
 #[grammar = "grammar.pest"]
@@ -33,15 +34,18 @@ pub struct Scdlang<'g> {
 
 	pub(super) clear_cache: bool, //-|in case for program that need to disable…|
 	pub semantic_error: bool,     //-|…then enable semantic error at runtime|
+
+	derive_config: Option<HashMap<&'static str, &'g str>>,
 }
 
 impl<'s> Scdlang<'s> {
 	/// This method is prefered for instantiating
 	/// than using [`Default::default()`](https://doc.rust-lang.org/std/default/trait.Default.html#tymethod.default)
 	pub fn new() -> Self {
-		Self {
+		Scdlang {
 			clear_cache: true,
 			semantic_error: true,
+			derive_config: Option::default(),
 			..Default::default()
 		}
 	}
@@ -77,12 +81,25 @@ impl<'g> Builder<'g> for Scdlang<'g> {
 		self.clear_cache = default;
 		self
 	}
+
+	fn set(&mut self, key: &'static str, value: &'g str) {
+		match self.derive_config.as_mut() {
+			Some(config) => {
+				config.entry(key).and_modify(|val| *val = value).or_insert(value);
+			}
+			None => self.derive_config = Some([(key, value)].iter().cloned().collect()),
+		}
+	}
+
+	fn get(&self, key: &'g str) -> Option<&'g str> {
+		self.derive_config.as_ref()?.get(key).cloned()
+	}
 }
 
 impl<'g> Drop for Scdlang<'g> {
 	fn drop(&mut self) {
 		if self.clear_cache {
-			clear_cache().expect("Deadlock")
+			clear_cache().expect("no Deadlock")
 		}
 	}
 }

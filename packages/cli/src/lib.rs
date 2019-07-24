@@ -95,6 +95,7 @@ pub mod print {
 			.theme("TwoDark")
 			.language(match lang {
 				"smcat" => "perl",
+				"dts" => "typescript",
 				"scxml" | "xmi" => "xml",
 				"ascii" | "boxart" => "txt",
 				_ => lang,
@@ -149,7 +150,7 @@ pub mod iter {
 
 // TODO: Hacktoberfest
 pub mod format {
-	pub const XSTATE: [&str; 1] = ["json" /*, typescript*/];
+	pub const XSTATE: [&str; 4] = ["json", "dts", "javascript", "typescript"];
 	pub const SMCAT: &str = "json";
 	#[rustfmt::skip]
 	pub const BLOB: [&str; 13] = ["bmp", "gd", "gd2", "gif", "jpg", "jpeg", "jpe", "png", "svgz", "tif", "tiff", "vmlz", "webmp"];

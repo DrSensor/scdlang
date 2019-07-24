@@ -108,6 +108,11 @@ pub trait Builder<'t> {
 	fn with_err_path(&mut self, path: &'t str) -> &mut dyn Builder<'t>;
 	/// Set the line_of_code offset of the error essages.
 	fn with_err_line(&mut self, line: usize) -> &mut dyn Builder<'t>;
+
+	// Set custom config. Used on derived Parser.
+	fn set(&mut self, key: &'static str, value: &'t str);
+	// Get custom config. Used on derived Parser.
+	fn get(&self, key: &'t str) -> Option<&'t str>;
 }
 
 type DynError<'t> = Box<dyn Error + 't>;

@@ -15,8 +15,12 @@ pub enum Transition {
 }
 
 type Event = String;
+
+// #[skip_serializing_none]
 #[derive(Debug, Clone, Serialize)]
 pub struct State {
+	// #[serde(flatten)]
+	// pub child: Option<StateChart>,
 	pub on: HashMap<Event, Transition>,
 	// 🤔☝️ how about convert it to struct of #[derive(Hash, Eq, PartialEq, Debug)]
 	// see https://doc.rust-lang.org/nightly/std/collections/struct.HashMap.html#examples
