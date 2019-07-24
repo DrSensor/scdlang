@@ -42,16 +42,31 @@ If file => It will be overwriten everytime the REPL produce output, especially i
 				),
 				output::target(),
 				output::format(),
+				output::export_name().required_ifs(
+					output::EXPORT_NAME_LIST
+						.iter()
+						.map(|&v| ("format", v))
+						.collect::<Vec<_>>()
+						.as_slice(),
+				),
 			])
 	}
 
 	fn invoke(args: &ArgMatches) -> Result<()> {
-		let output_format = args.value_of(output::FORMAT).unwrap_or_default();
-		let target = args.value_of(output::TARGET).unwrap_or_default();
-		let mut repl: REPL = Editor::with_config(prompt::CONFIG());
+		let value_of = |arg| args.value_of(arg).unwrap_or_default();
+		let (target, output_format) = (value_of(output::TARGET), value_of(output::FORMAT));
+		let (export_name, mut repl) = (value_of(output::EXPORT_NAME), Editor::with_config(prompt::CONFIG()) as REPL);
 
 		let mut machine: Box<dyn Transpiler> = match target {
-			"xstate" => Box::new(xstate::Machine::new()),
+			"xstate" => Box::new({
+				let mut machine = xstate::Machine::new();
+				let config = machine.configure();
+				config.set("output", output_format);
+				if output_format.one_of(&output::EXPORT_NAME_LIST) {
+					config.set("export_name", &export_name);
+				}
+				machine
+			}),
 			"smcat" | "graph" => {
 				let mut machine = Box::new(smcat::Machine::new());
 				let config = machine.configure();

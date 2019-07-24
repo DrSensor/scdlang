@@ -1399,6 +1399,7 @@ dependencies = [
  "scdlang 0.2.1",
  "scdlang_smcat 0.2.1",
  "scdlang_xstate 0.2.1",
+ "voca_rs 1.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "which 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 

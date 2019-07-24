@@ -54,8 +54,6 @@ pub mod output {
 	pub const FORMAT: &str = "format";
 	pub fn format<'o>() -> Arg<'o, 'o> {
 		Arg::from_usage("[format] --as 'Select parser output'")
-			.requires(TARGET)
-			.hidden(which("smcat").is_err()) // TODO: don't hide it when support another output (e.g typescript)
 			.possible_values(&{
 				let mut possible_formats = Vec::new();
 				possible_formats.merge_from_slice(&format::XSTATE);
@@ -76,5 +74,15 @@ pub mod output {
 				(TARGET, Some("smcat"), if which("smcat").is_ok() { "smcat" } else { "json" }),
 				(TARGET, Some("graph"), "boxart"),
 			])
+	}
+
+	// TODO: report bug that .requires(FORMAT) not work if .default_value_ifs() in format<'o>() is specify
+
+	pub const EXPORT_NAME: &str = "export";
+	pub const EXPORT_NAME_LIST: [&str; 3] = ["typescript", "javascript", "dts"];
+	pub fn export_name<'o>() -> Arg<'o, 'o> {
+		Arg::from_usage("[export] --name 'Export name'")
+			.requires(FORMAT)
+			.empty_values(false)
 	}
 }

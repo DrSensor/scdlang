@@ -30,6 +30,7 @@ prettyprint = "0.*"
 colored = "1"
 which = "2"
 regex = "1"
+voca_rs = "1"
 
 [dependencies.clap]
 version = "2"
@@ -47,6 +48,7 @@ prettyprint = "0.*"
 colored = "1"
 which = "2"
 regex = "1"
+voca_rs = "1"
 
 [dev-dependencies]
 predicates = "1"
