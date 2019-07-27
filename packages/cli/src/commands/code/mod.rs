@@ -47,6 +47,7 @@ impl<'c> CLI<'c> for Code {
 				let stem = Path::new(filepath).file_stem().expect("<FILE>").to_str().unwrap();
 				match output_format {
 					"dts" | "typescript" => case::pascal_case(stem),
+					"javascript" => case::camel_case(stem),
 					_ => stem.to_string(),
 				}
 			}
