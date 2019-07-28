@@ -1,6 +1,6 @@
 workflow "Testing" {
 	on = "push"
-	resolves = ["Test all rust project"]
+	resolves = ["Test all rust project", "Smoke tests"]
 }
 
 workflow "Measure Performance" {
@@ -41,6 +41,31 @@ action "Summarize perf" {
 # ---------------------------------------------------------------
 
 # ------------------------ Process ------------------------------
+action "Test all rust project" {
+	uses = "docker://rust:slim-buster"
+	runs = "./.github/entrypoint.sh"
+	args = [
+		"cargo install just",
+		"just test",
+		"mv target/debug/${BIN} ${HOME}/.cargo/bin/${BIN}",
+	]
+	env = { PWD = "/github/workspace", BIN = "scrap" }
+}
+
+action "Smoke tests" {
+	needs = "Test all rust project"
+	uses = "docker://node:slim-buster"
+	runs = "./.github/entrypoint.sh"
+	args = [
+		"npm install",
+		"scrap generate src/${filestem}.scl --format xstate --as typescript > src/fsm/${filestem}.ts",
+		"scrap generate src/${filestem}.scl --format xstate --as javascript >> src/fsm/${filestem}.ts",
+		"npx tsc --build",
+		"node dist/index.js",
+	]
+	env = { PWD = "/github/workspace", filestem = "light" }
+}
+
 action "Perf cargo" {
 	needs = "On Push"
 	uses = "./.github/action/perf"
@@ -52,16 +77,6 @@ action "Perf cargo" {
 	]
 }
 
-action "Test all rust project" {
-	uses = "docker://rust:slim"
-	runs = "./.github/entrypoint.sh"
-	args = [
-		"cargo install just",
-		"just test",
-	]
-	env = { PWD = "/github/workspace" }
-}
-
 action "Build Release cli as musl" {
 	needs = "On Push"
 	uses = "docker://rust:slim"
@@ -70,7 +85,7 @@ action "Build Release cli as musl" {
 		"rustup target add x86_64-unknown-linux-musl",
 		"apt-get update && apt-get install -y musl-tools",
 		"cargo build --target x86_64-unknown-linux-musl --release --bin ${BIN}",
-		"mkdir -p ${HOME}/.bin/",
+		"mkdir --parents ${HOME}/.bin/",
 		"mv target/x86_64-unknown-linux-musl/release/${BIN} ${HOME}/.bin/${BIN}",
 	]
 	env = { BIN = "scrap" }
