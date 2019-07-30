@@ -74,10 +74,9 @@ pub struct Event<'at> {
 	pub guard: Option<&'at str>,
 }
 
-// FIXME: change to TryInto (maybe 🤔)
 impl Into<String> for &Event<'_> {
 	fn into(self) -> String {
-		self.name.unwrap_or("").to_string()
+		self.name.unwrap_or(self.guard.unwrap_or("")).to_string()
 	}
 }
 

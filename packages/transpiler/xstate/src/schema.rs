@@ -3,15 +3,20 @@ use serde_with::skip_serializing_none;
 use std::collections::HashMap;
 
 #[skip_serializing_none]
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Serialize)]
+pub struct TransitionObject {
+	pub target: Option<String>,
+	pub actions: Option<String>, // TODO: should be Option<Vec<String>> in the future
+	pub cond: Option<String>,
+}
+
+#[skip_serializing_none]
+#[derive(Debug, PartialEq, Eq, Clone, Serialize)]
 #[serde(untagged)]
 pub enum Transition {
 	Target(Option<String>),
-	Object {
-		target: Option<String>,
-		actions: Option<String>, // TODO: should be Option<Vec<String>> in the future
-		cond: Option<String>,
-	},
+	Object(TransitionObject),
+	ListObject(Vec<TransitionObject>),
 }
 
 type Event = String;

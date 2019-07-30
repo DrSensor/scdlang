@@ -75,25 +75,51 @@ impl<'a> Parser<'a> for Machine<'a> {
 					let action = expr.action().map(|e| e.map(camel_case));
 
 					let transition = if guard.is_none() && action.is_none() {
-						Transition::Target(next_state)
+						Transition::Target(next_state.clone())
 					} else {
-						Transition::Object {
-							target: next_state,
-							actions: action,
-							cond: guard,
-						}
+						Transition::Object(TransitionObject {
+							target: next_state.clone(),
+							actions: action.clone(),
+							cond: guard.clone(),
+						})
 					};
 
-					schema
-						.states
-						.entry(current_state)
-						.and_modify(|t| {
-							t.on.entry(event_name.to_string()).or_insert_with(|| transition.clone());
+					let t = schema.states.entry(current_state).or_insert(State {
+						// TODO: waiting for map macros https://github.com/rust-lang/rfcs/issues/542
+						on: [(event_name.to_string(), transition.clone())].iter().cloned().collect(),
+					});
+					t.on.entry(event_name.to_string())
+						.and_modify(|e| {
+							match e {
+								Transition::ListObject(objects) => match transition.clone() {
+									Transition::Object(obj) => objects.push(obj),
+									_ => objects.push(TransitionObject {
+										target: next_state,
+										actions: action,
+										cond: guard,
+									}),
+								},
+								_ if e != &transition => {
+									*e = Transition::ListObject(vec![
+										if let Transition::Object(obj) = e {
+											obj.clone()
+										} else {
+											TransitionObject {
+												target: next_state.clone(),
+												..Default::default()
+											}
+										},
+										TransitionObject {
+											target: next_state,
+											actions: action,
+											cond: guard,
+										},
+									])
+								}
+								_ => {}
+							};
 						})
-						.or_insert(State {
-							// TODO: waiting for map macros https://github.com/rust-lang/rfcs/issues/542
-							on: [(event_name.to_string(), transition)].iter().cloned().collect(),
-						});
+						.or_insert(transition);
 				}
 				_ => unimplemented!("TODO: implement the rest on the next update"),
 			}
