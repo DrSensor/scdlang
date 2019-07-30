@@ -74,12 +74,6 @@ pub struct Event<'at> {
 	pub guard: Option<&'at str>,
 }
 
-impl Into<String> for &Event<'_> {
-	fn into(self) -> String {
-		self.name.unwrap_or(self.guard.unwrap_or("")).to_string()
-	}
-}
-
 impl Display for Event<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		write!(

@@ -1,5 +1,5 @@
 ---
-title: Semantics Error on Transient Transition
+title: Semantics Error/Warning on Transient Transition
 references:
 ---
 
@@ -29,8 +29,30 @@ A -> C @ D [isAllowed]
 ```
 Even `isAllowed` is true, the program that implement this state machine will likely don't have enough time to trigger event `D`.
 However, guarded event with no trigger is allowed because guard is precomputed (hence it written in camelCase).
-```scl
+```scl,warning
 A -> B
 A -> C @ [isAllowed]
 ```
 `A` will transition to `C` if `isAllowed` else it will transition to `B`.
+<!--TODO:-->Even so, formal verification should be used for extra precautions:
+```scl
+assume [auto + transient] in A -> *
+
+A -> B
+A -> C @ [isAllowed]
+```
+
+##### 3. Have multiple guards (auto transition)
+This expression can cause unpredictable transition.
+```scl,warning
+A -> B @ [valid]
+A -> C @ [exist]
+```
+Which state should `A` transtition to when `valid` and `exist` is true?
+Formal verification should be used for extra precautions:
+```scl
+assume [guards <= 2] in A -> *
+
+A -> B @ [valid]
+A -> C @ [exist]
+```

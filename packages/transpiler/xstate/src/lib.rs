@@ -74,14 +74,19 @@ impl<'a> Parser<'a> for Machine<'a> {
 					);
 					let action = expr.action().map(|e| e.map(camel_case));
 
-					let transition = if guard.is_none() && action.is_none() {
-						Transition::Target(next_state.clone())
+					let (not_obj, t_obj) = (
+						guard.is_none() && action.is_none(),
+						TransitionObject {
+							target: next_state,
+							actions: action,
+							cond: guard,
+						},
+					);
+
+					let transition = if not_obj {
+						Transition::Target(t_obj.target.clone())
 					} else {
-						Transition::Object(TransitionObject {
-							target: next_state.clone(),
-							actions: action.clone(),
-							cond: guard.clone(),
-						})
+						Transition::Object(t_obj.clone())
 					};
 
 					let t = schema.states.entry(current_state).or_insert(State {
@@ -89,31 +94,13 @@ impl<'a> Parser<'a> for Machine<'a> {
 						on: [(event_name.to_string(), transition.clone())].iter().cloned().collect(),
 					});
 					t.on.entry(event_name.to_string())
-						.and_modify(|e| {
-							match e {
-								Transition::ListObject(objects) => match transition.clone() {
-									Transition::Object(obj) => objects.push(obj),
-									_ => objects.push(TransitionObject {
-										target: next_state,
-										actions: action,
-										cond: guard,
-									}),
-								},
-								_ if e != &transition => {
-									*e = Transition::ListObject(vec![
-										if let Transition::Object(obj) = e {
-											obj.clone()
-										} else {
-											TransitionObject {
-												target: next_state.clone(),
-												..Default::default()
-											}
-										},
-										TransitionObject {
-											target: next_state,
-											actions: action,
-											cond: guard,
-										},
+						.and_modify(|target| {
+							match target {
+								Transition::ListObject(objects) => objects.push(t_obj),
+								_ if target != &transition => {
+									*target = Transition::ListObject(vec![
+										(if let Transition::Object(obj) = target { obj } else { &t_obj }).clone(),
+										t_obj,
 									])
 								}
 								_ => {}

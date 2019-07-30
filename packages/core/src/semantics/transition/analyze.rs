@@ -1,6 +1,6 @@
 use super::helper::prelude::*;
 use crate::{cache, semantics, utils::naming::sanitize, Error};
-use semantics::{analyze::*, Kind, Transition};
+use semantics::{analyze::*, Event, Kind, Transition};
 
 impl SemanticCheck for Transition<'_> {
 	fn check_error(&self) -> Result<Option<String>, Error> {
@@ -13,17 +13,17 @@ impl SemanticCheck for Transition<'_> {
 		let t_cache = cache_transition.entry(current).or_default();
 
 		Ok(match &self.at {
-			Some(trigger) => {
-				if t_cache.contains_key(&None) {
+			Some(event) => {
+				if t_cache.contains_key(&None) && event.guard.is_none() {
 					Some(self.warn_conflict(&t_cache))
-				} else if let Some(prev_target) = t_cache.insert(Some(trigger.into()), target) {
+				} else if let Some(prev_target) = t_cache.insert(Some(event.into()), target) {
 					Some(self.warn_duplicate(&prev_target))
 				} else {
 					None
 				}
 			}
 			None => {
-				if t_cache.keys().any(Option::is_some) {
+				if t_cache.keys().cloned().any(has_trigger) {
 					Some(self.warn_conflict(&t_cache))
 				} else if let Some(prev_target) = t_cache.insert(None, target) {
 					Some(self.warn_duplicate(&prev_target))
@@ -33,6 +33,17 @@ impl SemanticCheck for Transition<'_> {
 			}
 		})
 	}
+}
+
+impl Into<String> for &Event<'_> {
+	fn into(self) -> String {
+		format!("{}?{}", self.name.unwrap_or(""), self.guard.unwrap_or(""))
+	}
+}
+
+fn has_trigger(key: Option<String>) -> bool {
+	key.filter(|e| e.rsplit('?').last().filter(|s| !s.is_empty()).is_some())
+		.is_some()
 }
 
 impl<'t> SemanticAnalyze<'t> for Transition<'t> {

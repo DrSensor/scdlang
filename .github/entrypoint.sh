@@ -6,7 +6,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 for cmd in "$@"; do
   echo "Running '$cmd'..."
   if sh -c "$cmd"; then
-    # no op
+    [ -z "$BIN" ] && mv target/debug/$BIN $HOME/.cargo/bin/$BIN
     echo
     echo "Successfully ran '$cmd'"
   else

@@ -239,6 +239,46 @@ mod pair {
 		)
 	}
 
+	#[test]
+	#[ignore]
+	fn guard_transition() -> ParseResult {
+		test::parse::expression(
+			r#"
+			A -> B @ D[valid]
+			A -> F @ D
+			A -> C @ D[exist]
+		"#,
+			|expression| unimplemented!(),
+		)
+	}
+
+	#[test]
+	#[ignore]
+	fn auto_transient_transition() -> ParseResult {
+		test::parse::expression(
+			r#"
+			A -> B @ [valid]
+			A -> F
+			A -> C @ [exist]
+		"#,
+			|expression| unimplemented!(),
+		)
+	}
+
+	#[test]
+	#[ignore]
+	fn auto_transition_with_trigger() -> ParseResult {
+		test::parse::expression(
+			r#"
+			A -> B @ D
+			A -> B @ [valid]
+			A -> C @ [exist]
+			A -> C @ E
+		"#,
+			|expression| unimplemented!(),
+		)
+	}
+
 	mod fix_issues {
 		use super::*;
 		use crate::semantics::analyze::SemanticAnalyze;
@@ -315,6 +355,22 @@ mod pair {
 					})
 				},
 			)
+		}
+
+		mod redundant_transition {
+			use super::*;
+
+			#[test]
+			#[ignore]
+			fn event_guard_target_same_state() -> ParseResult {
+				test::parse::expression(
+					r#"
+					A -> B @ D[valid]
+					A -> B @ D
+				"#,
+					|expression| unimplemented!(),
+				)
+			}
 		}
 
 		mod ambigous_transition {
