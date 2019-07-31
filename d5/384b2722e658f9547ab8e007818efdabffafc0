@@ -1,0 +1,36 @@
+{
+  "exec": "/github/home/.bin/scrap code examples/simple.scl --format xstate",
+  "memory": 13024,
+  "cpu": "92%"
+}
+{
+  "exec": "/github/home/.bin/scrap code examples/simple.scl --format xstate --stream",
+  "memory": 14336,
+  "cpu": "100%"
+}
+{
+  "exec": "/github/home/.bin/scrap code examples/simple.scl --format smcat",
+  "memory": 14096,
+  "cpu": "93%"
+}
+{
+  "exec": "/github/home/.bin/scrap code examples/simple.scl --format smcat --stream",
+  "memory": 15152,
+  "cpu": "100%"
+}
+{
+  "exec": "cargo build --all",
+  "time": 19.651289655955004
+}
+{
+  "exec": "cargo build -p scdlang",
+  "time": 0.19243323665499998
+}
+{
+  "exec": "cargo build -p scdlang_xstate",
+  "time": 0.264705412455
+}
+{
+  "exec": "cargo build -p s-crap",
+  "time": 19.536739721054996
+}
