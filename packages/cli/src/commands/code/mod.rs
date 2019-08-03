@@ -102,6 +102,10 @@ impl<'c> CLI<'c> for Code {
 			machine.parse(&file)?;
 		}
 
+		if let Some(warnings) = machine.collect_warnings()? {
+			PRINTER("erlang").change(Mode::Warning).prompt(&warnings, "WARNING");
+		}
+
 		let machine = machine.to_string();
 		let result = if which("smcat").is_ok() && target.one_of(&["smcat", "graph"]) {
 			use format::ext;

@@ -34,6 +34,7 @@ pub struct Scdlang<'g> {
 
 	pub(super) clear_cache: bool, //-|in case for program that need to disable…|
 	pub semantic_error: bool,     //-|…then enable semantic error at runtime|
+	pub warnings: &'g [&'g str],
 
 	derive_config: Option<HashMap<&'static str, &'g str>>,
 }

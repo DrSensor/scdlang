@@ -4,7 +4,7 @@ mod helper;
 mod iter;
 
 use crate::{
-	semantics::{analyze::SemanticCheck, Expression, Found, Kind, Transition},
+	semantics::{analyze::SemanticCheck, Check, Expression, Found, Kind, Transition},
 	utils::naming::Name,
 	Error,
 };
@@ -29,11 +29,15 @@ impl Expression for Transition<'_> {
 	fn action(&self) -> Option<Name> {
 		self.run.as_ref().map(|action| action.name.into())
 	}
+}
 
+impl Check for Transition<'_> {
 	fn semantic_check(&self) -> Result<Found, Error> {
-		Ok(match self.check_error()? {
-			Some(message) => Found::Error(message),
-			None => Found::None,
+		// WARNING: there is possibility that one expression can contain both error and warning because of sugar syntax (<->, ->>, >->)
+		Ok(match (self.check_error()?, self.check_warning()?) {
+			(Some(message), _) => Found::Error(message),
+			(_, Some(message)) => Found::Warning(message),
+			(None, None) => Found::None,
 		})
 	}
 }

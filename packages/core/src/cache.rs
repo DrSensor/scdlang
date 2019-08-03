@@ -2,14 +2,7 @@
 // TODO: 🤔 use hot reload https://crates.rs/crates/warmy when import statement is introduced
 use crate::error::Error;
 use lazy_static::lazy_static;
-use std::{
-	any::Any,
-	collections::HashMap,
-	hash::Hash,
-	sync::{Mutex, MutexGuard},
-};
-
-const NUM_OF_CACHES: usize = 1; /*update 👈 when adding another type of caches*/
+use std::{collections::HashMap, sync::*};
 
 // TODO: replace with https://github.com/rust-lang-nursery/lazy-static.rs/issues/111 when resolved
 // 🤔 or is there any better way?
@@ -17,6 +10,7 @@ const NUM_OF_CACHES: usize = 1; /*update 👈 when adding another type of caches
 // type LazyMut<T> = Mutex<Option<T>>;
 lazy_static! {
 	static ref TRANSITION: Mutex<MapTransition> = Mutex::new(HashMap::new());
+	static ref WARNING: RwLock<String> = RwLock::new(String::new());
 	/*reserved for another caches*/
 }
 
@@ -25,29 +19,45 @@ pub fn transition<'a>() -> Result<MutexGuard<'a, MapTransition>, Error> {
 	TRANSITION.lock().map_err(|_| Error::Deadlock)
 }
 
-/// Clear cache data but preserve the allocated memory for reuse.
-pub fn clear<'c>() -> Result<Shrink<'c, impl Eq + Hash, impl Any>, Error> {
-	let mut cache_list = [
-		TRANSITION.lock().map_err(|_| Error::Deadlock)?,
-		/*reserved for another caches*/
-	];
-	cache_list.iter_mut().for_each(|c| c.clear());
-	Ok(Shrink(cache_list))
+/// write only caches
+pub mod write {
+	use super::*;
+	/// Access cached warnings safely
+	pub fn warning<'a>() -> Result<RwLockWriteGuard<'a, String>, Error> {
+		WARNING.write().map_err(|_| Error::Deadlock)
+	}
 }
 
-pub struct Shrink<'c, K: Eq + Hash, V: Any>(CacheList<'c, K, V>);
-impl<K: Eq + Hash, V: Any> Shrink<'_, K, V> {
+/// read only caches
+pub mod read {
+	use super::*;
+	/// Access cached warnings safely
+	pub fn warning<'a>() -> Result<RwLockReadGuard<'a, String>, Error> {
+		WARNING.read().map_err(|_| Error::Deadlock)
+	}
+}
+
+/// Clear cache data but preserve the allocated memory for reuse.
+pub fn clear() -> Result<Shrink, Error> {
+	transition()?.clear();
+	write::warning()?.clear();
+	/*reserved for another caches*/
+	Ok(Shrink)
+}
+
+pub struct Shrink;
+impl Shrink {
 	/// Shrinks the allocated memory as much as possible
-	pub fn shrink(mut self) -> Result<(), Error> {
-		self.0.iter_mut().for_each(|c| c.shrink_to_fit());
+	pub fn shrink(self) -> Result<(), Error> {
+		transition()?.shrink_to_fit();
+		write::warning()?.shrink_to_fit();
+		/*reserved for another caches*/
 		Ok(())
 	}
 }
 
 // TODO: 🤔 consider using this approach http://idubrov.name/rust/2018/06/01/tricking-the-hashmap.html
-type CacheList<'c, K, V> = [MutexGuard<'c, HashMap<K, V>>; NUM_OF_CACHES];
-type MapTransition = HashMap<CurrentState, HashMap<Trigger, NextState>>;
-
-type CurrentState = String;
-type NextState = String;
-type Trigger = Option<String>;
+pub(crate) type MapTransition = HashMap<CurrentState, HashMap<Trigger, NextState>>;
+pub(crate) type CurrentState = String;
+pub(crate) type NextState = String;
+pub(crate) type Trigger = Option<String>;

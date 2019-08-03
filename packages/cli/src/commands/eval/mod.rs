@@ -3,6 +3,7 @@ mod console;
 use crate::{
 	arg::output,
 	cli::{Result, CLI},
+	error::*,
 	format,
 	iter::*,
 	print::*,
@@ -161,6 +162,9 @@ If file => It will be overwriten everytime the REPL produce output, especially i
 								},
 								line
 							);
+							if let Some(warnings) = machine.collect_warnings()? {
+								PRINTER("erlang").change(Mode::Warning).prompt(&warnings, "WARNING");
+							}
 							output(machine.to_string(), Some(header))?;
 						}
 					}

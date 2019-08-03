@@ -64,7 +64,6 @@ parser.parse("Off -> On @ Power")?;
 use crate::{cache, Scdlang};
 use std::{error::Error, fmt};
 
-#[rustfmt::skip]
 /** A Trait which external parser must implement.
 
 This trait was mean to be used outside the core.
@@ -74,11 +73,20 @@ pub trait Parser<'t>: fmt::Display {
 	fn parse(&mut self, source: &str) -> Result<(), BoxError>;
 	/// Parse `source` then insert/append the results.
 	fn insert_parse(&mut self, source: &str) -> Result<(), BoxError>;
-
 	/// Parse `source` while instantiate the Parser.
-	fn try_parse(source: &str, options: Scdlang<'t>) -> Result<Self, BoxError> where Self: Sized;
+	fn try_parse(source: &str, options: Scdlang<'t>) -> Result<Self, BoxError>
+	where
+		Self: Sized;
+
 	/// Configure the parser.
 	fn configure(&mut self) -> &mut dyn Builder<'t>;
+	/// Get all warnings messages (all messages are prettified)
+	fn collect_warnings<'e>(&self) -> Result<Option<String>, DynError<'e>> {
+		let messages = cache::read::warning()?.to_string();
+		Ok(Some(messages)
+			.filter(|s| !s.is_empty())
+			.map(|s| s.replace("  --> ", "\n\n  --> ").trim_matches('\n').into()))
+	}
 
 	/// Completely clear the caches which also deallocate the memory.
 	fn flush_cache<'e>(&'t self) -> Result<(), DynError<'e>> {

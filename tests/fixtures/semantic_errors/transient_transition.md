@@ -34,13 +34,6 @@ A -> B
 A -> C @ [isAllowed]
 ```
 `A` will transition to `C` if `isAllowed` else it will transition to `B`.
-<!--TODO:-->Even so, formal verification should be used for extra precautions:
-```scl
-assume [auto + transient] in A -> *
-
-A -> B
-A -> C @ [isAllowed]
-```
 
 ##### 3. Have multiple guards (auto transition)
 This expression can cause unpredictable transition.

@@ -6,6 +6,8 @@ use prettyprint::PrettyPrint;
 use scdlang;
 use std::*;
 
+const HEADER: &str = "ERROR";
+
 #[derive(Debug)]
 pub enum Error<'s> {
 	Count {
@@ -55,7 +57,7 @@ impl Report for Box<dyn error::Error> {
 			use scdlang::Error::*;
 			match err {
 				Deadlock => prompting(&err.to_string()),
-				_ => print.prompt(&err.to_string(), "can't parse"),
+				_ => print.prompt(&err.to_string(), HEADER),
 			}
 		} else {
 			prompting(&self.to_string())
@@ -71,7 +73,7 @@ impl Report for Error<'_> {
 	fn report_and_exit(&self, default_exit_code: Option<i32>, _: Option<ArgMatches>) {
 		let print = PRINTER("haskell").change(Mode::Error);
 		match self {
-			Error::StreamParse(err) => print.prompt(&err.to_string(), "can't parse"),
+			Error::StreamParse(err) => print.prompt(&err.to_string(), HEADER),
 			_ => prompting(&self.to_string()),
 		};
 		if let Some(exit_code) = default_exit_code {
@@ -107,7 +109,7 @@ impl fmt::Display for Error<'_> {
 
 fn error(message: &str) -> String {
 	if atty::is(Stream::Stderr) {
-		format!("{} {}", prompt::ERROR.red().bold(), message.magenta())
+		format!("{} {}", prompt::ERROR.cyan(), message.italic().bold())
 	} else {
 		format!("{} {}", prompt::ERROR, message)
 	}
@@ -119,7 +121,7 @@ impl Prompt for PrettyPrint {
 	}
 }
 
-trait Prompt {
+pub trait Prompt {
 	fn prompt(&self, message: &str, title: &str) {
 		if atty::is(Stream::Stderr) {
 			self.print(message, title)

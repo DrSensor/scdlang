@@ -32,7 +32,7 @@ This expression can cause unpredictable transition.
 A -> B @ E[valid]
 A -> C @ E[exist]
 ```
-Which state should `A` transtition to when `valid` and `exist` is true and `E` is triggered?
+Which state should `A` transtition to when `E` is triggered despite both `valid` and `exist` is true?
 Formal verification should be used for extra precautions:
 ```scl
 assume [guards <= 2] in A -> *

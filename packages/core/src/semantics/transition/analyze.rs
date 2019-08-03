@@ -4,17 +4,13 @@ use semantics::{analyze::*, Event, Kind, Transition};
 
 impl SemanticCheck for Transition<'_> {
 	fn check_error(&self) -> Result<Option<String>, Error> {
-		let mut cache_transition = cache::transition()?;
-
-		let (current, target) = (
-			sanitize(self.from.name),
-			sanitize(self.to.as_ref().unwrap_or(&self.from).name),
-		);
-		let t_cache = cache_transition.entry(current).or_default();
+		// (key, value) = (EventName + guardName, NextState)
+		let (mut cache, target) = (cache::transition()?, sanitize(self.to.as_ref().unwrap_or(&self.from).name));
+		let t_cache = self.cache_current_state(&mut cache);
 
 		Ok(match &self.at {
 			Some(event) => {
-				if t_cache.contains_key(&None) && event.guard.is_none() {
+				if t_cache.contains_key(&None) && event.name.is_some() {
 					Some(self.warn_conflict(&t_cache))
 				} else if let Some(prev_target) = t_cache.insert(Some(event.into()), target) {
 					Some(self.warn_duplicate(&prev_target))
@@ -23,7 +19,7 @@ impl SemanticCheck for Transition<'_> {
 				}
 			}
 			None => {
-				if t_cache.keys().cloned().any(has_trigger) {
+				if t_cache.keys().any(EventKey::has_trigger) {
 					Some(self.warn_conflict(&t_cache))
 				} else if let Some(prev_target) = t_cache.insert(None, target) {
 					Some(self.warn_duplicate(&prev_target))
@@ -33,17 +29,70 @@ impl SemanticCheck for Transition<'_> {
 			}
 		})
 	}
-}
 
-impl Into<String> for &Event<'_> {
-	fn into(self) -> String {
-		format!("{}?{}", self.name.unwrap_or(""), self.guard.unwrap_or(""))
+	fn check_warning(&self) -> Result<Option<String>, Error> {
+		// (key, value) = (EventName + guardName, NextState)
+		let (mut cache, target) = (cache::transition()?, sanitize(self.to.as_ref().unwrap_or(&self.from).name));
+		let t_cache = self.cache_current_state(&mut cache);
+
+		// WARNING: don't insert anything since the insertion is already done in analyze_error >-down-to-> check_error
+		Ok(self.at.as_ref().and_then(|event| {
+			// FIXME: not working on auto-transition
+			let has_same_event = t_cache
+				.keys()
+				.filter(|&key| key != &Some(event.into()))
+				.any(|key| key.get_trigger() == event.name);
+			let has_different_target = t_cache.values().any(|key| key != &target);
+
+			if t_cache.keys().any(EventKey::has_guard) && event.guard.is_some() && has_same_event && has_different_target {
+				Some(self.warn_nondeterministic(t_cache))
+			} else {
+				None
+			}
+		}))
 	}
 }
 
-fn has_trigger(key: Option<String>) -> bool {
-	key.filter(|e| e.rsplit('?').last().filter(|s| !s.is_empty()).is_some())
-		.is_some()
+impl From<&Event<'_>> for String {
+	fn from(event: &Event<'_>) -> Self {
+		format!("{}?{}", event.name.unwrap_or(""), event.guard.unwrap_or(""))
+	}
+}
+
+impl<'i> EventKey<'i> for &'i Option<String> {}
+trait EventKey<'i>: Into<Option<&'i String>> {
+	fn has_trigger(self) -> bool {
+		self.into().filter(|e| is_empty(e.rsplit('?'))).is_some()
+	}
+	fn has_guard(self) -> bool {
+		self.into().filter(|e| is_empty(e.split('?'))).is_some()
+	}
+	fn get_guard(self) -> Option<&'i str> {
+		self.into().and_then(|e| none_empty(e.split('?')))
+	}
+	fn get_trigger(self) -> Option<&'i str> {
+		self.into().and_then(|e| none_empty(e.rsplit('?')))
+	}
+	fn guards_with_same_trigger(self, trigger: Option<&'i str>) -> Option<&'i str> {
+		self.into()
+			.filter(|e| none_empty(e.rsplit('?')) == trigger)
+			.and_then(|e| none_empty(e.split('?')))
+	}
+	fn triggers_with_same_guard(self, guard: Option<&'i str>) -> Option<&'i str> {
+		self.into()
+			.filter(|e| none_empty(e.split('?')) == guard)
+			.and_then(|e| none_empty(e.rsplit('?')))
+	}
+}
+
+impl<'o> Trigger<'o> for &'o Option<&'o str> {}
+trait Trigger<'o>: Into<Option<&'o &'o str>> {
+	fn as_expression(self) -> String {
+		self.into().map(|s| " @ ".to_owned() + &s).unwrap_or_default()
+	}
+	fn as_key(self, guard: &str) -> Option<String> {
+		Some(format!("{}?{}", self.into().unwrap_or(&""), guard))
+	}
 }
 
 impl<'t> SemanticAnalyze<'t> for Transition<'t> {
@@ -51,6 +100,16 @@ impl<'t> SemanticAnalyze<'t> for Transition<'t> {
 		let make_error = |message| options.err_from_span(span, message).into();
 		for transition in self.clone().into_iter() {
 			if let Some(message) = transition.check_error()? {
+				return Err(make_error(message));
+			}
+		}
+		Ok(())
+	}
+
+	fn analyze_warning(&self, span: Span<'t>, options: &'t Scdlang) -> Result<(), Error> {
+		let make_error = |message| options.err_from_span(span, message).into();
+		for transition in self.clone().into_iter() {
+			if let Some(message) = transition.check_warning()? {
 				return Err(make_error(message));
 			}
 		}
@@ -66,7 +125,24 @@ impl<'t> SemanticAnalyze<'t> for Transition<'t> {
 	}
 }
 
+fn is_empty<'a>(split: impl Iterator<Item = &'a str>) -> bool {
+	none_empty(split).is_some()
+}
+
+fn none_empty<'a>(split: impl Iterator<Item = &'a str>) -> Option<&'a str> {
+	split.last().filter(|s| !s.is_empty())
+}
+
 use std::collections::HashMap;
+type CacheMap = HashMap<Option<String>, String>;
+type CachedTransition<'state> = MutexGuard<'state, cache::MapTransition>;
+
+impl<'t> Transition<'t> {
+	fn cache_current_state<'a>(&self, cache: &'t mut CachedTransition<'a>) -> &'t mut CacheMap {
+		cache.entry(sanitize(self.from.name)).or_default()
+	}
+}
+
 impl Transition<'_> {
 	fn warn_duplicate(&self, prev_target: &str) -> String {
 		match &self.at {
@@ -86,18 +162,18 @@ impl Transition<'_> {
 		}
 	}
 
-	fn warn_conflict(&self, cache_target: &HashMap<Option<String>, String>) -> String {
+	fn warn_conflict(&self, cache: &CacheMap) -> String {
 		match &self.at {
 			Some(_) => {
-				let prev_target = cache_target.get(&None).unwrap();
+				let prev_target = cache.get(&None).expect("cache without trigger");
 				format!("conflict with: {} -> {}", self.from.name, prev_target)
 			}
 			None => {
-				let prev_targets: Vec<&str> = cache_target
+				let prev_targets: Vec<&str> = cache
 					.iter()
 					.filter_map(|(trigger, target)| trigger.as_ref().and(Some(target.as_str())))
 					.collect();
-				let prev_triggers: Vec<String> = cache_target.keys().filter_map(ToOwned::to_owned).collect();
+				let prev_triggers: Vec<String> = cache.keys().filter_map(ToOwned::to_owned).collect();
 				format!(
 					"conflict with: {} -> {} @ {}",
 					self.from.name,
@@ -105,6 +181,25 @@ impl Transition<'_> {
 					prev_triggers.join(",")
 				)
 			}
+		}
+	}
+
+	// WARNING: not performant because of using concatenated String as a key which cause to filter
+	fn warn_nondeterministic(&self, cache: &CacheMap) -> String {
+		let mut messages = String::from("non-deterministic transition of ");
+		// (trigger, guard) = (rsplit('?'), split('?')) each call .last()
+		match &self.at {
+			Some(event) => {
+				let guards = cache.keys().filter_map(|k| k.guards_with_same_trigger(event.name));
+
+				writeln!(&mut messages, "{}{} {{", self.from.name, event.name.as_expression()).expect("utf-8");
+				for guard in guards {
+					let target = cache.get(&event.name.as_key(&guard)).map(String::as_str).unwrap_or("");
+					writeln!(&mut messages, "\t-> {} @ [{}]", target, guard).expect("utf-8");
+				}
+				messages + "   }"
+			}
+			None => unreachable!("there is no such thing as \"non-deterministic transient transition\""),
 		}
 	}
 }

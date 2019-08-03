@@ -6,7 +6,7 @@ pub(super) mod prelude {
 		Scdlang,
 	};
 	pub use pest::{error::ErrorVariant, iterators::Pair, Span};
-	pub use std::convert::TryInto;
+	pub use std::{convert::TryInto, fmt::Write, sync::MutexGuard};
 }
 
 pub(super) mod get {
