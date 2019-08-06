@@ -37,7 +37,6 @@ impl SemanticCheck for Transition<'_> {
 
 		// WARNING: don't insert anything since the insertion is already done in analyze_error >-down-to-> check_error
 		Ok(self.at.as_ref().and_then(|event| {
-			// FIXME: not working on auto-transition
 			let has_same_event = t_cache
 				.keys()
 				.filter(|&key| key != &Some(event.into()))
@@ -53,6 +52,7 @@ impl SemanticCheck for Transition<'_> {
 	}
 }
 
+// WARNING: not performant because of using concatenated String as a key which cause filtering
 impl From<&Event<'_>> for String {
 	fn from(event: &Event<'_>) -> Self {
 		format!("{}?{}", event.name.unwrap_or(""), event.guard.unwrap_or(""))
@@ -83,12 +83,26 @@ trait EventKey<'i>: Into<Option<&'i String>> {
 			.filter(|e| none_empty(e.split('?')) == guard)
 			.and_then(|e| none_empty(e.rsplit('?')))
 	}
+	fn as_expression(self) -> String {
+		self.into().map(String::as_str).as_expression()
+	}
 }
 
 impl<'o> Trigger<'o> for &'o Option<&'o str> {}
 trait Trigger<'o>: Into<Option<&'o &'o str>> {
 	fn as_expression(self) -> String {
-		self.into().map(|s| " @ ".to_owned() + &s).unwrap_or_default()
+		self.into()
+			.map(|s| {
+				format!(
+					" @ {trigger}{guard}",
+					trigger = none_empty(s.rsplit('?')).unwrap_or_default(),
+					guard = none_empty(s.split('?'))
+						.filter(|_| s.contains('?'))
+						.map(|g| format!("[{}]", g))
+						.unwrap_or_default(),
+				)
+			})
+			.unwrap_or_default()
 	}
 	fn as_key(self, guard: &str) -> Option<String> {
 		Some(format!("{}?{}", self.into().unwrap_or(&""), guard))
@@ -154,7 +168,7 @@ impl Transition<'_> {
 				trigger
 			),
 			None => format!(
-				"duplicate transient transition: {} -> {},{}",
+				"duplicate transient-transition: {} -> {},{}",
 				self.from.name,
 				self.to.as_ref().unwrap_or(&self.from).name,
 				prev_target
@@ -163,31 +177,33 @@ impl Transition<'_> {
 	}
 
 	fn warn_conflict(&self, cache: &CacheMap) -> String {
+		const REASON: &str = "never had a chance to trigger";
 		match &self.at {
-			Some(_) => {
-				let prev_target = cache.get(&None).expect("cache without trigger");
-				format!("conflict with: {} -> {}", self.from.name, prev_target)
+			Some(event) => {
+				let (prev_target, trigger) = (
+					cache.get(&None).expect("cache without trigger"),
+					event.name.expect("not auto-transition"),
+				);
+				format!("{} {} because: {} -> {}", trigger, REASON, self.from.name, prev_target)
 			}
 			None => {
-				let prev_targets: Vec<&str> = cache
-					.iter()
-					.filter_map(|(trigger, target)| trigger.as_ref().and(Some(target.as_str())))
-					.collect();
-				let prev_triggers: Vec<String> = cache.keys().filter_map(ToOwned::to_owned).collect();
-				format!(
-					"conflict with: {} -> {} @ {}",
-					self.from.name,
-					prev_targets.join(","),
-					prev_triggers.join(",")
-				)
+				let caches = cache.iter().filter(|(event, _)| event.has_trigger());
+
+				let mut messages = format!("conflict with {} {{\n", self.from.name);
+				for (event, target) in caches.clone() {
+					writeln!(&mut messages, "\t -> {}{}", target, event.as_expression()).expect("utf-8");
+				}
+				messages += "   }";
+
+				let triggers = caches.filter_map(|(event, _)| event.get_trigger()).collect::<Vec<&str>>();
+				write!(&mut messages, "\n   because {} {}", triggers.join(","), REASON).expect("utf-8");
+				messages
 			}
 		}
 	}
 
-	// WARNING: not performant because of using concatenated String as a key which cause to filter
 	fn warn_nondeterministic(&self, cache: &CacheMap) -> String {
 		let mut messages = String::from("non-deterministic transition of ");
-		// (trigger, guard) = (rsplit('?'), split('?')) each call .last()
 		match &self.at {
 			Some(event) => {
 				let guards = cache.keys().filter_map(|k| k.guards_with_same_trigger(event.name));

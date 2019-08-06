@@ -47,7 +47,6 @@ action "Test all rust project" {
 	args = [
 		"cargo install just",
 		"just test",
-		"mv target/debug/${BIN} ${HOME}/.cargo/bin/${BIN}",
 	]
 	env = { PWD = "/github/workspace", BIN = "scrap" }
 }
