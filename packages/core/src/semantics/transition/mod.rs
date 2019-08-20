@@ -4,10 +4,18 @@ mod helper;
 mod iter;
 
 use crate::{
-	semantics::{analyze::SemanticCheck, Check, Expression, Found, Kind, Transition},
+	semantics::{analyze::*, Check, Expression, Found, Kind, Transition},
 	utils::naming::Name,
 	Error,
 };
+use static_assertions::assert_impl_all;
+
+assert_impl_all!(r#for; Transition,
+	SemanticAnalyze<'static>,
+	SemanticCheck,
+	From<TokenPair<'static>>,
+	IntoIterator // because `A <-> B` can be desugared into 2 transition
+);
 
 impl Expression for Transition<'_> {
 	fn current_state(&self) -> Name {
@@ -252,7 +260,7 @@ mod pair {
 			A -> F @ D
 			A -> C @ D[exist]
 		"#,
-			|expression| unimplemented!(),
+			|_expression| unimplemented!(),
 		)
 	}
 
@@ -265,7 +273,7 @@ mod pair {
 			A -> F
 			A -> C @ [exist]
 		"#,
-			|expression| unimplemented!(),
+			|_expression| unimplemented!(),
 		)
 	}
 
@@ -279,7 +287,7 @@ mod pair {
 			A -> C @ [exist]
 			A -> C @ E
 		"#,
-			|expression| unimplemented!(),
+			|_expression| unimplemented!(),
 		)
 	}
 
@@ -372,7 +380,7 @@ mod pair {
 					A -> B @ D[valid]
 					A -> B @ D
 				"#,
-					|expression| unimplemented!(),
+					|_expression| unimplemented!(),
 				)
 			}
 		}

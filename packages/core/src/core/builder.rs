@@ -2,7 +2,7 @@ use crate::{cache, error::Error, external::Builder};
 use pest_derive::Parser;
 use std::collections::HashMap;
 
-#[derive(Parser, Default, Clone)] // 🤔 is it wise to derive from Copy&Clone ?
+#[derive(Debug, Parser, Default, Clone)] // 🤔 is it wise to derive from Copy&Clone ?
 #[grammar = "grammar.pest"]
 /** __Core__ parser and also [`Builder`].
 

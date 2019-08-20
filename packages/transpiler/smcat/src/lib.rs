@@ -1,7 +1,6 @@
 #![allow(clippy::unit_arg)]
 mod schema;
 mod utils;
-pub use scdlang::Transpiler;
 
 use scdlang::{
 	prelude::*,
@@ -12,18 +11,25 @@ use schema::*;
 use serde::Serialize;
 use std::{error, fmt, mem::ManuallyDrop};
 use utils::*;
+pub mod prelude {
+	pub use scdlang::external::*;
+}
 
 #[derive(Default, Serialize)]
 /** Transpiler Scdlang → State Machine Cat (JSON).
 
 # Examples
 ```no_run
-let smcat = Machine::new();
+# use std::error::Error;
+use scdlang_smcat::{prelude::*, Machine};
 
-smcat.configure().with_err_path("test.scl");
+let mut parser = Machine::new();
+
+parser.configure().with_err_path("test.scl");
 parser.parse("A -> B")?;
 
 println!("{}", parser.to_string());
+# Ok::<(), Box<dyn Error>>(())
 ``` */
 pub struct Machine<'a> {
 	#[serde(skip)]
@@ -35,7 +41,7 @@ pub struct Machine<'a> {
 }
 
 impl<'a> Parser<'a> for Machine<'a> {
-	fn configure(&mut self) -> &mut Builder<'a> {
+	fn configure(&mut self) -> &mut dyn Builder<'a> {
 		&mut self.builder
 	}
 
@@ -308,7 +314,7 @@ mod test {
 							"from": "A",
 							"to": "B",
 							"color": "red",
-							"note": ["duplicate transient transition: A -> B,C"]
+							"note": ["duplicate transient-transition: A -> B,C"]
 					}]
 				}),
 				json!(machine)

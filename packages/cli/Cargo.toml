@@ -12,7 +12,8 @@ edition = "2018"
 [[bin]]
 name = "scrap"
 path = "src/main.rs"
-test = false
+test = false 	# TODO: remove integration test and replace it with evlish or bats
+							# CLI tests should be readable and close to shell scripting environment
 doc = false
 doctest = false
 

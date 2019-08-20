@@ -5,10 +5,19 @@ Useful for creating transpiler, codegen, or even compiler.
 
 1. Implement trait [`Parser`] on struct with [`Scdlang`] field (or any type that implement [`Builder`]).
 ```no_run
-#[derive(Default)]
+use scdlang::{*, prelude::*};
+use std::{error, fmt};
+pub mod prelude {
+	pub use scdlang::external::*;
+}
+
+#[derive(Debug, Default)]
+struct Schema {}
+
+#[derive(Debug, Default)]
 pub struct Machine<'a> {
 	builder: Scdlang<'a>, // or any type that implmenet trait `Builder`
-	schema: std::any::Any,
+	schema: Schema,
 }
 
 impl Machine<'_> {
@@ -20,12 +29,18 @@ impl Machine<'_> {
 	}
 }
 
+impl fmt::Display for Machine<'_> {
+	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+		write!(f, "{:?}", self.schema)
+	}
+}
+
 impl<'a> Parser<'a> for Machine<'a> {
-	fn configure(&mut self) -> &mut Builder<'a> {
+	fn configure(&mut self) -> &mut dyn Builder<'a> {
 		&mut self.builder
 	}
 
-	fn parse(&mut self, source: &str) -> Result<(), DynError> {
+	fn parse(&mut self, source: &str) -> Result<(), Box<dyn error::Error>> {
 		self.clean_cache()?;
 		unimplemented!();
 	}
@@ -42,6 +57,8 @@ impl<'a> Parser<'a> for Machine<'a> {
 
 2. Then it can be used like this:
 ```ignore
+use scdlang::external::*;
+
 let parser: Box<dyn Parser> = Box::new(match args {
 	Some(text) => module_a::Machine::try_parse(text)?,
 	None => module_b::Machine::new(),

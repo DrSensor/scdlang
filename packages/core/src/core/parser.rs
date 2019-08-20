@@ -11,8 +11,12 @@ use std::{fmt, *};
 
 # Examples
 ```
+# use std::error::Error;
+use scdlang::parse;
+
 let token_pairs = parse("A -> B")?;
-println("{:#?}", token_pairs);
+println!("{:#?}", token_pairs);
+# Ok::<(), Box<dyn Error>>(())
 ``` */
 pub fn parse(source: &str) -> Result<Pairs<Rule>, RuleError> {
 	<Scdlang as pest::Parser<Rule>>::parse(Rule::DescriptionFile, source)

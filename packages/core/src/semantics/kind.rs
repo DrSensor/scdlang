@@ -1,6 +1,8 @@
 use crate::{utils::naming::Name, Error};
 use std::{any::Any, fmt::Debug};
 
+// TODO: test this in BDD style (possibly via cucumber-rust)
+
 #[derive(Debug)]
 /// An enum returned by [Scdlang.iter_from](../struct.Scdlang.html#method.iter_from)
 /// to access semantics type/kind
@@ -69,6 +71,6 @@ A |> doSomething
 or just a shorthand for writing a declaration in one line */
 pub trait Statement: Debug + Check {
 	fn state(&self) -> Option<Name>;
-	fn action(&self) -> Option<&Any /*👈TBD*/>;
+	fn action(&self) -> Option<&dyn Any /*👈TBD*/>;
 	fn event(&self) -> Option<Name>;
 }

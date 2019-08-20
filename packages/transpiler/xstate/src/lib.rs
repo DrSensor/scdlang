@@ -1,13 +1,15 @@
 #![allow(clippy::unit_arg)]
 mod schema;
 mod typescript;
-pub use scdlang::Transpiler;
 
 use scdlang::{prelude::*, semantics::Kind, Scdlang};
 use schema::*;
 use serde::Serialize;
 use std::{error, fmt, mem::ManuallyDrop};
 use voca_rs::case::{camel_case, shouty_snake_case};
+pub mod prelude {
+	pub use scdlang::external::*;
+}
 
 pub mod option {
 	pub const OUTPUT: &str = "output";
@@ -19,12 +21,16 @@ pub mod option {
 
 # Examples
 ```no_run
-let xstate = Machine::new();
+# use std::error::Error;
+use scdlang_xstate::{prelude::*, Machine};
 
-xstate.configure().with_err_path("test.scl");
+let mut parser = Machine::new();
+
+parser.configure().with_err_path("test.scl");
 parser.parse("A -> B")?;
 
 println!("{}", parser.to_string());
+# Ok::<(), Box<dyn Error>>(())
 ``` */
 pub struct Machine<'a> {
 	#[serde(skip)]
@@ -36,7 +42,7 @@ pub struct Machine<'a> {
 }
 
 impl<'a> Parser<'a> for Machine<'a> {
-	fn configure(&mut self) -> &mut Builder<'a> {
+	fn configure(&mut self) -> &mut dyn Builder<'a> {
 		&mut self.builder
 	}
 
