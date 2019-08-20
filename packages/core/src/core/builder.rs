@@ -83,13 +83,14 @@ impl<'g> Builder<'g> for Scdlang<'g> {
 		self
 	}
 
-	fn set(&mut self, key: &'static str, value: &'g str) {
+	fn set(&mut self, key: &'static str, value: &'g str) -> &mut dyn Builder<'g> {
 		match self.derive_config.as_mut() {
 			Some(config) => {
 				config.entry(key).and_modify(|val| *val = value).or_insert(value);
 			}
 			None => self.derive_config = Some([(key, value)].iter().cloned().collect()),
-		}
+		};
+		self
 	}
 
 	fn get(&self, key: &'g str) -> Option<&'g str> {

@@ -60,19 +60,21 @@ If file => It will be overwriten everytime the REPL produce output, especially i
 
 		let mut machine: Box<dyn Transpiler> = match target {
 			"xstate" => Box::new({
+				use xstate::option::*;
 				let mut machine = xstate::Machine::new();
 				let config = machine.configure();
-				config.set("output", output_format);
+				config.set(OUTPUT, output_format);
 				if output_format.one_of(&output::EXPORT_NAME_LIST) {
-					config.set("export_name", &export_name);
+					config.set(EXPORT, &export_name);
 				}
 				machine
 			}),
 			"smcat" | "graph" => {
+				use smcat::option::*;
 				let mut machine = Box::new(smcat::Machine::new());
 				let config = machine.configure();
 				match output_format {
-					"ascii" | "boxart" => config.with_err_semantic(true),
+					"ascii" | "boxart" => config.with_err_semantic(true).set(MODE, mode::blackbox::STATE),
 					_ => config.with_err_semantic(false),
 				};
 				machine

@@ -135,7 +135,7 @@ pub trait Builder<'t> {
 	fn with_err_line(&mut self, line: usize) -> &mut dyn Builder<'t>;
 
 	// Set custom config. Used on derived Parser.
-	fn set(&mut self, key: &'static str, value: &'t str);
+	fn set(&mut self, key: &'static str, value: &'t str) -> &mut dyn Builder<'t>;
 	// Get custom config. Used on derived Parser.
 	fn get(&self, key: &'t str) -> Option<&'t str>;
 }

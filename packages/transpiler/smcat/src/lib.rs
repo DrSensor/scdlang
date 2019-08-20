@@ -15,6 +15,15 @@ pub mod prelude {
 	pub use scdlang::external::*;
 }
 
+pub mod option {
+	pub const MODE: &str = "mode"; // -> normal,blackbox-state
+	pub mod mode {
+		pub mod blackbox {
+			pub const STATE: &str = "blackbox-state";
+		}
+	}
+}
+
 #[derive(Default, Serialize)]
 /** Transpiler Scdlang → State Machine Cat (JSON).
 
@@ -66,6 +75,7 @@ impl<'a> Parser<'a> for Machine<'a> {
 	fn try_parse(source: &str, builder: Scdlang<'a>) -> Result<Self, DynError> {
 		use StateType::*;
 		let mut schema = Coordinate::default();
+		let get = |key| builder.get(key);
 
 		for kind in builder.iter_from(source)? {
 			match kind {
@@ -91,19 +101,22 @@ impl<'a> Parser<'a> for Machine<'a> {
 							current.with_color(color);
 							next = next.map(|mut s| s.with_color(color).clone())
 						}
-						if let Some(next) = next {
-							vec![current, next] // external transition
-						} else {
-							if let (Some(event), Some(action)) = (event.as_ref(), action.as_ref()) {
-								current.actions = Some(vec![ActionType {
-									r#type: ActionTypeType::Activity,
-									body: match cond.as_ref() {
-										None => format!("{} / {}", event, action),
-										Some(cond) => format!("{} [{}] / {}", event, cond, action),
-									},
-								}]);
+						use option::mode::*;
+						match next {
+							Some(next) => vec![current, next], // external transition
+							None if get(option::MODE) == Some(blackbox::STATE) => vec![/*WARNING:wasted*/], // ignore anything inside state
+							None => {
+								if let (Some(event), Some(action)) = (event.as_ref(), action.as_ref()) {
+									current.actions = Some(vec![ActionType {
+										r#type: ActionTypeType::Activity,
+										body: match cond.as_ref() {
+											None => format!("{} / {}", event, action),
+											Some(cond) => format!("{} [{}] / {}", event, cond, action),
+										},
+									}]);
+								}
+								vec![current] // internal transition
 							}
-							vec![current] // internal transition
 						}
 					});
 
