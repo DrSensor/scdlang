@@ -15,9 +15,12 @@ edition = "2018"
 pest = "2"
 pest_derive = "2"
 # helper
-lazy_static = "1" # to define the global caches
 either = "1" # a workaround for iterator.filter that return Result<Vec, _>
 static_assertions = "0.3" # design-by-contract at compile time
+
+[dependencies.once_cell] # to define the global caches
+version = "0.2"
+default-features = false # disable parking_lot
 
 [badges]
 maintenance = { status = "actively-developed" }

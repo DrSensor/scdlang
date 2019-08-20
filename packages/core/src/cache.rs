@@ -1,18 +1,16 @@
 //! Collection of cache variables which help detecting semantics error.
 // TODO: 🤔 use hot reload https://crates.rs/crates/warmy when import statement is introduced
 use crate::error::Error;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::{collections::HashMap, sync::*};
 
 // TODO: replace with https://github.com/rust-lang-nursery/lazy-static.rs/issues/111 when resolved
 // 🤔 or is there any better way?
 // pub static mut TRANSITION: Option<HashMap<Transition, &str>> = None; // doesn't work!
 // type LazyMut<T> = Mutex<Option<T>>;
-lazy_static! {
-	static ref TRANSITION: Mutex<MapTransition> = Mutex::new(HashMap::new());
-	static ref WARNING: RwLock<String> = RwLock::new(String::new());
-	/*reserved for another caches*/
-}
+static TRANSITION: Lazy<Mutex<MapTransition>> = Lazy::new(|| Mutex::new(HashMap::new()));
+static WARNING: Lazy<RwLock<String>> = Lazy::new(|| RwLock::new(String::new()));
+/*reserved for another caches*/
 
 /// Access cached transition safely
 pub fn transition<'a>() -> Result<MutexGuard<'a, MapTransition>, Error> {

@@ -53,7 +53,7 @@ action "Test all rust project" {
 
 action "Smoke tests" {
 	needs = "Test all rust project"
-	uses = "docker://node:slim-buster"
+	uses = "docker://node:buster-slim"
 	runs = "./.github/entrypoint.sh"
 	args = [
 		"npm install",
