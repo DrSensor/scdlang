@@ -47,22 +47,24 @@ action "Test all rust project" {
 	args = [
 		"cargo install just",
 		"just test",
+		"mv target/debug/${BIN} ${HOME}/.bin/${BIN}",
 	]
-	env = { PWD = "/github/workspace", BIN = "scrap" }
+	env = { BIN = "scrap" }
 }
 
 action "Smoke tests" {
 	needs = "Test all rust project"
-	uses = "docker://node:buster-slim"
+	uses = "docker://node:buster"
 	runs = "./.github/entrypoint.sh"
 	args = [
+		"git submodule update --init --recursive",
 		"npm install",
 		"scrap generate src/${filestem}.scl --format xstate --as typescript > src/fsm/${filestem}.ts",
 		"scrap generate src/${filestem}.scl --format xstate --as javascript >> src/fsm/${filestem}.ts",
 		"npx tsc --build",
 		"node dist/index.js",
 	]
-	env = { PWD = "/github/workspace", filestem = "light" }
+	env = { WORKDIR = "examples/xstate/nodejs", filestem = "light" }
 }
 
 action "Perf cargo" {
@@ -84,7 +86,6 @@ action "Build Release cli as musl" {
 		"rustup target add x86_64-unknown-linux-musl",
 		"apt-get update && apt-get install -y musl-tools",
 		"cargo build --target x86_64-unknown-linux-musl --release --bin ${BIN}",
-		"mkdir --parents ${HOME}/.bin/",
 		"mv target/x86_64-unknown-linux-musl/release/${BIN} ${HOME}/.bin/${BIN}",
 	]
 	env = { BIN = "scrap" }
@@ -95,10 +96,10 @@ action "Perf CLI release" {
 	uses = "docker://python:alpine"
 	runs = "./.github/profiler.sh"
 	args = [
-		"${HOME}/.bin/scrap code examples/simple.scl --format xstate",
-		"${HOME}/.bin/scrap code examples/simple.scl --format xstate --stream",
-		"${HOME}/.bin/scrap code examples/simple.scl --format smcat",
-		"${HOME}/.bin/scrap code examples/simple.scl --format smcat --stream",
+		"scrap code examples/simple.scl --format xstate",
+		"scrap code examples/simple.scl --format xstate --stream",
+		"scrap code examples/simple.scl --format smcat",
+		"scrap code examples/simple.scl --format smcat --stream",
 	],
 	env = { PREPARE = "./scripts/gensample.py 1000 > examples/simple.scl" }
 }

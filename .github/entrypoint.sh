@@ -1,12 +1,13 @@
 #!/bin/sh
 set -e
 
-export PATH="$HOME/.cargo/bin:$PATH"
+mkdir --parents ${HOME}/.bin/
+export PATH="$HOME/.cargo/bin:${HOME}/.bin:$PATH"
 
+[ -z $WORKDIR ] || cd $WORKDIR
 for cmd in "$@"; do
   echo "Running '$cmd'..."
   if sh -c "$cmd"; then
-    [ -z "$BIN" ] && mv target/debug/$BIN $HOME/.cargo/bin/$BIN
     echo
     echo "Successfully ran '$cmd'"
   else
