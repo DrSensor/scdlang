@@ -8,12 +8,12 @@ use std::{collections::HashMap, sync::*};
 // 🤔 or is there any better way?
 // pub static mut TRANSITION: Option<HashMap<Transition, &str>> = None; // doesn't work!
 // type LazyMut<T> = Mutex<Option<T>>;
-static TRANSITION: Lazy<Mutex<MapTransition>> = Lazy::new(|| Mutex::new(HashMap::new()));
+static TRANSITION: Lazy<Mutex<TransitionMap>> = Lazy::new(|| Mutex::new(HashMap::new()));
 static WARNING: Lazy<RwLock<String>> = Lazy::new(|| RwLock::new(String::new()));
 /*reserved for another caches*/
 
 /// Access cached transition safely
-pub fn transition<'a>() -> Result<MutexGuard<'a, MapTransition>, Error> {
+pub fn transition<'a>() -> Result<MutexGuard<'a, TransitionMap>, Error> {
 	TRANSITION.lock().map_err(|_| Error::Deadlock)
 }
 
@@ -55,7 +55,8 @@ impl Shrink {
 }
 
 // TODO: 🤔 consider using this approach http://idubrov.name/rust/2018/06/01/tricking-the-hashmap.html
-pub(crate) type MapTransition = HashMap<CurrentState, HashMap<Trigger, NextState>>;
+pub(crate) type TransitionMap = HashMap<CurrentState, HashMap<Trigger, NextState>>;
+// pub(crate) type WarningSet = HashSet<CurrentState>;
 pub(crate) type CurrentState = String;
 pub(crate) type NextState = String;
 pub(crate) type Trigger = Option<String>;

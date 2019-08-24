@@ -6,6 +6,8 @@
 # 4. Add environment variable for preparation (e.g execute script to generate sample data)
 set -e
 
+export PATH="$HOME/.cargo/bin:${HOME}/.bin:$PATH"
+
 json='{
   "command": "%C",
   "memory": {

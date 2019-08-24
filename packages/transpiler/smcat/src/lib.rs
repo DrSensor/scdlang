@@ -327,6 +327,7 @@ mod test {
 							"from": "A",
 							"to": "B",
 							"color": "red",
+							// FIXME: 👇 should be tested using regex
 							"note": ["duplicate transient-transition: A -> B,C"]
 					}]
 				}),

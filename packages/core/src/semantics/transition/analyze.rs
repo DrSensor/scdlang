@@ -1,6 +1,6 @@
-use super::helper::prelude::*;
+use super::helper::{prelude::*, transform_key::*};
 use crate::{cache, semantics, utils::naming::sanitize, Error};
-use semantics::{analyze::*, Event, Kind, Transition};
+use semantics::{analyze::*, Kind, Transition};
 
 impl SemanticCheck for Transition<'_> {
 	fn check_error(&self) -> Result<Option<String>, Error> {
@@ -52,63 +52,6 @@ impl SemanticCheck for Transition<'_> {
 	}
 }
 
-// WARNING: not performant because of using concatenated String as a key which cause filtering
-impl From<&Event<'_>> for String {
-	fn from(event: &Event<'_>) -> Self {
-		format!("{}?{}", event.name.unwrap_or(""), event.guard.unwrap_or(""))
-	}
-}
-
-impl<'i> EventKey<'i> for &'i Option<String> {}
-trait EventKey<'i>: Into<Option<&'i String>> {
-	fn has_trigger(self) -> bool {
-		self.into().filter(|e| is_empty(e.rsplit('?'))).is_some()
-	}
-	fn has_guard(self) -> bool {
-		self.into().filter(|e| is_empty(e.split('?'))).is_some()
-	}
-	fn get_guard(self) -> Option<&'i str> {
-		self.into().and_then(|e| none_empty(e.split('?')))
-	}
-	fn get_trigger(self) -> Option<&'i str> {
-		self.into().and_then(|e| none_empty(e.rsplit('?')))
-	}
-	fn guards_with_same_trigger(self, trigger: Option<&'i str>) -> Option<&'i str> {
-		self.into()
-			.filter(|e| none_empty(e.rsplit('?')) == trigger)
-			.and_then(|e| none_empty(e.split('?')))
-	}
-	fn triggers_with_same_guard(self, guard: Option<&'i str>) -> Option<&'i str> {
-		self.into()
-			.filter(|e| none_empty(e.split('?')) == guard)
-			.and_then(|e| none_empty(e.rsplit('?')))
-	}
-	fn as_expression(self) -> String {
-		self.into().map(String::as_str).as_expression()
-	}
-}
-
-impl<'o> Trigger<'o> for &'o Option<&'o str> {}
-trait Trigger<'o>: Into<Option<&'o &'o str>> {
-	fn as_expression(self) -> String {
-		self.into()
-			.map(|s| {
-				format!(
-					" @ {trigger}{guard}",
-					trigger = none_empty(s.rsplit('?')).unwrap_or_default(),
-					guard = none_empty(s.split('?'))
-						.filter(|_| s.contains('?'))
-						.map(|g| format!("[{}]", g))
-						.unwrap_or_default(),
-				)
-			})
-			.unwrap_or_default()
-	}
-	fn as_key(self, guard: &str) -> Option<String> {
-		Some(format!("{}?{}", self.into().unwrap_or(&""), guard))
-	}
-}
-
 impl<'t> SemanticAnalyze<'t> for Transition<'t> {
 	fn analyze_error(&self, span: Span<'t>, options: &'t Scdlang) -> Result<(), Error> {
 		let make_error = |message| options.err_from_span(span, message).into();
@@ -139,17 +82,9 @@ impl<'t> SemanticAnalyze<'t> for Transition<'t> {
 	}
 }
 
-fn is_empty<'a>(split: impl Iterator<Item = &'a str>) -> bool {
-	none_empty(split).is_some()
-}
-
-fn none_empty<'a>(split: impl Iterator<Item = &'a str>) -> Option<&'a str> {
-	split.last().filter(|s| !s.is_empty())
-}
-
 use std::collections::HashMap;
 type CacheMap = HashMap<Option<String>, String>;
-type CachedTransition<'state> = MutexGuard<'state, cache::MapTransition>;
+type CachedTransition<'state> = MutexGuard<'state, cache::TransitionMap>;
 
 impl<'t> Transition<'t> {
 	fn cache_current_state<'a>(&self, cache: &'t mut CachedTransition<'a>) -> &'t mut CacheMap {

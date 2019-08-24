@@ -1,3 +1,5 @@
+//! Code for desugaring expression into multiple transition
+
 use crate::semantics;
 use semantics::{Transition, TransitionType};
 use std::iter::FromIterator;
@@ -8,7 +10,6 @@ impl<'i> IntoIterator for Transition<'i> {
 
 	fn into_iter(mut self) -> Self::IntoIter {
 		TransitionIterator(match self.kind {
-			/*FIXME: iterator for internal transition*/
 			TransitionType::Normal | TransitionType::Internal => vec![self],
 			TransitionType::Toggle => {
 				self.kind = TransitionType::Normal;

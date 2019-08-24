@@ -1,7 +1,9 @@
+//! parse -> convert -> desugar -> analyze -> consume
+
 mod analyze;
 mod convert;
+mod desugar;
 mod helper;
-mod iter;
 
 use crate::{
 	semantics::{analyze::*, Check, Expression, Found, Kind, Transition},

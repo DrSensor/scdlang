@@ -1,6 +1,6 @@
 use crate::{cache, error::Error, external::Builder};
 use pest_derive::Parser;
-use std::collections::HashMap;
+use std::collections::*;
 
 #[derive(Debug, Parser, Default, Clone)] // 🤔 is it wise to derive from Copy&Clone ?
 #[grammar = "grammar.pest"]
@@ -34,7 +34,6 @@ pub struct Scdlang<'g> {
 
 	pub(super) clear_cache: bool, //-|in case for program that need to disable…|
 	pub semantic_error: bool,     //-|…then enable semantic error at runtime|
-	pub warnings: &'g [&'g str],
 
 	derive_config: Option<HashMap<&'static str, &'g str>>,
 }
