@@ -11,14 +11,16 @@ pub use kind::*;
 pub(super) mod analyze {
 	// WARNING: move this on separate file when it became more complex
 	use super::*;
-	use crate::{cache, error::Error, grammar::Rule, Scdlang};
+	use crate::{cache, error::*, grammar::Rule, Scdlang};
 	use pest::{iterators::Pair, Span};
 
 	pub type TokenPair<'i> = Pair<'i, Rule>;
 
-	pub trait SemanticCheck: Expression {
+	// TODO: report visibility of pub(crate) inside pub(super) as bugs
+	//		 it's a workaround for ErrorMap
+	pub(crate) trait SemanticCheck: Expression {
 		fn check_error(&self) -> Result<Option<String>, Error>;
-		fn check_warning(&self) -> Result<Option<String>, Error> {
+		fn check_warning(&self) -> Result<Option<ErrorMap>, Error> {
 			Ok(None)
 		}
 	}
@@ -36,9 +38,11 @@ pub(super) mod analyze {
 			let this = pair.clone().into();
 			// WARNING: there is possibility that one expression can contain both error and warning because of sugar syntax (<->, ->>, >->)
 			Self::analyze_error(&this, pair.as_span(), options)?;
-			if let Err(Error::Parse(warning)) = Self::analyze_warning(&this, pair.as_span(), options) {
-				let mut messages = cache::write::warning()?;
-				messages.push_str(&warning.to_string());
+			if let Err(Error::WithId { id, error }) = Self::analyze_warning(&this, pair.as_span(), options) {
+				cache::write::warning()?
+					.entry(id)
+					.and_modify(|e| *e = error.to_string())
+					.or_insert_with(|| error.to_string());
 			}
 			// reserved for another analysis! 💪
 			Ok(this)

@@ -46,7 +46,7 @@ impl Check for Transition<'_> {
 		// WARNING: there is possibility that one expression can contain both error and warning because of sugar syntax (<->, ->>, >->)
 		Ok(match (self.check_error()?, self.check_warning()?) {
 			(Some(message), _) => Found::Error(message),
-			(_, Some(message)) => Found::Warning(message),
+			(_, Some(err)) => Found::Warning(err.message),
 			(None, None) => Found::None,
 		})
 	}

@@ -9,7 +9,7 @@ use std::{collections::HashMap, sync::*};
 // pub static mut TRANSITION: Option<HashMap<Transition, &str>> = None; // doesn't work!
 // type LazyMut<T> = Mutex<Option<T>>;
 static TRANSITION: Lazy<Mutex<TransitionMap>> = Lazy::new(|| Mutex::new(HashMap::new()));
-static WARNING: Lazy<RwLock<String>> = Lazy::new(|| RwLock::new(String::new()));
+static WARNING: Lazy<RwLock<WarningMap>> = Lazy::new(|| RwLock::new(WarningMap::new()));
 /*reserved for another caches*/
 
 /// Access cached transition safely
@@ -21,7 +21,7 @@ pub fn transition<'a>() -> Result<MutexGuard<'a, TransitionMap>, Error> {
 pub mod write {
 	use super::*;
 	/// Access cached warnings safely
-	pub fn warning<'a>() -> Result<RwLockWriteGuard<'a, String>, Error> {
+	pub fn warning<'a>() -> Result<RwLockWriteGuard<'a, WarningMap>, Error> {
 		WARNING.write().map_err(|_| Error::Deadlock)
 	}
 }
@@ -30,7 +30,7 @@ pub mod write {
 pub mod read {
 	use super::*;
 	/// Access cached warnings safely
-	pub fn warning<'a>() -> Result<RwLockReadGuard<'a, String>, Error> {
+	pub fn warning<'a>() -> Result<RwLockReadGuard<'a, WarningMap>, Error> {
 		WARNING.read().map_err(|_| Error::Deadlock)
 	}
 }
@@ -56,7 +56,7 @@ impl Shrink {
 
 // TODO: 🤔 consider using this approach http://idubrov.name/rust/2018/06/01/tricking-the-hashmap.html
 pub(crate) type TransitionMap = HashMap<CurrentState, HashMap<Trigger, NextState>>;
-// pub(crate) type WarningSet = HashSet<CurrentState>;
+pub(crate) type WarningMap = HashMap<u64, String>;
 pub(crate) type CurrentState = String;
 pub(crate) type NextState = String;
 pub(crate) type Trigger = Option<String>;

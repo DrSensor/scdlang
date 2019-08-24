@@ -1,11 +1,14 @@
 use super::helper::{prelude::*, transform_key::*};
-use crate::{cache, semantics, utils::naming::sanitize, Error};
+use crate::{cache, error::*, semantics, utils::*};
 use semantics::{analyze::*, Kind, Transition};
 
 impl SemanticCheck for Transition<'_> {
 	fn check_error(&self) -> Result<Option<String>, Error> {
 		// (key, value) = (EventName + guardName, NextState)
-		let (mut cache, target) = (cache::transition()?, sanitize(self.to.as_ref().unwrap_or(&self.from).name));
+		let (mut cache, target) = (
+			cache::transition()?,
+			naming::sanitize(self.to.as_ref().unwrap_or(&self.from).name),
+		);
 		let t_cache = self.cache_current_state(&mut cache);
 
 		Ok(match &self.at {
@@ -30,9 +33,12 @@ impl SemanticCheck for Transition<'_> {
 		})
 	}
 
-	fn check_warning(&self) -> Result<Option<String>, Error> {
+	fn check_warning(&self) -> Result<Option<ErrorMap>, Error> {
 		// (key, value) = (EventName + guardName, NextState)
-		let (mut cache, target) = (cache::transition()?, sanitize(self.to.as_ref().unwrap_or(&self.from).name));
+		let (mut cache, target) = (
+			cache::transition()?,
+			naming::sanitize(self.to.as_ref().unwrap_or(&self.from).name),
+		);
 		let t_cache = self.cache_current_state(&mut cache);
 
 		// WARNING: don't insert anything since the insertion is already done in analyze_error >-down-to-> check_error
@@ -44,7 +50,10 @@ impl SemanticCheck for Transition<'_> {
 			let has_different_target = t_cache.values().any(|key| key != &target);
 
 			if t_cache.keys().any(EventKey::has_guard) && event.guard.is_some() && has_same_event && has_different_target {
-				Some(self.warn_nondeterministic(t_cache))
+				Some(ErrorMap {
+					id: (self.from.name, self.at.as_ref().and_then(|e| e.name)).get_hash(),
+					message: self.warn_nondeterministic(t_cache),
+				})
 			} else {
 				None
 			}
@@ -66,8 +75,11 @@ impl<'t> SemanticAnalyze<'t> for Transition<'t> {
 	fn analyze_warning(&self, span: Span<'t>, options: &'t Scdlang) -> Result<(), Error> {
 		let make_error = |message| options.err_from_span(span, message).into();
 		for transition in self.clone().into_iter() {
-			if let Some(message) = transition.check_warning()? {
-				return Err(make_error(message));
+			if let Some(err) = transition.check_warning()? {
+				return Err(Error::WithId {
+					id: err.id,
+					error: make_error(err.message),
+				});
 			}
 		}
 		Ok(())
@@ -88,7 +100,7 @@ type CachedTransition<'state> = MutexGuard<'state, cache::TransitionMap>;
 
 impl<'t> Transition<'t> {
 	fn cache_current_state<'a>(&self, cache: &'t mut CachedTransition<'a>) -> &'t mut CacheMap {
-		cache.entry(sanitize(self.from.name)).or_default()
+		cache.entry(naming::sanitize(self.from.name)).or_default()
 	}
 }
 

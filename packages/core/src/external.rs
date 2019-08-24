@@ -99,10 +99,12 @@ pub trait Parser<'t>: fmt::Display {
 	fn configure(&mut self) -> &mut dyn Builder<'t>;
 	/// Get all warnings messages (all messages are prettified)
 	fn collect_warnings<'e>(&self) -> Result<Option<String>, DynError<'e>> {
-		let messages = cache::read::warning()?.to_string();
-		Ok(Some(messages)
-			.filter(|s| !s.is_empty())
-			.map(|s| s.replace("  --> ", "\n\n  --> ").trim_matches('\n').into()))
+		let messages = cache::read::warning()?
+			.values()
+			.map(|s| s.as_str())
+			.collect::<Vec<&str>>()
+			.join("\n\n");
+		Ok(Some(messages).filter(|s| !s.is_empty()))
 	}
 
 	/// Completely clear the caches which also deallocate the memory.
