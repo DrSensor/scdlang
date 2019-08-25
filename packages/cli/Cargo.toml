@@ -35,21 +35,7 @@ voca_rs = "1"
 
 [dependencies.clap]
 version = "2"
-features = ["wrap_help"]
-
-# WARNING: This make compilation time doubled!! Seems cargo has serious issue here 😠
-[build-dependencies]
-clap = "2"
-scdlang = { path = "../core", version = "0.2.1" }
-scdlang_xstate = { path = "../transpiler/xstate", version = "0.2.1" }
-scdlang_smcat = { path = "../transpiler/smcat", version = "0.2.1" }
-atty = "0.2"
-rustyline = "5"
-prettyprint = "0.*"
-colored = "1"
-which = "2"
-regex = "1"
-voca_rs = "1"
+features = ["wrap_help", "color"]
 
 [dev-dependencies]
 predicates = "1"
