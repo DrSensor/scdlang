@@ -55,21 +55,21 @@ impl<'c> CLI<'c> for Code {
 
 		let mut machine: Box<dyn Transpiler> = match target {
 			"xstate" => Box::new({
-				use xstate::option::*;
+				use xstate::Option;
 				let mut machine = xstate::Machine::new();
 				let config = machine.configure();
-				config.set(OUTPUT, output_format);
+				config.set(&Option::Output, &output_format);
 				if output_format.one_of(&output::EXPORT_NAME_LIST) {
-					config.set(EXPORT, &export_name);
+					config.set(&Option::ExportName, &export_name);
 				}
 				machine
 			}),
 			"smcat" | "graph" => {
-				use smcat::option::*;
+				use smcat::{option::Mode::*, Option};
 				let mut machine = Box::new(smcat::Machine::new());
 				let config = machine.configure();
 				match output_format {
-					"ascii" | "boxart" => config.with_err_semantic(true).set(MODE, mode::blackbox::STATE),
+					"ascii" | "boxart" => config.with_err_semantic(true).set(&Option::Mode, &BlackboxState),
 					_ => config.with_err_semantic(false),
 				};
 				machine

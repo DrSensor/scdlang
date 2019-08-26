@@ -1,7 +1,11 @@
 #![allow(clippy::unit_arg)]
+extern crate strum;
+
+pub mod option;
 mod schema;
 mod typescript;
 
+pub use option::Key as Option;
 use scdlang::{prelude::*, semantics::Kind, Scdlang};
 use schema::*;
 use serde::Serialize;
@@ -9,11 +13,6 @@ use std::{error, fmt, mem::ManuallyDrop};
 use voca_rs::case::{camel_case, shouty_snake_case};
 pub mod prelude {
 	pub use scdlang::external::*;
-}
-
-pub mod option {
-	pub const OUTPUT: &str = "output";
-	pub const EXPORT: &str = "export_name";
 }
 
 #[derive(Default, Serialize)]
@@ -128,9 +127,10 @@ impl Machine<'_> {
 	##### custom config
 	* "output": "json" | "typescript" (default: "json") */
 	pub fn new() -> Self {
+		use option::*;
 		let (mut builder, schema) = (Scdlang::new(), StateChart::default());
 		builder.auto_clear_cache(false);
-		builder.set(option::OUTPUT, "json");
+		builder.set(&Option::Output, &Output::JSON);
 		Self { builder, schema }
 	}
 }
@@ -144,7 +144,7 @@ impl Drop for Machine<'_> {
 impl fmt::Display for Machine<'_> {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
 		let get = |key| self.builder.get(key).ok_or(fmt::Error);
-		let (output, export_name) = (get(option::OUTPUT)?, get(option::EXPORT));
+		let (output, export_name) = (get(&Option::Output)?, get(&Option::ExportName));
 		match output {
 			"json" | "javascript" | "js" => {
 				let json = serde_json::to_string_pretty(&self.schema).map_err(|_| fmt::Error)?;

@@ -139,9 +139,9 @@ pub trait Builder<'t> {
 	// WARNING: `Any` is not supported because trait object can't have generic methods
 
 	/// Set custom config. Used on derived Parser.
-	fn set(&mut self, key: &'static str, value: &'t str) -> &mut dyn Builder<'t>;
+	fn set(&mut self, key: &'t dyn AsRef<str>, value: &'t dyn AsRef<str>) -> &mut dyn Builder<'t>;
 	/// Get custom config. Used on derived Parser.
-	fn get(&self, key: &'t str) -> Option<&'t str>;
+	fn get(&self, key: &'t dyn AsRef<str>) -> Option<&'t str>;
 }
 
 type DynError<'t> = Box<dyn Error + 't>;

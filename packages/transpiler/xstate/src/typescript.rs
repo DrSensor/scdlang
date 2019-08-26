@@ -1,10 +1,10 @@
-use crate::{option, Builder, DynError, Machine};
+use crate::{Builder, DynError, Machine, Option};
 use serde_json;
 use std::fmt::{self, Write};
 
 impl Machine<'_> {
 	pub(super) fn to_typescript(&self) -> Result<String, DynError> {
-		if let Some(export_name) = self.builder.get(option::EXPORT) {
+		if let Some(export_name) = self.builder.get(&Option::ExportName) {
 			let json = serde_json::to_string_pretty(&self.schema)?;
 			let mut fsm_interface = format!("type {name} = {expr}", name = export_name, expr = json);
 
@@ -25,7 +25,7 @@ impl Machine<'_> {
 			fsm_interface.push_str(EVENT_HELPER);
 			Ok(fsm_interface)
 		} else {
-			panic!("\"{}\" must be defined", option::EXPORT)
+			Err(format!("\"{}\" must be defined", Option::ExportName.as_ref()).into())
 		}
 	}
 }

@@ -35,7 +35,7 @@ pub struct Scdlang<'g> {
 	pub(super) clear_cache: bool, //-|in case for program that need to disable…|
 	pub semantic_error: bool,     //-|…then enable semantic error at runtime|
 
-	derive_config: Option<HashMap<&'static str, &'g str>>,
+	derive_config: Option<HashMap<&'g str, &'g str>>,
 }
 
 impl<'s> Scdlang<'s> {
@@ -82,18 +82,21 @@ impl<'g> Builder<'g> for Scdlang<'g> {
 		self
 	}
 
-	fn set(&mut self, key: &'static str, value: &'g str) -> &mut dyn Builder<'g> {
+	fn set(&mut self, key: &'g dyn AsRef<str>, value: &'g dyn AsRef<str>) -> &mut dyn Builder<'g> {
 		match self.derive_config.as_mut() {
 			Some(config) => {
-				config.entry(key).and_modify(|val| *val = value).or_insert(value);
+				config
+					.entry(key.as_ref())
+					.and_modify(|val| *val = value.as_ref())
+					.or_insert_with(|| value.as_ref());
 			}
-			None => self.derive_config = Some([(key, value)].iter().cloned().collect()),
+			None => self.derive_config = Some([(key.as_ref(), value.as_ref())].iter().cloned().collect()),
 		};
 		self
 	}
 
-	fn get(&self, key: &'g str) -> Option<&'g str> {
-		self.derive_config.as_ref()?.get(key).cloned()
+	fn get(&self, key: &'g dyn AsRef<str>) -> Option<&'g str> {
+		self.derive_config.as_ref()?.get(key.as_ref()).cloned()
 	}
 }
 
