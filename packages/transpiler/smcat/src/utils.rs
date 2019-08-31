@@ -1,4 +1,4 @@
-use super::{State, StateType};
+use super::schema::{State, StateType};
 use scdlang::utils::naming::Name;
 use std::iter::FromIterator;
 
