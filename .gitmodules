@@ -1,0 +1,3 @@
+[submodule "examples/xstate/nodejs"]
+	path = examples/xstate/nodejs
+	url = https://github.com/DrSensor/nodejs-scdlang_xstate.git

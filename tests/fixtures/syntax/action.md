@@ -132,11 +132,11 @@ Read as: "decrement `x` when entering *state **Alpha*** and increment `x` if exi
 
 #### activity
 ```scl
-state Beta { do |> beeping }
+state Beta { do <> beeping }
 ```
 or
 ```scl
-Beta >< beeping
+Beta <> beeping
 ```
 Read as: "perform *activity **beeping*** when on *state **Beta***"
 
@@ -158,18 +158,17 @@ state Beta { @ Click |> something }
 ```
 or
 ```scl
-Beta @ Click |> something
+Beta @ Click |> something // ✔
 ```
-Read as: "execute *action **something*** when *event **Click*** occurred while in *state **Beta***"
+Read as: "while in *state **Beta*** and *event **Click*** occurred, execute *action **something***"
 
-##### with guard 🤔
+##### with guard
 ```scl
-state Beta { @ Click[x > 0 & In(A)] |> something }
+state Beta { @ Click[allGreen] |> something }
 ```
 or
 ```scl
-Beta @ Click[x > 0 & In(A)] |> something
+Beta @ Click[allGreen] |> something // ✔
 ```
-Read as: "execute *action **something*** *event **Click*** can occurred while in *state **Beta*** only if in *state **Alpha***"
-
+Read as: "while in *state **Beta*** and *event **Click*** occurred, execute *action **something*** only if *condition **allGreen*** is true"
 ---

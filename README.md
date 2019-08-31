@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/github/license/drsensor/scdlang.svg)](./LICENSE)
 [![Chats](https://img.shields.io/badge/community-grey.svg?logo=matrix)](https://matrix.to/#/+statecharts:matrix.org)
 
-> 🚧 Still **Work in Progress** 🏗️
+> 🚧 Slowly **Work in Progress** 🏗️
 
 ## About
 Scdlang (pronounced `/ˈesˌsi:ˈdi:ˈlæŋ/`) is a description language for describing Statecharts that later can be used to generate code or just transpile it into another format. This project is more focus on how to describe Statecharts universally that can be used in another language/platform rather than drawing a Statecharts diagram. For drawing, see [State Machine Cat][].
@@ -35,11 +35,12 @@ Scdlang (pronounced `/ˈesˌsi:ˈdi:ˈlæŋ/`) is a description language for des
   - [ ] [WaveDrom](https://observablehq.com/@drom/wavedrom)
 - Compile into other formats (hopefully, no promise):
   - [ ] WebAssembly (using [parity-wasm](https://github.com/paritytech/parity-wasm))
-- Code generation 🤔
-  - [ ] Julia via [`@generated`](https://docs.julialang.org/en/v1/manual/metaprogramming/#Generated-functions-1) implemented as [parametric](https://docs.julialang.org/en/v1/manual/methods/#Parametric-Methods-1) [multiple-dispatch](https://en.wikipedia.org/wiki/Multiple_dispatch#Julia) [functors](https://docs.julialang.org/en/v1/manual/methods/#Function-like-objects-1)
-  - [ ] Rust via [`#[proc_macro_attribute]`](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros) implemented as [typestate programming](https://rust-embedded.github.io/book/static-guarantees/typestate-programming.html)? (I'm still afraid if it will conflict with another crates)
-  - [ ] Elixir via [`use`](https://elixir-lang.org/getting-started/alias-require-and-import.html#use) macro which desugar into [gen_statem](https://andrealeopardi.com/posts/connection-managers-with-gen_statem/) 💪
-  - [ ] Flutter via [`builder_factories`](https://github.com/flutter/flutter/wiki/Code-generation-in-Flutter) (waiting for the [FFI](https://github.com/dart-lang/sdk/issues/34452) to be stable)
+- Code generation (all of them can be non-embedded and it will be the priority) 🤔
+  - [ ] Julia via [`@generated`](https://docs.julialang.org/en/v1/manual/metaprogramming/#Generated-functions-1) implemented as [parametric](https://docs.julialang.org/en/v1/manual/methods/#Parametric-Methods-1) [multiple-dispatch](https://en.wikipedia.org/wiki/Multiple_dispatch#Julia) [functors](https://docs.julialang.org/en/v1/manual/methods/#Function-like-objects-1) [non-embedded until there is a project like PyO3 but for Julia]
+  - [ ] Rust via [`#[proc_macro_attribute]`](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros) implemented as [typestate programming](https://rust-embedded.github.io/book/static-guarantees/typestate-programming.html)? (Need to figure out how to support async, non-async, and no-std in single abstraction) [embedded]
+  - [ ] Elixir via [`use`](https://elixir-lang.org/getting-started/alias-require-and-import.html#use) macro and [rustler](https://github.com/rusterlium/rustler) which desugar into [gen_statem](https://andrealeopardi.com/posts/connection-managers-with-gen_statem/) [embedded]
+  - [ ] Flutter via [`builder_factories`](https://github.com/flutter/flutter/wiki/Code-generation-in-Flutter) (waiting for the [FFI](https://github.com/dart-lang/sdk/issues/34452) to be stable) [embedded]
+  - [ ] Typescript or **AssemblyScript** implemented as [typestate interface or abstract-class](https://spectrum.chat/statecharts/general/typestate-guard~d1ec4eb1-6db7-45bb-8b79-836c9a22cd5d) (usefull for building smart contract) [non-embedded]
 
 > For more info, see the changelog in the [release page][]
 

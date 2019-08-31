@@ -10,6 +10,8 @@ pub mod utils;
 pub use crate::core::{parse, Scdlang};
 pub use error::Error;
 pub use external::Parser as Transpiler;
+pub use external::Parser as Compiler;
+pub use external::Parser as Codegen;
 
 /// A prelude providing convenient access to commonly-used features of scdlang core parser.
 pub mod prelude {
@@ -65,6 +67,12 @@ pub mod grammar {
 				TransientLoopFrom as left,
 			};
 		}
+
+		pub mod triangle {
+			pub use crate::core::Rule::{
+				PlayNext as right,
+			};
+		}
 	}
 
 	#[allow(non_snake_case)]
@@ -73,7 +81,9 @@ pub mod grammar {
 	pub mod Name {
 		pub use super::Rule::{
 			StateName as state,
-			EventName as event
+			EventName as event,
+			actionName as action,
+			guardName as guard,
 		};
 	}
 }

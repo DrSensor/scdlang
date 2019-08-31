@@ -18,7 +18,7 @@ check: clear
 	watchexec --restart --clear 'just {{command}} {{args}}'
 
 # Run all kind of tests
-test: unit integration
+test: unit integration smoke
 
 # Generate and open the documentation
 docs +args='':
@@ -63,13 +63,19 @@ release version:
 build args='':
 	cargo build {{args}}
 
-# Run all unit test
+# Run all unit tests
 unit:
 	cargo test --lib --all --exclude s-crap -- --test-threads=1
 
-# Run all integration test
+# Run all integration tests
 integration:
 	cargo test --tests -p s-crap -- --test-threads=1
+
+# Run all examples and doc-tests
+smoke:
+	cargo test --doc --all --exclude s-crap
+	cargo test --examples
+# TODO: `mask --maskfile examples/xstate/nodejs/maskfile.md start` should link `scrap` to target/debug/scrap
 
 # Show reports of macro-benchmark
 @stats git-flags='':

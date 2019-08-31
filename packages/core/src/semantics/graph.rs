@@ -1,5 +1,6 @@
 //! Module that contain semantics graph of Scdlang which modeled as [DAG](https://en.wikipedia.org/wiki/Directed_acyclic_graph)
 #![allow(dead_code)]
+use std::fmt::{self, Display};
 
 #[derive(Debug, Clone)]
 /// SCXML equivalent:
@@ -10,8 +11,9 @@
 /// ```
 pub struct Transition<'t> {
 	pub from: State<'t>,
-	pub to: State<'t>,
+	pub to: Option<State<'t>>,
 	pub at: Option<Event<'t>>,
+	pub run: Option<Action<'t>>,
 	pub kind: TransitionType<'t>, // 🤔 maybe I should hide it then implement kind() method
 }
 
@@ -30,7 +32,9 @@ pub enum TransitionType<'t> {
 		state: &'t State<'t>,
 		kind: &'t TransitionType<'t>,
 	},
-	Normal, // 🤔 should I implement Default trait?
+	Internal,
+	// FIXME: encapsulate 👇 as External variant
+	Normal,
 	Toggle,
 	Loop {
 		transient: bool,
@@ -59,17 +63,37 @@ impl Into<String> for &State<'_> {
 	}
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Default, Clone)]
 /// SCXML equivalent:
 /// ```scxml
 /// <transition event="name"/>
 /// ```
-pub struct Event<'s> {
+pub struct Event<'at> {
 	// pub kind: &'s EventType, // 🤔 probably should not be a field but more like kind() method because the type can be deduce on the available field
-	pub name: &'s str, // TODO: should be None when it only have a Guard or it just an Internal Event
+	pub name: Option<&'at str>, // should be None when it only have a Guard or "it just an Internal Event"
+	pub guard: Option<&'at str>,
 }
 
-impl Into<String> for &Event<'_> {
+impl Display for Event<'_> {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(
+			f,
+			"{event}{guard}",
+			event = self.name.unwrap_or(""),
+			guard = match self.guard {
+				Some(guard_name) => ["[", guard_name, "]"].concat(),
+				None => String::new(),
+			}
+		)
+	}
+}
+
+#[derive(Debug, Default, Clone)]
+pub struct Action<'play> {
+	pub name: &'play str,
+}
+
+impl Into<String> for &Action<'_> {
 	fn into(self) -> String {
 		self.name.to_string()
 	}

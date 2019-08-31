@@ -13,7 +13,11 @@ edition = "2018"
 scdlang = { path = "../../core", version = "0.2.1" }
 serde_json = "1"
 serde = { version = "1", features = ["derive"] }
-voca_rs = "1"
+serde_with = { version = "1", features = ["json"] }
+voca_rs = "1" # helper to convert Scdlang naming convention into DavidKPiano naming convention
+# for custom options
+strum = { git = "https://github.com/Peternator7/strum.git" }
+strum_macros = { git = "https://github.com/Peternator7/strum.git" }
 
 [dev-dependencies]
 assert-json-diff = "1"

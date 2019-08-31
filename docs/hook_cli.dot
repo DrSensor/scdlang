@@ -8,8 +8,8 @@ digraph {
   node [shape=box]
 
   initial -> smcat [label=<<u>json</u>>]
+  smcat -> {"" [shape=point]} [dir=none, label="[ if no graphviz ]"]
   smcat -> dot [label=<<u>dot</u>>]
-  smcat -> {"" [shape=point]} [dir=none, label="[ no graphviz ]"]
   "" -> "graph-easy" [label=<<u>dot</u>>]
 
   image [shape=record, label="bmp|gif|jpg|png|tif"]
@@ -17,11 +17,15 @@ digraph {
   terminal [shape=record, label="ascii|boxart"]
   lang1 [shape=record, label="smcat|json|scxml|xmi"]
   lang2 [shape=record, label="eps|fig|dot_json|pic|tk|vml|vrml"]
+  lang3 [shape=record, label="vcg|gdl|<gml>graphml", color=limegreen]
   compressed [shape=record, label="gd|gd2|svgz|vmlz|wbmp"]
   all [shape=record, label="svg|dot"]
 
   smcat -> all,lang1 [label=<<i>-f smcat --as</i>>]
   dot,"graph-easy" -> all,image,document [label=<<i>-f graph --as</i>>]
-  "graph-easy" -> terminal,pdf [label=<<i>-f graph --as</i>>]
+  "graph-easy" -> terminal,pdf,lang3 [label=<<i>-f graph --as</i>>]
+  lang3:gml -> cytoscape [color=grey]
   dot -> compressed,lang2 [label=<<i>-f graph --as</i>>]
+
+  cytoscape [shape=ellipse,color=grey,fontcolor=slategrey]
 }

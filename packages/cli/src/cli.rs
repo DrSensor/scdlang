@@ -1,5 +1,6 @@
 use crate::{arg, commands::*};
-use clap::{App, ArgMatches, SubCommand};
+use atty::{self, Stream};
+use clap::{App, AppSettings::*, ArgMatches, SubCommand};
 use std::error;
 
 #[rustfmt::skip]
@@ -10,7 +11,7 @@ pub fn build<'a, 'b>() -> App<'a, 'b> {
 }
 
 pub fn run(matches: &ArgMatches) -> Result<()> {
-	Main::run_on(&matches)?;
+	Main::invoke(&matches)?;
 	Eval::run_on(&matches)?;
 	Code::run_on(&matches)?;
 	Ok(())
@@ -25,7 +26,12 @@ pub trait CLI<'c> {
 	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c>;
 	fn command<'s: 'c>() -> App<'c, 's> {
 		let cmd = SubCommand::with_name(Self::NAME);
-		Self::additional_usage(cmd).args_from_usage(Self::USAGE)
+		let app = Self::additional_usage(cmd).args_from_usage(Self::USAGE);
+		if atty::is(Stream::Stdout) {
+			app.setting(ColoredHelp)
+		} else {
+			app.setting(ColorNever)
+		}
 	}
 
 	fn invoke(args: &ArgMatches) -> Result<()>;

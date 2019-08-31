@@ -1,6 +1,8 @@
 use crate::{utils::naming::Name, Error};
 use std::{any::Any, fmt::Debug};
 
+// TODO: test this in BDD style (possibly via cucumber-rust)
+
 #[derive(Debug)]
 /// An enum returned by [Scdlang.iter_from](../struct.Scdlang.html#method.iter_from)
 /// to access semantics type/kind
@@ -24,6 +26,10 @@ pub enum Found {
 	None,
 }
 
+pub trait Check {
+	fn semantic_check(&self) -> Result<Found, Error>;
+}
+
 #[rustfmt::skip]
 /** Everything that can change state
 
@@ -31,14 +37,12 @@ Example:
 ```scl
 A -> B
 ``` */
-pub trait Expression: Debug {
+pub trait Expression: Debug + Check {
 	fn current_state(&self) -> Name;
-	fn next_state(&self) -> Name;
+	fn next_state(&self) -> Option<Name>;
 	fn event(&self) -> Option<Name>;
-	fn semantic_check(&self) -> Result<Found, Error>;
-	fn action(&self) -> Option<&Any/*👈TBD*/> {
-		unimplemented!("TBD")
-	}
+	fn guard(&self) -> Option<Name>;
+	fn action(&self) -> Option<Name>;
 }
 
 /** [UNIMPLEMENTED] Mostly everything that use curly braces.
@@ -48,7 +52,7 @@ Example:
 state A {}
 ```
 🤔 I wonder if curly braces that can expand into multiple transition is included */
-pub trait Declaration: Debug {
+pub trait Declaration: Debug + Check {
 	/// e.g: `@entry |> doSomething`
 	fn statements(&self) -> Option<Vec<&dyn Statement>>;
 
@@ -65,8 +69,8 @@ Example:
 A |> doSomething
 ```
 or just a shorthand for writing a declaration in one line */
-pub trait Statement: Debug {
+pub trait Statement: Debug + Check {
 	fn state(&self) -> Option<Name>;
-	fn action(&self) -> Option<&Any /*👈TBD*/>;
+	fn action(&self) -> Option<&dyn Any /*👈TBD*/>;
 	fn event(&self) -> Option<Name>;
 }

@@ -11,10 +11,16 @@ categories = ["parsing"]
 edition = "2018"
 
 [dependencies]
+# parser + context-free-grammar
 pest = "2"
 pest_derive = "2"
-lazy_static = "1"
-either = "1"
+# helper
+either = "1" # a workaround for iterator.filter that return Result<Vec, _>
+static_assertions = "0.3" # design-by-contract at compile time
+
+[dependencies.once_cell] # to define the global caches
+version = "0.2"
+default-features = false # disable parking_lot
 
 [badges]
 maintenance = { status = "actively-developed" }

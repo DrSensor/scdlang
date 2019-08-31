@@ -17,8 +17,10 @@ use scdlang_xstate as xstate;
 use std::{
 	fs::{self, File},
 	io::{BufRead, BufReader},
+	path::Path,
 	str,
 };
+use voca_rs::*;
 use which::which;
 
 pub struct Code;
@@ -32,26 +34,42 @@ impl<'c> CLI<'c> for Code {
 	fn additional_usage<'s>(cmd: App<'s, 'c>) -> App<'s, 'c> {
 		cmd.visible_aliases(&["generate", "gen", "declaration", "declr"])
 			.about("Generate from scdlang file declaration to another format")
-			.args(&[output::dist(), output::target(), output::format()])
+			.args(&[output::dist(), output::target(), output::format(), output::export_name()])
 	}
 
 	fn invoke(args: &ArgMatches) -> Result<()> {
-		let filepath = args.value_of("FILE").unwrap_or_default();
-		let target = args.value_of(output::TARGET).unwrap_or_default();
-		let output_format = args.value_of(output::FORMAT).unwrap_or_default();
-		let mut print = PRINTER(output_format);
+		let value_of = |arg| args.value_of(arg).unwrap_or_default();
+		let (target, output_format) = (value_of(output::TARGET), value_of(output::FORMAT));
+		let (mut print, filepath) = (PRINTER(output_format), value_of("FILE"));
+		let export_name = match args.value_of(output::EXPORT_NAME) {
+			Some(export_name) => export_name.to_string(),
+			None => {
+				let stem = Path::new(filepath).file_stem().expect("<FILE>").to_str().unwrap();
+				match output_format {
+					"dts" | "typescript" => case::pascal_case(stem),
+					"javascript" => case::camel_case(stem),
+					_ => stem.to_string(),
+				}
+			}
+		};
 
 		let mut machine: Box<dyn Transpiler> = match target {
-			"xstate" => Box::new(match output_format {
-				"json" => xstate::Machine::new(),
-				"typescript" => unreachable!("TODO: on the next update"),
-				_ => unreachable!("{} --as {:?}", Self::NAME, args.value_of(output::FORMAT)),
+			"xstate" => Box::new({
+				use xstate::Config;
+				let mut machine = xstate::Machine::new();
+				let config = machine.configure();
+				config.set(&Config::Output, &output_format);
+				if output_format.one_of(&output::EXPORT_NAME_LIST) {
+					config.set(&Config::ExportName, &export_name);
+				}
+				machine
 			}),
 			"smcat" | "graph" => {
+				use smcat::{option::Mode::*, Config};
 				let mut machine = Box::new(smcat::Machine::new());
 				let config = machine.configure();
 				match output_format {
-					"ascii" | "boxart" => config.with_err_semantic(true),
+					"ascii" | "boxart" => config.with_err_semantic(true).set(&Config::Mode, &BlackboxState),
 					_ => config.with_err_semantic(false),
 				};
 				machine
@@ -84,6 +102,10 @@ impl<'c> CLI<'c> for Code {
 		} else {
 			let file = fs::read_to_string(filepath)?;
 			machine.parse(&file)?;
+		}
+
+		if let Some(warnings) = machine.collect_warnings()? {
+			PRINTER("erlang").change(Mode::Warning).prompt(&warnings, "WARNING");
 		}
 
 		let machine = machine.to_string();

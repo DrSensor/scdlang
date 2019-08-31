@@ -27,7 +27,7 @@ pub mod prompt {
 	use rustyline::config::{self, *};
 
 	pub const REPL: &str = "»";
-	pub const ERROR: &str = "ERROR:";
+	pub const ERROR: &str = "severity:";
 
 	// TODO: PR are welcome 😆
 	pub const CONFIG: fn() -> config::Config = || {
@@ -47,6 +47,7 @@ pub mod print {
 		REPL,
 		Debug,
 		Error,
+		Warning,
 		MultiLine,
 		UseHeader,
 
@@ -62,18 +63,22 @@ pub mod print {
 
 	impl PrinterChange for PrettyPrint {
 		fn change(&self, mode: Mode) -> Self {
+			let stderr = |theme| {
+				self.configure()
+					.grid(true)
+					.header(true)
+					.theme(theme)
+					.paging_mode(PagingMode::Error)
+					.build()
+			};
 			(match mode {
 				Mode::Plain => self.configure().grid(false).header(false).line_numbers(false).build(),
 				Mode::UseHeader => self.configure().grid(true).header(true).build(),
 				Mode::MultiLine => self.configure().grid(true).build(),
 				Mode::REPL => self.configure().line_numbers(true).grid(true).build(),
 				Mode::Debug => self.configure().line_numbers(true).grid(true).header(true).build(),
-				Mode::Error => self
-					.configure()
-					.grid(true)
-					.theme("Sublime Snazzy")
-					.paging_mode(PagingMode::Error)
-					.build(),
+				Mode::Error => stderr("Sublime Snazzy"),
+				Mode::Warning => stderr("OneHalfDark"),
 			})
 			.unwrap() // because it only throw error if field not been initialized
 		}
@@ -95,6 +100,7 @@ pub mod print {
 			.theme("TwoDark")
 			.language(match lang {
 				"smcat" => "perl",
+				"dts" => "typescript",
 				"scxml" | "xmi" => "xml",
 				"ascii" | "boxart" => "txt",
 				_ => lang,
@@ -149,7 +155,7 @@ pub mod iter {
 
 // TODO: Hacktoberfest
 pub mod format {
-	pub const XSTATE: [&str; 1] = ["json" /*, typescript*/];
+	pub const XSTATE: [&str; 4] = ["json", "dts", "javascript", "typescript"];
 	pub const SMCAT: &str = "json";
 	#[rustfmt::skip]
 	pub const BLOB: [&str; 13] = ["bmp", "gd", "gd2", "gif", "jpg", "jpeg", "jpe", "png", "svgz", "tif", "tiff", "vmlz", "webmp"];
@@ -158,7 +164,7 @@ pub mod format {
 	pub mod ext {
 		pub const SMCAT: [&str; 7] = ["svg", "dot", "smcat", "json", "html", "scxml", "xmi"];
 		pub const DOT: [&str; 32] = ["bmp", "canon", "dot", "gv", "xdot", "eps", "fig", "gd", "gd2", "gif", "jpg", "jpeg", "jpe", "json", "json0", "dot_json", "xdot_json", "pic", "plain", "plain-ext", "png", "ps", "ps2", "svg", "svgz", "tif", "tiff", "tk", "vml", "vmlz", "vrml", "wbmp"];
-		pub const GRAPH_EASY: [&str; 13] = ["ascii", "boxart", "svg", "dot", "txt", "bmp", "gif", "jpg", "pdf", "png", "ps", "ps2", "tif"];
+		pub const GRAPH_EASY: [&str; 16] = ["ascii", "boxart", "svg", "dot", "txt", "vcg", "gdl", "graphml", "bmp", "gif", "jpg", "pdf", "png", "ps", "ps2", "tif"];
 	}
 
 	pub fn into_legacy_dot(input: &str) -> String {

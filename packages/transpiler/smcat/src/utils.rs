@@ -1,4 +1,4 @@
-use super::{State, StateType};
+use super::schema::{State, StateType};
 use scdlang::utils::naming::Name;
 use std::iter::FromIterator;
 
@@ -42,12 +42,21 @@ impl MergeStates for Vec<State> {
 		for state in states {
 			if !self.iter().any(|s| s.name == state.name) {
 				self.push(state.to_owned());
-			} else if state.color.is_some() {
+			} else {
 				let pos = self
 					.iter()
 					.position(|s| s.name == state.name)
 					.expect("any(|s| s.name == state.name)");
-				self[pos].color = state.color.clone();
+				if let Some(color) = state.color.clone() {
+					self[pos].color = Some(color);
+				}
+				if let Some(new_actions) = state.actions.clone() {
+					let mut actions = self[pos].actions.clone().unwrap_or_default();
+					actions.extend(new_actions);
+					actions.sort_unstable();
+					actions.dedup();
+					self[pos].actions = Some(actions);
+				}
 			}
 		}
 	}

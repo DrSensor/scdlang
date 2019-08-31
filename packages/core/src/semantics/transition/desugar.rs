@@ -1,3 +1,5 @@
+//! Code for desugaring expression into multiple transition
+
 use crate::semantics;
 use semantics::{Transition, TransitionType};
 use std::iter::FromIterator;
@@ -8,26 +10,26 @@ impl<'i> IntoIterator for Transition<'i> {
 
 	fn into_iter(mut self) -> Self::IntoIter {
 		TransitionIterator(match self.kind {
-			TransitionType::Normal => [self].to_vec(),
+			TransitionType::Normal | TransitionType::Internal => vec![self],
 			TransitionType::Toggle => {
 				self.kind = TransitionType::Normal;
 				let (mut left, right) = (self.clone(), self);
-				left.from = right.to.clone();
-				left.to = right.from.clone();
-				[left, right].to_vec()
+				left.from = right.to.clone().expect("not Internal");
+				left.to = right.from.clone().into();
+				vec![left, right]
 			}
 			TransitionType::Loop { transient } => {
 				/* A ->> B @ C */
-				if self.from.name != self.to.name {
+				if self.from.name != self.to.as_ref().expect("not Internal").name {
 					let (mut self_loop, mut normal) = (self.clone(), self);
-					self_loop.from = self_loop.to.clone();
+					self_loop.from = self_loop.to.as_ref().expect("not Internal").clone();
 					normal.kind = TransitionType::Normal;
-					normal.at = if transient { None } else { normal.at };
-					[normal, self_loop].to_vec()
+					normal.at = normal.at.filter(|_| !transient);
+					vec![normal, self_loop]
 				}
 				/* ->> B @ C */
 				else {
-					[self].to_vec() // reason: see Symbol::double_arrow::right => (..) in convert.rs
+					vec![self] // reason: see Symbol::double_arrow::right => (..) in convert.rs
 				}
 			}
 			TransitionType::Inside { .. } => unreachable!("TODO: when support StateType::Compound"),
@@ -62,6 +64,6 @@ where
 	where
 		T: IntoIterator<Item = Transition<'i>>,
 	{
-		unimplemented!("TODO: on the next update")
+		unimplemented!("TODO: on the next update when const generic is stabilized")
 	}
 }

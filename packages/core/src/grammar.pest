@@ -4,13 +4,16 @@ DescriptionFile = _{ SOI ~ CRLF? ~ (
   ) ~ NEWLINE*
 )* ~ EOI }
 
-expression =  { (self_transition|(StateName ~ transition)) ~ trigger? }
-  self_transition = { LoopTo ~ StateName }
-  transition      = { ( TransitionToggle
-                      | TransientLoopTo | LoopTo | TransitionTo
-                      | TransientLoopFrom | LoopFrom | TransitionFrom
-                      ) ~ StateName }
-  trigger         = { TriggerAt ~ EventName }
+expression =  { ( internal_transition | ((self_transition | (StateName ~ transition)) ~ trigger? ~ action?) ) }
+  self_transition     = { LoopTo ~ StateName }
+  internal_transition = { StateName ~ trigger ~ action }
+  transition          = { ( TransitionToggle
+                          | TransientLoopTo | LoopTo | TransitionTo
+                          | TransientLoopFrom | LoopFrom | TransitionFrom
+                          ) ~ StateName }
+  trigger             = { TriggerAt ~ (guard|(EventName ~ guard?)) }
+    guard             = _{ "[" ~ guardName ~ "]" }
+  action              = { PlayNext ~ actionName }
 
 // #region symbol/operator
 TransitionTo           = @{ "-"+ ~ ">" }
@@ -21,14 +24,18 @@ LoopFrom               = @{ "<<" ~ "-"+ }
 TransientLoopTo        = @{ ">" ~ "-"+ ~ ">" }
 TransientLoopFrom      = @{ "<" ~ "-"+ ~ "<" }
 TriggerAt              = @{ "@" }
+PlayNext               = @{ "|>" }
 // #endregion
 
 // #region name
-StateName = ${ PASCAL_CASE|QUOTED }
-EventName = ${ PASCAL_CASE|QUOTED }
+StateName  = ${ PASCAL_CASE|QUOTED }
+EventName  = ${ PASCAL_CASE|QUOTED }
+actionName = ${ CAMEL_CASE|QUOTED }
+guardName  = ${ CAMEL_CASE|QUOTED }
 // #endregion
 
 PASCAL_CASE = @{ ASCII_ALPHA_UPPER ~ ASCII_ALPHANUMERIC* }
+CAMEL_CASE  = @{ ASCII_ALPHA_LOWER ~ ASCII_ALPHANUMERIC* }
 QUOTED      = @{ single_quote|double_quote|backtick }
   single_quote = _{ "'" ~ (!(NEWLINE|"'") ~ "\\"? ~ ANY)* ~ "'" }
   double_quote = _{ "\"" ~ (!(NEWLINE|"\"") ~ "\\"? ~ ANY)* ~ "\"" }

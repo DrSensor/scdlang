@@ -1,7 +1,8 @@
 use crate::{cache, error::Error, external::Builder};
 use pest_derive::Parser;
+use std::collections::*;
 
-#[derive(Parser, Default, Clone)] // 🤔 is it wise to derive from Copy&Clone ?
+#[derive(Debug, Parser, Default, Clone)] // 🤔 is it wise to derive from Copy&Clone ?
 #[grammar = "grammar.pest"]
 /** __Core__ parser and also [`Builder`].
 
@@ -33,15 +34,18 @@ pub struct Scdlang<'g> {
 
 	pub(super) clear_cache: bool, //-|in case for program that need to disable…|
 	pub semantic_error: bool,     //-|…then enable semantic error at runtime|
+
+	derive_config: Option<HashMap<&'g str, &'g str>>,
 }
 
 impl<'s> Scdlang<'s> {
 	/// This method is prefered for instantiating
 	/// than using [`Default::default()`](https://doc.rust-lang.org/std/default/trait.Default.html#tymethod.default)
 	pub fn new() -> Self {
-		Self {
+		Scdlang {
 			clear_cache: true,
 			semantic_error: true,
+			derive_config: Option::default(),
 			..Default::default()
 		}
 	}
@@ -77,12 +81,29 @@ impl<'g> Builder<'g> for Scdlang<'g> {
 		self.clear_cache = default;
 		self
 	}
+
+	fn set(&mut self, key: &'g dyn AsRef<str>, value: &'g dyn AsRef<str>) -> &mut dyn Builder<'g> {
+		match self.derive_config.as_mut() {
+			Some(config) => {
+				config
+					.entry(key.as_ref())
+					.and_modify(|val| *val = value.as_ref())
+					.or_insert_with(|| value.as_ref());
+			}
+			None => self.derive_config = Some([(key.as_ref(), value.as_ref())].iter().cloned().collect()),
+		};
+		self
+	}
+
+	fn get(&self, key: &'g dyn AsRef<str>) -> Option<&'g str> {
+		self.derive_config.as_ref()?.get(key.as_ref()).cloned()
+	}
 }
 
 impl<'g> Drop for Scdlang<'g> {
 	fn drop(&mut self) {
 		if self.clear_cache {
-			clear_cache().expect("Deadlock")
+			clear_cache().expect("no Deadlock")
 		}
 	}
 }
