@@ -1,0 +1,53 @@
+name: Measure Performance
+on:
+  pull_request:
+    branches: ['**']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch:
+        - x86_64-unknown-linux-musl
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: ${{ matrix.arch }}
+
+    - run: scripts/gensample.py 1000 > examples/simple.scl
+    - name: Build
+      env: { BIN: scrap }
+      run: |-
+        cargo build --target ${{ matrix.arch }} --release --bin ${BIN}
+        mv target/${{ matrix.arch }}/release/${BIN} ${HOME}/.bin/${BIN}
+
+    - name: Perf Release
+      run: >-
+        .github/profiler.sh
+        "scrap code examples/simple.scl --format xstate"
+        "scrap code examples/simple.scl --format xstate --stream"
+        "scrap code examples/simple.scl --format smcat"
+        "scrap code examples/simple.scl --format smcat --stream"
+    - name: Perf Build
+      continue-on-error: true
+      uses: ./.github/action/perf
+      with:
+        args: >-
+          "build --all"
+          "build -p scdlang"
+          "build -p scdlang_xstate"
+          "build -p s-crap"
+
+    - name: Store to git-notes
+      env: { GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+      uses: .github/action/summarize-perf
+      with:
+        args: "query '{exec: .command, memory: .memory.peak, cpu: .cpu, time: .mean}' | commit"
+    - name: Report
+      env: { GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}' }
+      uses: .github/action/summarize-perf
+      with:
+        args: "summary | ./scripts/perfsum.py | comment"

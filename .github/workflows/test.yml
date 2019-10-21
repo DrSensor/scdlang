@@ -1,0 +1,31 @@
+name: Testing
+on:
+  push:
+    branches: ['**']
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install `just`
+      env: { VERSION: v0.4.4 }
+      run: >-
+        wget -nv https://github.com/casey/just/releases/download/${VERSION}/just-${VERSION}-x86_64-unknown-linux-musl.tar.gz
+        -O- | sudo tar xz -C /usr/local/bin/ just
+
+    - name: Test all
+      run: |-
+        just test
+        mv target/debug/${BIN} ${HOME}/.bin/${BIN}
+      env: { BIN: scrap }
+
+    - name: Test examples
+      env: { WORKDIR = "examples/xstate/nodejs", filestem = "light" }
+      run: |-
+        git submodule update --init --recursive
+        cd ${WORKDIR} && npm Install
+        scrap generate src/${filestem}.scl --format xstate --as typescript > src/fsm/${filestem}.ts
+        scrap generate src/${filestem}.scl --format xstate --as javascript >> src/fsm/${filestem}.ts
+        npx tsc --build
+        node dist/index.js

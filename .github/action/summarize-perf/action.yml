@@ -1,0 +1,6 @@
+
+name: 'Summarize Perf'
+description: 'Store perf result in git-notes'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
