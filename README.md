@@ -1,14 +1,11 @@
 # Scdlang
 <sup>**S**tate**c**harts **D**escription **Lang**uage</sup><br>
 
-> Interested? Show it by clicking [🌟](https://help.github.com/en/articles/about-stars) or [♥️](https://help.github.com/en/articles/sponsoring-open-source-developers)
-
 [![current version](https://badge.fury.io/gh/drsensor%2Fscdlang.svg)](https://github.com/drsensor/scdlang/releases/latest)
 [![Docker image size](https://img.shields.io/microbadger/image-size/scdlang/scrap/latest.svg)](https://hub.docker.com/r/scdlang/scrap)
 [![License](https://img.shields.io/github/license/drsensor/scdlang.svg)](./LICENSE)
-[![Chats](https://img.shields.io/badge/community-grey.svg?logo=matrix)](https://matrix.to/#/+statecharts:matrix.org)
 
-> 🚧 Still **Work in Progress** 🏗️
+> 🚧 Still **Experimental** 🏗️
 
 ## About
 Scdlang (pronounced `/ˈesˌsi:ˈdi:ˈlæŋ/`) is a description language for describing Statecharts that later can be used to generate code or just transpile it into another format. This project is more focus on how to describe Statecharts universally that can be used in another language/platform rather than drawing a Statecharts diagram. For drawing, see [State Machine Cat][].
@@ -20,11 +17,12 @@ Scdlang (pronounced `/ˈesˌsi:ˈdi:ˈlæŋ/`) is a description language for des
 - **Writeable** just like you write code which is concise, clear, and can be refactored
 - **Transferable** to any implementation (e.g platform, programming language, runtime, etc)
 
-### Key Features
-- [x] Awesome CLI (see [usage](packages/cli/README.md))
+### Features and *Wishlist*
+- [x] CLI utils (see [usage](packages/cli/README.md))
 - [x] Syntax is inspired from various drawing languages like [mermaid][], [Graphviz][], [PlantUML][], and many more
 - [x] Decent error message
 - [x] Avoid invalid and ambigous transition via semantics analysis
+- [ ] Rule definition for static analysis and formal verification
 - Transpile into other formats:
   - [x] [XState](https://xstate.js.org/docs/)
   - [x] [State Machine Cat][]
@@ -33,9 +31,10 @@ Scdlang (pronounced `/ˈesˌsi:ˈdi:ˈlæŋ/`) is a description language for des
   - [ ] [Sismic](https://sismic.readthedocs.io/en/latest/)
   - [ ] [SCXML](https://www.w3.org/TR/scxml/)
   - [ ] [WaveDrom](https://observablehq.com/@drom/wavedrom)
-- Compile into other formats (hopefully, no promise):
+- Compile into other formats (need this to make it being an embeddable DSL):
   - [ ] WebAssembly (using [parity-wasm](https://github.com/paritytech/parity-wasm))
-- Code generation 🤔
+  - [ ] LLVM IR 🤔 (open the possibility to be compiled as wasm, dynlib, and static lib)
+- Code generation 🤔 (not sure if I need this but why not?)
   - [ ] Julia via [`@generated`](https://docs.julialang.org/en/v1/manual/metaprogramming/#Generated-functions-1) implemented as [parametric](https://docs.julialang.org/en/v1/manual/methods/#Parametric-Methods-1) [multiple-dispatch](https://en.wikipedia.org/wiki/Multiple_dispatch#Julia) [functors](https://docs.julialang.org/en/v1/manual/methods/#Function-like-objects-1)
   - [ ] Rust via [`#[proc_macro_attribute]`](https://doc.rust-lang.org/reference/procedural-macros.html#attribute-macros) implemented as [typestate programming](https://rust-embedded.github.io/book/static-guarantees/typestate-programming.html)? (I'm still afraid if it will conflict with another crates)
   - [ ] Elixir via [`use`](https://elixir-lang.org/getting-started/alias-require-and-import.html#use) macro which desugar into [gen_statem](https://andrealeopardi.com/posts/connection-managers-with-gen_statem/) 💪
