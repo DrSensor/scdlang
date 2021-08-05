@@ -5,7 +5,7 @@
 [![Docker image size](https://img.shields.io/microbadger/image-size/scdlang/scrap/latest.svg)](https://hub.docker.com/r/scdlang/scrap)
 [![License](https://img.shields.io/github/license/drsensor/scdlang.svg)](./LICENSE)
 
-> 🚧 Still **Experimental** 🏗️
+> 🚧Status: **🗶perimental *4*ever**<sup>🤞</sup>
 
 ## About
 Scdlang (pronounced `/ˈesˌsi:ˈdi:ˈlæŋ/`) is a description language for describing Statecharts that later can be used to generate code or just transpile it into another format. This project is more focus on how to describe Statecharts universally that can be used in another language/platform rather than drawing a Statecharts diagram. For drawing, see [State Machine Cat][].
