@@ -1,0 +1,38 @@
+[package]
+name = "scdlang-lsp"
+version = "0.0.0"
+description = "Scdlang LSP server"
+license = "UPL-1.0"
+repository = "https://github.com/drsensor/scdlang"
+authors = ["Fahmi Akbar Wildana <f.a.wildana@gmail.com>"]
+keywords = ["statemachine", "language", "lsp", "scdlang"]
+categories = ["development-tools"]
+edition = "2018"
+
+[[bin]]
+name = "scdlsp"
+path = "src/main.rs"
+test = false
+doc = false
+doctest = false
+
+[lib]
+doctest = false
+doc = false
+
+[dependencies]
+scdlang = { path = "../core", version = "*" }
+atty = "0.*"
+which = "2"
+regex = "1"
+tower-lsp = "0.*"
+
+[dependencies.clap]
+version = "2"
+features = ["wrap_help"]
+
+[dev-dependencies]
+predicates = "1"
+assert_fs = "0.*"
+assert_cmd = "0.*"
+rexpect = "0.*"
